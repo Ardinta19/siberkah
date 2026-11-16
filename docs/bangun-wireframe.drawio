@@ -1,0 +1,705 @@
+<mxfile host="65bd71144e">
+    <diagram id="d0" name="0 Pedoman">
+        <mxGraphModel dx="986" dy="697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="t" parent="1" style="text;html=1;fontSize=16;fontStyle=1;" value="SIBERKAH - Wireframe Bagian 1 dari 3: pedoman dan alur pelanggan (K-01 sampai K-06)" vertex="1">
+                    <mxGeometry height="30" width="1100" x="40" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="LEGENDA BENTUK" vertex="1">
+                    <mxGeometry height="24" width="260" x="40" y="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="s1" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Bilah atas atau bar menu" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="96" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Kotak isi: teks, kartu, ringkasan" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="142" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="Foto atau gambar (tempat foto)" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="188" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Kolom isian" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="234" as="geometry"/>
+                </mxCell>
+                <mxCell id="s5" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Aksi utama, satu per layar" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Aksi kedua" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="326" as="geometry"/>
+                </mxCell>
+                <mxCell id="s7" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="Catatan perilaku (kuning)" vertex="1">
+                    <mxGeometry height="38" width="280" x="40" y="372" as="geometry"/>
+                </mxCell>
+                <mxCell id="bp" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="UKURAN LAYAR YANG DIGAMBAR&#xa;&#xa;Ponsel 360 px: rancangan dasar, tanpa awalan.&#xa;md 768 px: dua kolom (tablet, tidak digambar terpisah).&#xa;lg 1024 px: gambar laptop, menu atas, panel berdampingan.&#xa;xl 1280 px: hanya membatasi lebar isi sekitar 1200 px.&#xa;&#xa;Urutan kerja: ponsel dahulu, laptop sebagai peningkatan.&#xa;Margin sisi ponsel 12 px, jarak antarkotak 8 sampai 12 px.&#xa;Tinggi tombol dan kolom isian minimal 44 px.&#xa;Huruf isi 16 px." vertex="1">
+                    <mxGeometry height="230" width="400" x="340" y="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="rd" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="CARA MEMBACA&#xa;&#xa;- Tiap halaman: kiri ponsel, tengah laptop, kanan catatan kuning.&#xa;- Wireframe sengaja abu-abu. Warna dan huruf ditentukan di tahap design token.&#xa;- Teks dan angka contoh hanya ilustrasi, bukan harga atau nama resmi.&#xa;- Kode layar: K pelanggan, S staf, A admin, O owner.&#xa;- BR, T, UC, NFR mengacu ke SRS SIBERKAH." vertex="1">
+                    <mxGeometry height="170" width="400" x="340" y="308" as="geometry"/>
+                </mxCell>
+                <mxCell id="ls" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="DAFTAR LAYAR PELANGGAN&#xa;&#xa;K-01 Katalog (bagian 1)&#xa;K-02 Detail produk (bagian 1)&#xa;K-03 Masuk dan kode OTP (bagian 1)&#xa;K-04 Isi pesanan (bagian 1)&#xa;K-05 Pembayaran (bagian 1)&#xa;K-06 Lacak pesanan (bagian 1)&#xa;K-07 Pesanan saya (bagian 2)&#xa;K-08 Profil dan hapus akun (bagian 2)&#xa;K-09 Kebijakan privasi (bagian 2)&#xa;K-10 Detail produk custom (bagian 2)&#xa;&#xa;Bagian 2: K-07 sampai K-10, keadaan khusus, S-00 sampai S-04.&#xa;Bagian 3: A-01 sampai A-03, O-01 sampai O-04, peta navigasi semua peran." vertex="1">
+                    <mxGeometry height="330" width="400" x="760" y="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="ky" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="KEPUTUSAN SEMENTARA (ubah bila jawabanmu berbeda)&#xa;&#xa;- Pelanggan dirancang untuk ponsel dan laptop sekaligus.&#xa;- Kalender memakai bawaan perangkat.&#xa;- Huruf isi 16 px, staf boleh 17 sampai 18 px.&#xa;- Konfirmasi bayar lewat tombol WhatsApp, bukan unggah bukti.&#xa;- Staf produksi dan kurir satu peran.&#xa;- Papan bunga hanya diantar atau boleh diambil: belum diputuskan, K-04 menampilkan kedua pilihan." vertex="1">
+                    <mxGeometry height="230" width="300" x="1180" y="66" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="d0b" name="0b Peta Pelanggan">
+        <mxGraphModel dx="1430" dy="1010" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="t" parent="1" style="text;html=1;fontSize=14;fontStyle=1;" value="PETA NAVIGASI PELANGGAN" vertex="1">
+                    <mxGeometry height="30" width="400" x="40" y="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="n1" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-01 Katalog" vertex="1">
+                    <mxGeometry height="48" width="160" x="40" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="n2" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-02 Detail produk" vertex="1">
+                    <mxGeometry height="48" width="160" x="260" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="n4" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-04 Isi pesanan" vertex="1">
+                    <mxGeometry height="48" width="160" x="480" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="n5" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-05 Pembayaran" vertex="1">
+                    <mxGeometry height="48" width="160" x="700" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="n6" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-06 Lacak pesanan" vertex="1">
+                    <mxGeometry height="48" width="160" x="920" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="n3" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-03 Masuk dan kode OTP" vertex="1">
+                    <mxGeometry height="48" width="160" x="260" y="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="n10" parent="1" style="html=1;rounded=1;dashed=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-10 Detail produk custom (bagian 2)" vertex="1">
+                    <mxGeometry height="48" width="160" x="480" y="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="nm" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Menu akun (setelah masuk)" vertex="1">
+                    <mxGeometry height="48" width="160" x="40" y="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="n7" parent="1" style="html=1;rounded=1;dashed=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-07 Pesanan saya (bagian 2)" vertex="1">
+                    <mxGeometry height="48" width="160" x="260" y="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="n8" parent="1" style="html=1;rounded=1;dashed=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-08 Profil dan hapus akun (bagian 2)" vertex="1">
+                    <mxGeometry height="48" width="160" x="260" y="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="n9" parent="1" style="html=1;rounded=1;dashed=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="K-09 Kebijakan privasi (bagian 2)" vertex="1">
+                    <mxGeometry height="48" width="160" x="260" y="560" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" edge="1" parent="1" source="n1" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n2" value="pilih produk">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" edge="1" parent="1" source="n2" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n4" value="sudah masuk">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" edge="1" parent="1" source="n2" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n3" value="belum masuk">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" edge="1" parent="1" source="n4" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n5" value="buat pesanan">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" edge="1" parent="1" source="n5" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n6" value="konfirmasi">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" edge="1" parent="1" source="n1" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n10" value="produk custom">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" edge="1" parent="1" source="n10" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n4" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" edge="1" parent="1" source="n1" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="nm" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" edge="1" parent="1" source="nm" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n7" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" edge="1" parent="1" source="nm" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n8" value="">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" edge="1" parent="1" source="n7" style="endArrow=classic;html=1;strokeColor=#444;fontSize=9;" target="n6" value="buka">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ny" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="CATATAN PETA&#xa;&#xa;- Garis putus-putus: layar digambar di Bagian 2.&#xa;- K-04, K-05, K-06, K-07, K-08 memerlukan masuk. Katalog, detail produk, dan kebijakan privasi bisa dibuka tanpa masuk.&#xa;- Setelah K-03 berhasil, pengguna kembali ke halaman asal (K-02 atau K-04).&#xa;- K-09 dibuka dari footer semua halaman.&#xa;- K-10 menggantikan K-02 untuk produk yang dibuat sesuai pesanan (buket, bunga wisuda, papan bunga) karena tidak memilih unit sewa." vertex="1">
+                    <mxGeometry height="220" width="320" x="1100" y="240" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="k1" name="K-01 Katalog">
+        <mxGraphModel dx="1430" dy="1010" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1900" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l1" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-01  PONSEL 360 px (rancangan dasar)" vertex="1">
+                    <mxGeometry height="24" width="360" x="40" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l2" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-01  LAPTOP 1024 px (lg)" vertex="1">
+                    <mxGeometry height="24" width="600" x="480" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="760" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif" vertex="1">
+                    <mxGeometry height="56" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Masuk" vertex="1">
+                    <mxGeometry height="44" width="66" x="318" y="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;align=left;spacingLeft=10;" value="Semua | Papan Akrilik | Buket | Wisuda | Papan Bunga | ..." vertex="1">
+                    <mxGeometry height="48" width="360" x="40" y="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Tanggal acara: pilih tanggal" vertex="1">
+                    <mxGeometry height="44" width="244" x="52" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Cari" vertex="1">
+                    <mxGeometry height="44" width="84" x="304" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="g" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="24 produk | tersedia pada tanggal terpilih" vertex="1">
+                    <mxGeometry height="20" width="336" x="52" y="228" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="150" width="162" x="52" y="254" as="geometry"/>
+                </mxCell>
+                <mxCell id="t1" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Papan Akrilik 60 cm&#xa;Mulai Rp75.000 / hari&#xa;Tersedia" vertex="1">
+                    <mxGeometry height="64" width="162" x="52" y="404" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="150" width="162" x="226" y="254" as="geometry"/>
+                </mxCell>
+                <mxCell id="t2" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Buket Custom&#xa;Mulai Rp ...&#xa;Tersedia" vertex="1">
+                    <mxGeometry height="64" width="162" x="226" y="404" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="150" width="162" x="52" y="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="t3" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Bunga Wisuda&#xa;Mulai Rp ...&#xa;Tersedia" vertex="1">
+                    <mxGeometry height="64" width="162" x="52" y="630" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="150" width="162" x="226" y="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="t4" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Papan Bunga Ucapan&#xa;Mulai Rp ...&#xa;Penuh 20 Des" vertex="1">
+                    <mxGeometry height="64" width="162" x="226" y="630" as="geometry"/>
+                </mxCell>
+                <mxCell id="h" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Tampilkan lebih banyak" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="706" as="geometry"/>
+                </mxCell>
+                <mxCell id="i" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Tanya via WhatsApp" vertex="1">
+                    <mxGeometry height="44" width="156" x="232" y="758" as="geometry"/>
+                </mxCell>
+                <mxCell id="A" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="740" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="B" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif | Katalog | Cara pesan | Lacak pesanan" vertex="1">
+                    <mxGeometry height="64" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="C" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Masuk" vertex="1">
+                    <mxGeometry height="44" width="100" x="1392" y="72" as="geometry"/>
+                </mxCell>
+                <mxCell id="D" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="FILTER&#xa;&#xa;Kategori&#xa;(o) Semua&#xa;( ) Papan Akrilik&#xa;( ) Buket&#xa;( ) Wisuda&#xa;( ) Papan Bunga&#xa;&#xa;Tanggal acara&#xa;[ pilih tanggal ]&#xa;&#xa;[ ] Hanya yang tersedia" vertex="1">
+                    <mxGeometry height="330" width="220" x="504" y="148" as="geometry"/>
+                </mxCell>
+                <mxCell id="E" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="24 produk" vertex="1">
+                    <mxGeometry height="20" width="732" x="748" y="148" as="geometry"/>
+                </mxCell>
+                <mxCell id="q1" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="170" width="171" x="748" y="174" as="geometry"/>
+                </mxCell>
+                <mxCell id="u1" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Papan Akrilik 60 cm&#xa;Mulai Rp75.000 / hari&#xa;Tersedia" vertex="1">
+                    <mxGeometry height="64" width="171" x="748" y="344" as="geometry"/>
+                </mxCell>
+                <mxCell id="q2" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="170" width="171" x="935" y="174" as="geometry"/>
+                </mxCell>
+                <mxCell id="u2" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Buket Custom&#xa;Mulai Rp ...&#xa;Tersedia" vertex="1">
+                    <mxGeometry height="64" width="171" x="935" y="344" as="geometry"/>
+                </mxCell>
+                <mxCell id="q3" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="170" width="171" x="1122" y="174" as="geometry"/>
+                </mxCell>
+                <mxCell id="u3" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Bunga Wisuda&#xa;Mulai Rp ...&#xa;Tersedia" vertex="1">
+                    <mxGeometry height="64" width="171" x="1122" y="344" as="geometry"/>
+                </mxCell>
+                <mxCell id="q4" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto produk ]" vertex="1">
+                    <mxGeometry height="170" width="171" x="1309" y="174" as="geometry"/>
+                </mxCell>
+                <mxCell id="u4" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Papan Bunga Ucapan&#xa;Mulai Rp ...&#xa;Penuh 20 Des" vertex="1">
+                    <mxGeometry height="64" width="171" x="1309" y="344" as="geometry"/>
+                </mxCell>
+                <mxCell id="F" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="baris kedua dan seterusnya berpola sama, 4 kolom" vertex="1">
+                    <mxGeometry height="40" width="732" x="748" y="424" as="geometry"/>
+                </mxCell>
+                <mxCell id="G" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Alamat toko | Jam buka | WhatsApp | Instagram | TikTok&#xa;Kebijakan privasi | Syarat sewa" vertex="1">
+                    <mxGeometry height="100" width="1024" x="480" y="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="H" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Tanya via WhatsApp" vertex="1">
+                    <mxGeometry height="44" width="160" x="1330" y="640" as="geometry"/>
+                </mxCell>
+                <mxCell id="y1" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="PERILAKU&#xa;- Baris kategori di ponsel bisa digeser ke samping. Tanda ... berarti masih ada kategori.&#xa;- Tanggal memakai kalender bawaan ponsel. Setelah dipilih, kartu menampilkan Tersedia atau Penuh. Kartu penuh tetap bisa dibuka.&#xa;- Tombol WhatsApp melayang di kanan bawah, tingginya 44 px dan tidak menutup tombol utama.&#xa;- Foto memakai srcset dan lazy loading.&#xa;- Katalog dapat dibuka tanpa masuk." vertex="1">
+                    <mxGeometry height="190" width="300" x="1530" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="y2" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="LAPTOP (lg)&#xa;- Kategori dan tanggal pindah ke panel filter kiri yang ikut menempel saat digulir.&#xa;- Grid 4 kolom (ponsel 2, md 3).&#xa;- Menu atas menggantikan baris kategori.&#xa;- Hover boleh menambah efek, tetapi tidak membawa informasi baru.&#xa;DATA&#xa;- Dari produk, varian_produk, gambar_produk. Ketersediaan dari hari_reservasi. Pencarian tanggal selesai kurang dari 500 ms." vertex="1">
+                    <mxGeometry height="200" width="300" x="1530" y="270" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="k2" name="K-02 Detail Produk">
+        <mxGraphModel dx="1192" dy="842" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1900" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l1" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-02  PONSEL 360 px (rancangan dasar)" vertex="1">
+                    <mxGeometry height="24" width="360" x="40" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l2" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-02  LAPTOP 1024 px (lg)" vertex="1">
+                    <mxGeometry height="24" width="600" x="480" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="900" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Kembali | Detail produk" vertex="1">
+                    <mxGeometry height="56" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto utama ]&#xa;&#xa;geser untuk foto lain&#xa;1 / 5" vertex="1">
+                    <mxGeometry height="280" width="360" x="40" y="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=left;whiteSpace=wrap;verticalAlign=top;" value="Papan Akrilik 60 cm&#xa;Mulai Rp75.000 / hari - Tersedia" vertex="1">
+                    <mxGeometry height="52" width="336" x="52" y="408" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Warna&#xa;( Bening ) ( Putih Susu ) ( Hitam Glossy )&#xa;Tiap pilihan tingginya 44 px" vertex="1">
+                    <mxGeometry height="76" width="336" x="52" y="468" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Tanggal sewa: pilih tanggal" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="552" as="geometry"/>
+                </mxCell>
+                <mxCell id="g" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Tersedia untuk tanggal ini. Pengembalian paling lambat pukul 18.00." vertex="1">
+                    <mxGeometry height="48" width="336" x="52" y="604" as="geometry"/>
+                </mxCell>
+                <mxCell id="h" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Opsi tambahan&#xa;[ ] Easel penyangga + Rp ...&#xa;[ ] Palet bunga artifisial (stok terbatas) + Rp ..." vertex="1">
+                    <mxGeometry height="76" width="336" x="52" y="660" as="geometry"/>
+                </mxCell>
+                <mxCell id="i" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Deskripsi dan aturan sewa [ buka ]&#xa;Ukuran, bahan, jaminan, jam kembali, denda keterlambatan, biaya kerusakan." vertex="1">
+                    <mxGeometry height="100" width="336" x="52" y="744" as="geometry"/>
+                </mxCell>
+                <mxCell id="j" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Total&#xa;Rp75.000" vertex="1">
+                    <mxGeometry height="72" width="360" x="40" y="888" as="geometry"/>
+                </mxCell>
+                <mxCell id="k" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Pesan sekarang" vertex="1">
+                    <mxGeometry height="48" width="172" x="216" y="900" as="geometry"/>
+                </mxCell>
+                <mxCell id="A" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="760" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="B" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif | Katalog | Cara pesan | Lacak pesanan | Masuk" vertex="1">
+                    <mxGeometry height="64" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="C" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="Katalog / Papan Akrilik / Papan Akrilik 60 cm" vertex="1">
+                    <mxGeometry height="20" width="700" x="504" y="136" as="geometry"/>
+                </mxCell>
+                <mxCell id="D" parent="1" style="html=1;fillColor=#EEE;strokeColor=#999;dashed=1;fontSize=10;fontColor=#777;whiteSpace=wrap;" value="[ foto utama ]" vertex="1">
+                    <mxGeometry height="420" width="480" x="504" y="168" as="geometry"/>
+                </mxCell>
+                <mxCell id="E" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="[ foto 2 ] [ foto 3 ] [ foto 4 ] [ foto 5 ] - klik untuk mengganti foto utama" vertex="1">
+                    <mxGeometry height="70" width="480" x="504" y="596" as="geometry"/>
+                </mxCell>
+                <mxCell id="F" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=12;fontStyle=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Papan Akrilik 60 cm&#xa;Mulai Rp75.000 / hari - Tersedia" vertex="1">
+                    <mxGeometry height="460" width="470" x="1010" y="168" as="geometry"/>
+                </mxCell>
+                <mxCell id="G" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Warna&#xa;( Bening ) ( Putih Susu ) ( Hitam Glossy )" vertex="1">
+                    <mxGeometry height="76" width="438" x="1026" y="236" as="geometry"/>
+                </mxCell>
+                <mxCell id="H" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Tanggal sewa: pilih tanggal" vertex="1">
+                    <mxGeometry height="44" width="438" x="1026" y="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="I" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Tersedia untuk tanggal ini. Pengembalian paling lambat pukul 18.00." vertex="1">
+                    <mxGeometry height="48" width="438" x="1026" y="372" as="geometry"/>
+                </mxCell>
+                <mxCell id="J" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Opsi tambahan&#xa;[ ] Easel penyangga + Rp ...&#xa;[ ] Palet bunga artifisial (stok terbatas) + Rp ..." vertex="1">
+                    <mxGeometry height="76" width="438" x="1026" y="428" as="geometry"/>
+                </mxCell>
+                <mxCell id="K" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=left;whiteSpace=wrap;verticalAlign=top;" value="Total&#xa;Rp75.000" vertex="1">
+                    <mxGeometry height="44" width="200" x="1026" y="522" as="geometry"/>
+                </mxCell>
+                <mxCell id="L" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Pesan sekarang" vertex="1">
+                    <mxGeometry height="52" width="224" x="1240" y="516" as="geometry"/>
+                </mxCell>
+                <mxCell id="M" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Deskripsi dan aturan sewa&#xa;Ukuran, bahan, jaminan, jam kembali pukul 18.00, denda keterlambatan, biaya kerusakan. Terbuka sejak awal di laptop." vertex="1">
+                    <mxGeometry height="150" width="470" x="1010" y="640" as="geometry"/>
+                </mxCell>
+                <mxCell id="y1" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="PERILAKU&#xa;- Tombol Pesan nonaktif sampai tanggal dipilih.&#xa;- Tanggal yang lewat batas jam 15.00 atau jarak H-1 dan H-2 tampil abu-abu di kalender (BR-03).&#xa;- Tanggal penuh: tampil Tanggal penuh, pilih tanggal lain. Tombol tetap nonaktif.&#xa;- Belum masuk: tombol membawa ke K-03, lalu kembali ke halaman ini dengan pilihan tetap.&#xa;- Total berubah langsung saat warna atau opsi dipilih.&#xa;- Ponsel: bar total dan tombol melekat di dasar dengan safe area.&#xa;- Produk custom memakai K-10, bukan layar ini." vertex="1">
+                    <mxGeometry height="270" width="300" x="1530" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="y2" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="LAPTOP (lg)&#xa;- Foto di kiri, panel pesan di kanan ikut menempel saat digulir.&#xa;- Galeri berupa thumbnail di bawah foto utama.&#xa;- Aturan sewa langsung terbuka." vertex="1">
+                    <mxGeometry height="110" width="300" x="1530" y="350" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="k3" name="K-03 Masuk OTP">
+        <mxGraphModel dx="2730" dy="1347" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2300" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l1" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-03a  PONSEL 360 px - nomor" vertex="1">
+                    <mxGeometry height="24" width="340" x="40" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l2" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-03b  PONSEL 360 px - kode" vertex="1">
+                    <mxGeometry height="24" width="340" x="420" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l3" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-03  LAPTOP 1024 px (lg) - kedua langkah" vertex="1">
+                    <mxGeometry height="24" width="600" x="820" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="640" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Kembali | Masuk" vertex="1">
+                    <mxGeometry height="56" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" parent="1" style="text;html=1;fontSize=11;align=left;whiteSpace=wrap;verticalAlign=top;" value="Masuk dengan nomor WhatsApp&#xa;Kode 6 digit dikirim lewat WhatsApp. Katalog tetap bisa dilihat tanpa masuk." vertex="1">
+                    <mxGeometry height="70" width="336" x="52" y="132" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=11;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="08xx xxxx xxxx" vertex="1">
+                    <mxGeometry height="48" width="336" x="52" y="212" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="Nomor disimpan dalam format 628xx. Satu nomor satu akun." vertex="1">
+                    <mxGeometry height="36" width="336" x="52" y="268" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" parent="1" style="text;html=1;fontSize=9;fontColor=#C00000;whiteSpace=wrap;verticalAlign=top;" value="Contoh galat: Nomor tidak valid. Gunakan nomor Indonesia yang aktif." vertex="1">
+                    <mxGeometry height="30" width="336" x="52" y="308" as="geometry"/>
+                </mxCell>
+                <mxCell id="g" parent="1" style="text;html=1;fontSize=9;align=left;whiteSpace=wrap;verticalAlign=top;" value="Dengan masuk, Anda menyetujui Kebijakan privasi." vertex="1">
+                    <mxGeometry height="30" width="336" x="52" y="582" as="geometry"/>
+                </mxCell>
+                <mxCell id="h" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="80" width="360" x="40" y="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="i" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Kirim kode" vertex="1">
+                    <mxGeometry height="48" width="336" x="52" y="632" as="geometry"/>
+                </mxCell>
+                <mxCell id="a2" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="640" width="360" x="420" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b2" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Kembali | Masukkan kode" vertex="1">
+                    <mxGeometry height="56" width="360" x="420" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c2" parent="1" style="text;html=1;fontSize=11;align=left;whiteSpace=wrap;verticalAlign=top;" value="Kode dikirim ke 0812-xxxx-xx89 lewat WhatsApp. Berlaku 5 menit." vertex="1">
+                    <mxGeometry height="50" width="336" x="432" y="132" as="geometry"/>
+                </mxCell>
+                <mxCell id="d2" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=12;fontColor=#777;whiteSpace=wrap;" value="[ _ ] [ _ ] [ _ ] [ _ ] [ _ ] [ _ ]" vertex="1">
+                    <mxGeometry height="56" width="336" x="432" y="194" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" parent="1" style="text;html=1;fontSize=9;fontColor=#C00000;whiteSpace=wrap;verticalAlign=top;" value="Contoh galat: Kode salah. Sisa percobaan 4." vertex="1">
+                    <mxGeometry height="20" width="336" x="432" y="258" as="geometry"/>
+                </mxCell>
+                <mxCell id="f2" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="Kirim ulang kode dalam 00:42" vertex="1">
+                    <mxGeometry height="20" width="336" x="432" y="286" as="geometry"/>
+                </mxCell>
+                <mxCell id="g2" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Salah nomor? Ganti nomor" vertex="1">
+                    <mxGeometry height="44" width="336" x="432" y="314" as="geometry"/>
+                </mxCell>
+                <mxCell id="h2" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="80" width="360" x="420" y="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="i2" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Masuk" vertex="1">
+                    <mxGeometry height="48" width="336" x="432" y="632" as="geometry"/>
+                </mxCell>
+                <mxCell id="A" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="640" width="1024" x="820" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="B" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif" vertex="1">
+                    <mxGeometry height="64" width="1024" x="820" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="C" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Mengapa perlu masuk&#xa;&#xa;- Pesanan terhubung ke nomor Anda.&#xa;- Kabar status dikirim lewat WhatsApp.&#xa;- Katalog tetap bisa dilihat tanpa masuk.&#xa;&#xa;Nomor dipakai untuk mengirim kode dan menghubungi Anda soal pesanan. Lihat Kebijakan privasi." vertex="1">
+                    <mxGeometry height="300" width="400" x="844" y="148" as="geometry"/>
+                </mxCell>
+                <mxCell id="D" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=11;fontStyle=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Langkah 1 - Masuk" vertex="1">
+                    <mxGeometry height="200" width="540" x="1270" y="148" as="geometry"/>
+                </mxCell>
+                <mxCell id="E" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=11;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="08xx xxxx xxxx" vertex="1">
+                    <mxGeometry height="48" width="492" x="1294" y="196" as="geometry"/>
+                </mxCell>
+                <mxCell id="F" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Kirim kode" vertex="1">
+                    <mxGeometry height="48" width="492" x="1294" y="256" as="geometry"/>
+                </mxCell>
+                <mxCell id="G" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=11;fontStyle=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Langkah 2 - Masukkan kode (menggantikan langkah 1 pada panel yang sama)" vertex="1">
+                    <mxGeometry height="260" width="540" x="1270" y="364" as="geometry"/>
+                </mxCell>
+                <mxCell id="H" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=12;fontColor=#777;whiteSpace=wrap;" value="[ _ ] [ _ ] [ _ ] [ _ ] [ _ ] [ _ ]" vertex="1">
+                    <mxGeometry height="56" width="492" x="1294" y="412" as="geometry"/>
+                </mxCell>
+                <mxCell id="I" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="Kirim ulang kode dalam 00:42 | Ganti nomor" vertex="1">
+                    <mxGeometry height="20" width="492" x="1294" y="476" as="geometry"/>
+                </mxCell>
+                <mxCell id="J" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Masuk" vertex="1">
+                    <mxGeometry height="48" width="492" x="1294" y="508" as="geometry"/>
+                </mxCell>
+                <mxCell id="y1" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="ATURAN KODE (UC masuk dan NFR)&#xa;- 6 digit, disimpan ter-hash, berlaku 5 menit.&#xa;- Salah maksimal 5 kali, lalu kode dibatalkan.&#xa;- Kirim ulang baru tersedia setelah 60 detik.&#xa;- Maksimal 3 permintaan per 15 menit, per nomor dan per alamat IP.&#xa;- Kolom nomor: type tel dan inputmode tel.&#xa;- Kolom kode: inputmode numeric dan autocomplete one-time-code.&#xa;KEADAAN KHUSUS&#xa;- Kode salah: teks merah tepat di bawah kolom.&#xa;- Kode kedaluwarsa: Kode sudah tidak berlaku, minta kode baru.&#xa;- Terlalu banyak permintaan: tampilkan waktu tunggu.&#xa;- Gagal kirim WhatsApp: tombol Kirim ulang dan tautan Hubungi admin." vertex="1">
+                    <mxGeometry height="300" width="320" x="1870" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="y2" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="- Setelah berhasil, kembali ke halaman asal (K-02 atau K-04).&#xa;- Pelanggan baru dibuat otomatis. Nama diisi di K-04.&#xa;- Ponsel: tombol utama melekat di dasar layar.&#xa;- Laptop: dua langkah tampil bergantian pada satu panel kanan, bukan dua halaman." vertex="1">
+                    <mxGeometry height="130" width="320" x="1870" y="380" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="k4" name="K-04 Isi Pesanan">
+        <mxGraphModel dx="1861" dy="918" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1900" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l1" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-04  PONSEL 360 px (rancangan dasar)" vertex="1">
+                    <mxGeometry height="24" width="360" x="40" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l2" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-04  LAPTOP 1024 px (lg)" vertex="1">
+                    <mxGeometry height="24" width="600" x="480" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="780" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Kembali | Isi pesanan" vertex="1">
+                    <mxGeometry height="56" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Papan Akrilik 60 cm - Bening&#xa;Sewa 20 Des 2026 (1 hari)&#xa;Rp75.000 - [ ubah ]" vertex="1">
+                    <mxGeometry height="84" width="336" x="52" y="128" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Nama pemesan" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="224" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="WhatsApp: 0812-xxxx-xx89 (dari akun)" vertex="1">
+                    <mxGeometry height="20" width="336" x="52" y="274" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Pengambilan&#xa;(o) Ambil di toko | ( ) Diantar" vertex="1">
+                    <mxGeometry height="68" width="336" x="52" y="302" as="geometry"/>
+                </mxCell>
+                <mxCell id="g" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Alamat lengkap (muncul jika Diantar)" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="h" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Zona 5 sampai 10 km - Ongkir Rp20.000" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="432" as="geometry"/>
+                </mxCell>
+                <mxCell id="i" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Jam ambil atau antar: pilih" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="484" as="geometry"/>
+                </mxCell>
+                <mxCell id="j" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Catatan untuk toko (opsional)" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="536" as="geometry"/>
+                </mxCell>
+                <mxCell id="k" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Ringkasan biaya&#xa;Subtotal: Rp75.000&#xa;Ongkir: Rp20.000&#xa;Total: Rp95.000&#xa;Bayar sekarang: Rp95.000" vertex="1">
+                    <mxGeometry height="112" width="336" x="52" y="592" as="geometry"/>
+                </mxCell>
+                <mxCell id="m" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Total&#xa;Rp95.000" vertex="1">
+                    <mxGeometry height="72" width="360" x="40" y="768" as="geometry"/>
+                </mxCell>
+                <mxCell id="n" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Buat pesanan" vertex="1">
+                    <mxGeometry height="48" width="172" x="216" y="780" as="geometry"/>
+                </mxCell>
+                <mxCell id="A" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="740" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="B" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif | Katalog | Cara pesan | Lacak pesanan | Pesanan saya" vertex="1">
+                    <mxGeometry height="64" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="C" parent="1" style="text;html=1;fontSize=14;fontStyle=1;align=left;whiteSpace=wrap;verticalAlign=top;" value="Isi pesanan" vertex="1">
+                    <mxGeometry height="30" width="400" x="504" y="136" as="geometry"/>
+                </mxCell>
+                <mxCell id="D" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Papan Akrilik 60 cm - Bening&#xa;Sewa 20 Des 2026 (1 hari)&#xa;Rp75.000 - [ ubah ]" vertex="1">
+                    <mxGeometry height="84" width="500" x="504" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="E" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Nama pemesan" vertex="1">
+                    <mxGeometry height="44" width="244" x="504" y="272" as="geometry"/>
+                </mxCell>
+                <mxCell id="F" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;spacingLeft=10;" value="WhatsApp: 0812-xxxx-xx89" vertex="1">
+                    <mxGeometry height="44" width="244" x="760" y="272" as="geometry"/>
+                </mxCell>
+                <mxCell id="G" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Pengambilan&#xa;(o) Ambil di toko | ( ) Diantar" vertex="1">
+                    <mxGeometry height="68" width="500" x="504" y="328" as="geometry"/>
+                </mxCell>
+                <mxCell id="H" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Alamat lengkap (muncul jika Diantar)" vertex="1">
+                    <mxGeometry height="44" width="500" x="504" y="408" as="geometry"/>
+                </mxCell>
+                <mxCell id="I" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Zona 5 sampai 10 km - Ongkir Rp20.000" vertex="1">
+                    <mxGeometry height="44" width="500" x="504" y="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="J" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Jam ambil atau antar" vertex="1">
+                    <mxGeometry height="44" width="244" x="504" y="516" as="geometry"/>
+                </mxCell>
+                <mxCell id="K" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#888;fontSize=10;fontColor=#777;align=left;spacingLeft=10;whiteSpace=wrap;" value="Catatan (opsional)" vertex="1">
+                    <mxGeometry height="44" width="244" x="760" y="516" as="geometry"/>
+                </mxCell>
+                <mxCell id="L" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Ringkasan biaya&#xa;&#xa;Subtotal: Rp75.000&#xa;Ongkir: Rp20.000&#xa;Total: Rp95.000&#xa;&#xa;Bayar sekarang: Rp95.000&#xa;Sisa pelunasan: Rp0" vertex="1">
+                    <mxGeometry height="230" width="450" x="1030" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="M" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Buat pesanan" vertex="1">
+                    <mxGeometry height="52" width="450" x="1030" y="420" as="geometry"/>
+                </mxCell>
+                <mxCell id="N" parent="1" style="text;html=1;fontSize=10;align=left;whiteSpace=wrap;verticalAlign=top;" value="Setelah pesanan dibuat, tanggal ditahan 60 menit sampai pembayaran diterima." vertex="1">
+                    <mxGeometry height="50" width="450" x="1030" y="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="y1" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="PERILAKU&#xa;- Alamat, zona, dan jadwal antar hanya muncul jika memilih Diantar.&#xa;- Ongkir mengikuti zona: 0-5 km Rp10.000, 5-10 km Rp20.000, 10-15 km Rp35.000. Di atas 15 km tampil Di luar jangkauan, hubungi admin, dan tombol nonaktif (BR-17). Cara menentukan zona dari alamat masih terbuka (pertanyaan 2).&#xa;- Total mencapai ambang Rp250.000: bayar DP 50% dulu, sisa dilunasi sebelum serah terima (BR-04).&#xa;- Pesanan sewa: jaminan diserahkan saat serah terima, tidak diunggah di sini (BR-12).&#xa;- Pesan galat tampil tepat di bawah kolom yang salah.&#xa;- Setelah tombol ditekan, label menjadi Memproses dan tombol nonaktif (cegah klik ganda)." vertex="1">
+                    <mxGeometry height="300" width="300" x="1530" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="y2" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="SAAT TOMBOL DITEKAN&#xa;Satu transaksi basis data: kunci unit, tulis hari_reservasi, buat pesanan. Jika tanggal baru saja diambil orang lain, tampil Tanggal ini baru saja terisi dan pengguna kembali ke K-02 dengan saran tanggal lain (BR-03).&#xa;PONSEL&#xa;Di ponsel, total harga dan tombol Buat pesanan melekat di dasar layar.&#xa;LAPTOP&#xa;Formulir di kiri, ringkasan biaya di kanan ikut menempel.&#xa;Papan bunga: pilihan Ambil di toko disembunyikan jika diputuskan hanya antar." vertex="1">
+                    <mxGeometry height="230" width="300" x="1530" y="380" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="k5" name="K-05 Pembayaran">
+        <mxGraphModel dx="1861" dy="918" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1900" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l1" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-05  PONSEL 360 px (rancangan dasar)" vertex="1">
+                    <mxGeometry height="24" width="360" x="40" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l2" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-05  LAPTOP 1024 px (lg)" vertex="1">
+                    <mxGeometry height="24" width="600" x="480" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="800" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Pembayaran | BK-2611-0001" vertex="1">
+                    <mxGeometry height="56" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Selesaikan dalam 59:41&#xa;Tanggal Anda ditahan sampai 14.32" vertex="1">
+                    <mxGeometry height="60" width="336" x="52" y="128" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=11;fontStyle=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Transfer tepat sebesar&#xa;Rp95.347&#xa;Sudah termasuk kode unik 347 - [ Salin ]" vertex="1">
+                    <mxGeometry height="104" width="336" x="52" y="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Transfer ke&#xa;Nama bank - a.n. Nama pemilik&#xa;0000 0000 0000 - [ Salin ]" vertex="1">
+                    <mxGeometry height="92" width="336" x="52" y="316" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Langkah&#xa;1. Transfer sesuai nominal sampai digit terakhir.&#xa;2. Tekan tombol di bawah, WhatsApp terbuka dengan pesan terisi.&#xa;3. Admin memeriksa, lalu status berubah di halaman Lacak." vertex="1">
+                    <mxGeometry height="124" width="336" x="52" y="420" as="geometry"/>
+                </mxCell>
+                <mxCell id="g" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;spacingLeft=10;" value="Rincian pesanan - [ buka ]" vertex="1">
+                    <mxGeometry height="48" width="336" x="52" y="556" as="geometry"/>
+                </mxCell>
+                <mxCell id="h" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="112" width="360" x="40" y="748" as="geometry"/>
+                </mxCell>
+                <mxCell id="i" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Kirim konfirmasi lewat WhatsApp" vertex="1">
+                    <mxGeometry height="48" width="336" x="52" y="760" as="geometry"/>
+                </mxCell>
+                <mxCell id="j" parent="1" style="text;html=1;fontSize=9;align=left;whiteSpace=wrap;verticalAlign=top;" value="Sudah transfer? Admin memeriksa pada jam buka." vertex="1">
+                    <mxGeometry height="36" width="336" x="52" y="816" as="geometry"/>
+                </mxCell>
+                <mxCell id="A" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="720" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="B" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif | Katalog | Cara pesan | Lacak pesanan | Pesanan saya" vertex="1">
+                    <mxGeometry height="64" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="C" parent="1" style="text;html=1;fontSize=14;fontStyle=1;align=left;whiteSpace=wrap;verticalAlign=top;" value="Pembayaran - BK-2611-0001" vertex="1">
+                    <mxGeometry height="30" width="500" x="504" y="136" as="geometry"/>
+                </mxCell>
+                <mxCell id="D" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Selesaikan dalam 59:41&#xa;Tanggal Anda ditahan sampai 14.32" vertex="1">
+                    <mxGeometry height="60" width="470" x="504" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="E" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=12;fontStyle=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Transfer tepat sebesar&#xa;Rp95.347&#xa;Sudah termasuk kode unik 347 - [ Salin ]" vertex="1">
+                    <mxGeometry height="110" width="470" x="504" y="248" as="geometry"/>
+                </mxCell>
+                <mxCell id="F" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Transfer ke&#xa;Nama bank - a.n. Nama pemilik&#xa;0000 0000 0000 - [ Salin ]" vertex="1">
+                    <mxGeometry height="100" width="470" x="504" y="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="G" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Langkah&#xa;1. Transfer sesuai nominal sampai digit terakhir.&#xa;2. Tekan tombol di kanan, WhatsApp terbuka dengan pesan terisi.&#xa;3. Admin memeriksa, lalu status berubah di halaman Lacak." vertex="1">
+                    <mxGeometry height="140" width="470" x="504" y="482" as="geometry"/>
+                </mxCell>
+                <mxCell id="H" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Rincian pesanan&#xa;&#xa;BK-2611-0001&#xa;Papan Akrilik 60 cm - Bening&#xa;Sewa 20 Des 2026&#xa;&#xa;Subtotal: Rp75.000&#xa;Ongkir: Rp20.000&#xa;Total: Rp95.000&#xa;Kode unik: Rp347&#xa;Transfer: Rp95.347" vertex="1">
+                    <mxGeometry height="330" width="480" x="1000" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="I" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Kirim konfirmasi lewat WhatsApp" vertex="1">
+                    <mxGeometry height="52" width="480" x="1000" y="522" as="geometry"/>
+                </mxCell>
+                <mxCell id="J" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Lihat status pesanan" vertex="1">
+                    <mxGeometry height="44" width="480" x="1000" y="584" as="geometry"/>
+                </mxCell>
+                <mxCell id="y1" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="PERILAKU&#xa;- Nominal = tagihan + kode unik 1 sampai 999, supaya transfer bisa dicocokkan satu per satu.&#xa;- Hitung mundur 60 menit (30 menit pada bulan ramai). Saat habis: status kedaluwarsa, tanggal dilepas, tampil Waktu habis, hubungi admin untuk menghidupkan kembali (T03 dan T13).&#xa;- Tombol WhatsApp membuka pesan berisi nomor pesanan dan nominal. Setelah ditekan, label menjadi Menunggu verifikasi admin.&#xa;- Tombol Salin memberi umpan balik Tersalin selama 2 detik.&#xa;- Pesanan DP: nominal yang tampil adalah DP 50%, sisa dan batas pelunasan ditulis di rincian." vertex="1">
+                    <mxGeometry height="290" width="300" x="1530" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="y2" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="PONSEL&#xa;Di ponsel, tombol Kirim konfirmasi lewat WhatsApp melekat di dasar layar.&#xa;LAPTOP&#xa;Rekening di kiri, rincian dan tombol di kanan.&#xa;BELUM DIPUTUSKAN&#xa;Bukti transfer berupa unggah foto (BYR-05). Yang digambar adalah konfirmasi WhatsApp. Jika memilih unggah, tambah tombol Unggah bukti dan kolom bukti di tabel pembayaran." vertex="1">
+                    <mxGeometry height="200" width="300" x="1530" y="370" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="k6" name="K-06 Lacak Pesanan">
+        <mxGraphModel dx="2642" dy="1303" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1900" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="l1" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-06  PONSEL 360 px (rancangan dasar)" vertex="1">
+                    <mxGeometry height="24" width="360" x="40" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="l2" parent="1" style="text;html=1;fontSize=11;fontStyle=1;" value="K-06  LAPTOP 1024 px (lg)" vertex="1">
+                    <mxGeometry height="24" width="600" x="480" y="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="860" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Kembali | Lacak pesanan" vertex="1">
+                    <mxGeometry height="56" width="360" x="40" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="BK-2611-0001&#xa;Papan Akrilik 60 cm - Bening&#xa;Sewa 20 Des 2026 - Ambil di toko" vertex="1">
+                    <mxGeometry height="88" width="336" x="52" y="128" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="STATUS SAAT INI: Dikonfirmasi" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="224" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Riwayat&#xa;&#xa;(x) Menunggu pembayaran - 14 Nov 13.32&#xa;(x) Dikonfirmasi - 14 Nov 13.50&#xa;( ) Sedang diproduksi (khusus pesanan custom)&#xa;( ) Siap&#xa;( ) Sudah diserahkan&#xa;( ) Sudah dikembalikan (khusus sewa)&#xa;( ) Selesai" vertex="1">
+                    <mxGeometry height="248" width="336" x="52" y="276" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Pembayaran&#xa;Lunas Rp95.347&#xa;Sisa tagihan: Rp0" vertex="1">
+                    <mxGeometry height="84" width="336" x="52" y="536" as="geometry"/>
+                </mxCell>
+                <mxCell id="g" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Jadwal dan lokasi&#xa;Ambil: 20 Des 2026, 08.00 sampai 10.00&#xa;Toko: alamat toko&#xa;Kembalikan paling lambat 18.00" vertex="1">
+                    <mxGeometry height="112" width="336" x="52" y="632" as="geometry"/>
+                </mxCell>
+                <mxCell id="h" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Batalkan pesanan" vertex="1">
+                    <mxGeometry height="44" width="336" x="52" y="756" as="geometry"/>
+                </mxCell>
+                <mxCell id="i" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="72" width="360" x="40" y="848" as="geometry"/>
+                </mxCell>
+                <mxCell id="j" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Hubungi admin lewat WhatsApp" vertex="1">
+                    <mxGeometry height="48" width="336" x="52" y="860" as="geometry"/>
+                </mxCell>
+                <mxCell id="A" parent="1" style="rounded=1;arcSize=2;fillColor=#FAFAFA;strokeColor=#222;strokeWidth=2;" value="" vertex="1">
+                    <mxGeometry height="680" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="B" parent="1" style="html=1;fillColor=#D9D9D9;strokeColor=#666;fontSize=10;align=left;spacingLeft=10;" value="Berkah Kreatif | Katalog | Cara pesan | Lacak pesanan | Pesanan saya" vertex="1">
+                    <mxGeometry height="64" width="1024" x="480" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="C" parent="1" style="text;html=1;fontSize=14;fontStyle=1;align=left;whiteSpace=wrap;verticalAlign=top;" value="Lacak pesanan - BK-2611-0001" vertex="1">
+                    <mxGeometry height="30" width="500" x="504" y="136" as="geometry"/>
+                </mxCell>
+                <mxCell id="D" parent="1" style="html=1;fillColor=#fff;strokeColor=#444;strokeWidth=2;fontSize=10;whiteSpace=wrap;align=left;spacingLeft=10;" value="BK-2611-0001 | Papan Akrilik 60 cm - Bening | Sewa 20 Des 2026 | Ambil di toko | STATUS: DIKONFIRMASI" vertex="1">
+                    <mxGeometry height="76" width="976" x="504" y="176" as="geometry"/>
+                </mxCell>
+                <mxCell id="E" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;" value="Riwayat&#xa;&#xa;(x) Menunggu pembayaran - 14 Nov 13.32&#xa;(x) Dikonfirmasi - 14 Nov 13.50&#xa;( ) Sedang diproduksi (khusus pesanan custom)&#xa;( ) Siap&#xa;( ) Sudah diserahkan&#xa;( ) Sudah dikembalikan (khusus sewa)&#xa;( ) Selesai" vertex="1">
+                    <mxGeometry height="340" width="470" x="504" y="264" as="geometry"/>
+                </mxCell>
+                <mxCell id="F" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Pembayaran&#xa;Lunas Rp95.347&#xa;Sisa tagihan: Rp0" vertex="1">
+                    <mxGeometry height="100" width="480" x="1000" y="264" as="geometry"/>
+                </mxCell>
+                <mxCell id="G" parent="1" style="html=1;fillColor=#fff;strokeColor=#777;fontSize=10;whiteSpace=wrap;align=left;verticalAlign=top;spacing=6;" value="Jadwal dan lokasi&#xa;Ambil: 20 Des 2026, 08.00 sampai 10.00&#xa;Toko: alamat toko&#xa;Kembalikan paling lambat 18.00" vertex="1">
+                    <mxGeometry height="130" width="480" x="1000" y="376" as="geometry"/>
+                </mxCell>
+                <mxCell id="H" parent="1" style="html=1;rounded=1;fillColor=#444;strokeColor=#222;fontColor=#fff;fontStyle=1;fontSize=11;whiteSpace=wrap;" value="Hubungi admin lewat WhatsApp" vertex="1">
+                    <mxGeometry height="52" width="480" x="1000" y="522" as="geometry"/>
+                </mxCell>
+                <mxCell id="I" parent="1" style="html=1;rounded=1;fillColor=#fff;strokeColor=#444;fontSize=10;whiteSpace=wrap;" value="Batalkan pesanan" vertex="1">
+                    <mxGeometry height="44" width="480" x="1000" y="584" as="geometry"/>
+                </mxCell>
+                <mxCell id="y1" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="PERILAKU&#xa;- Hanya bisa dibuka oleh pemilik pesanan (nomor yang masuk).&#xa;- Riwayat dibaca dari riwayat_status_pesanan. Jalur status tunggal (BR-25): langkah yang tidak berlaku, misalnya diproduksi atau dikembalikan, disembunyikan.&#xa;- Halaman diperbarui saat dibuka atau ditarik ke bawah, bukan real-time. Kabar penting juga dikirim lewat WhatsApp.&#xa;- Tombol utama berubah menurut status: Menunggu pembayaran = Bayar sekarang (ke K-05), Siap = Lihat cara ambil, lainnya = Hubungi admin.&#xa;- Batalkan pesanan langsung hanya sebelum dikonfirmasi (T04). Sesudah dikonfirmasi, pembatalan lewat admin dan refund dihitung BR-13. Teks ini tampil di dialog konfirmasi (Bagian 2).&#xa;- Ponsel: tombol utama melekat di dasar layar." vertex="1">
+                    <mxGeometry height="340" width="300" x="1530" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="y2" parent="1" style="html=1;shape=note;size=8;fillColor=#FFF2A8;strokeColor=#BFA800;fontSize=9;align=left;whiteSpace=wrap;spacing=6;verticalAlign=top;" value="KEADAAN LAIN&#xa;Kedaluwarsa: teks Waktu habis dan tombol Hubungi admin. Dibatalkan: alasan dan nominal refund. Selesai: ringkasan akhir." vertex="1">
+                    <mxGeometry height="100" width="300" x="1530" y="420" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
