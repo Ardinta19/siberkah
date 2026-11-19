@@ -35,6 +35,10 @@ final class CreateBouquetOrder
         return DB::transaction(function () use ($actor, $d, $hash, $staff) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($actor->id);
             abort_unless($customer->isActive() && $customer->isVerified() && filled($customer->nama), 403);
+            // Take the month lock before the first consistent read. A checkout that waited
+            // for another writer must see its committed reservations and invoice amounts.
+            $period = now('Asia/Jakarta')->format('ym');
+            app(OrderNumber::class)->lockPeriod($period);
             $prior = DB::table('checkout_buket')->where(['pelanggan_id' => $customer->id, 'kunci' => $d['kunci']])->first();
             if ($prior) {
                 abort_unless($prior->sidik === $hash, 409, 'Isi keranjang berbeda untuk kunci yang sama.');
@@ -44,7 +48,7 @@ final class CreateBouquetOrder
             $now = now('Asia/Jakarta');
             $date = Carbon::parse($d['tanggal'], 'Asia/Jakarta')->startOfDay();
             abort_if($date->lt($now->copy()->startOfDay()), 422);
-            $number = app(OrderNumber::class)->next($now->format('ym'));
+            $number = app(OrderNumber::class)->next($period);
             $zone = null;
             if ($d['cara_serah'] === 'antar') {
                 $zone = DB::table('zona_antar')->where('id', $d['zona_antar_id'])->where('aktif', true)->where('jarak_maks_km', '<=', 15)->sharedLock()->first();

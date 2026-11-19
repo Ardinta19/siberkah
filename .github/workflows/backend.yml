@@ -37,4 +37,18 @@ jobs:
         env:
           CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
         run: bash scripts/ci/restore-drill.sh
-      - run: php artisan test
+      - run: php artisan test --log-junit "$RUNNER_TEMP/backend-results.xml"
+      - name: Ringkasan kegagalan pengujian
+        if: failure()
+        run: |
+          python - <<'PYTEST'
+          import os, pathlib, xml.etree.ElementTree as ET
+          report = pathlib.Path(os.environ['RUNNER_TEMP']) / 'backend-results.xml'
+          if report.exists():
+              for case in ET.parse(report).iter('testcase'):
+                  for failure in list(case):
+                      if failure.tag in ('failure', 'error'):
+                          lines = (failure.text or '').strip().splitlines()
+                          text = ' '.join(lines[:6])[:1200].replace('%', '%25')
+                          print(f"::error::{case.get('name')}: {text}")
+          PYTEST

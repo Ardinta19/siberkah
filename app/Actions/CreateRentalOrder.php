@@ -39,6 +39,10 @@ final class CreateRentalOrder
         return DB::transaction(function () use ($actor, $d, $fingerprint, $operator) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($actor->id);
             abort_unless($customer->isActive() && $customer->isVerified(), 403);
+            // Take the month lock before the first consistent read. A checkout that waited
+            // for another writer must see its committed reservations and invoice amounts.
+            $period = now('Asia/Jakarta')->format('ym');
+            app(OrderNumber::class)->lockPeriod($period);
             $receipt = DB::table('checkout_sewa')->where('pelanggan_id', $customer->id)->where('kunci', $d['kunci'])->first();
             if ($receipt) {
                 $this->check($receipt->sidik === $fingerprint, 'Kunci checkout sudah digunakan dengan isi berbeda.');
@@ -51,7 +55,7 @@ final class CreateRentalOrder
             // Standard rental only. Same-day and custom lettering are not in this flow.
             $earliest = $now->startOfDay()->addDays($now->gt($now->setTime(15, 0)) ? 2 : 1);
             $this->check($date->gte($earliest), 'Tanggal sewa terlalu dekat.');
-            $number = app(OrderNumber::class)->next($now->format('ym'));
+            $number = app(OrderNumber::class)->next($period);
             $product = DB::table('produk')->where('id', $d['produk_id'])->where('aktif', true)->where('jenis', 'sewa')->lockForUpdate()->first();
             $this->check((bool) $product, 'Produk sewa tidak tersedia.');
             $this->check(! DB::table('opsi_produk')->where('produk_id', $product->id)->exists(), 'Produk dengan opsi memerlukan checkout khusus.');
