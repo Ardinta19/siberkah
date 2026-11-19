@@ -211,36 +211,6 @@ class AdminOrderController extends BaseController
     }
 
     /**
-     * Record refund.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function recordRefund(Request $request, $id)
-    {
-        $request->validate([
-            'action' => 'required|in:terima,tolak',
-            'catatan' => 'required|string',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-        $pembayaran = $pesanan->pembayaran()->first();
-
-        // TODO: Implement refund recording using RecordRefund action
-        // - Hitung BR-13 (min dari waktu & status)
-        // - Catat penyesuaian
-        // - Update status
-
-        if ($request->action === 'terima') {
-            $pembayaran->status = 'terverifikasi';
-            $pembayaran->save();
-        }
-
-        return back()
-            ->with('success', 'Catatan refund berhasil disimpan.');
-    }
-
-    /**
      * Reactivate expired order.
      *
      * @param  int  $id

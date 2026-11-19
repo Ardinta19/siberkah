@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\TransferReconciliationController;
+use App\Http\Controllers\PaidRentalCancellationController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\CatalogController;
@@ -122,7 +123,8 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('pesanan/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('admin.pesanan.verify-payment');
         Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->middleware('pending.transaction')->name('admin.pesanan.reject-payment');
         Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->middleware('pending.transaction')->name('admin.pesanan.record-cash');
-        Route::post('pesanan/{id}/record-refund', [AdminOrderController::class, 'recordRefund'])->middleware('pending.transaction')->name('admin.pesanan.record-refund');
+        Route::post('pesanan/{id}/cancel-paid', [PaidRentalCancellationController::class, 'cancel'])->whereNumber('id')->name('admin.pesanan.cancel-paid');
+        Route::post('pesanan/{id}/record-refund', [PaidRentalCancellationController::class, 'record'])->whereNumber('id')->name('admin.pesanan.record-refund');
         Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->middleware('pending.transaction')->name('admin.pesanan.reactivate-expired');
     });
 

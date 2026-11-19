@@ -212,6 +212,53 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('hari_reservasi', 1);
     }
 
+    public static function refundCases(): array
+    {
+        return [
+            'H-2 confirmed' => [2, 'dikonfirmasi', 130500],
+            'H-1 confirmed' => [1, 'dikonfirmasi', 65250],
+            'early in production' => [4, 'sedang_diproduksi', 65250],
+            'event today' => [0, 'dikonfirmasi', 0],
+            'ready' => [4, 'siap', 0],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('refundCases')]
+    public function test_paid_cancellation_uses_the_lesser_percentage_and_records_payout_once(int $days, string $status, int $expected): void
+    {
+        $data = $this->fixture();
+        $order = app(CreateRentalOrder::class)->create($this->customer('628111111120'), $data);
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $dp = DB::table('pembayaran')->where('pesanan_id', $order->id)->first();
+        app(\App\Actions\VerifyRentalTransfer::class)->record($admin, $order->id, ['pembayaran_id' => $dp->id, 'referensi' => 'BANK:DP', 'nominal' => $dp->nominal_diharapkan]);
+        $order->update(['status' => $status]);
+        $this->travelTo($order->tanggal_serah->copy()->subDays($days)->setTime(12, 0));
+        config(['checkout.staging' => true]);
+        $cancel = route('admin.pesanan.cancel-paid', $order->id);
+        $input = ['alasan' => 'Acara dibatalkan pelanggan.'];
+        $this->actingAs($admin, 'staff')->postJson($cancel, $input + ['nominal_override' => 1, 'alasan_override' => 'Penyesuaian'])->assertForbidden();
+        $this->postJson($cancel, $input)->assertOk()->assertJsonPath('nominal_refund', $expected);
+        $this->postJson($cancel, $input)->assertOk();
+        $this->postJson($cancel, ['alasan' => 'Berubah'])->assertConflict();
+        $this->assertDatabaseCount('hari_reservasi', 0);
+        $this->assertDatabaseHas('pembayaran', ['pesanan_id' => $order->id, 'jenis' => 'pelunasan', 'status' => 'kedaluwarsa', 'nominal_tertunda' => null]);
+        $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'status' => 'dibatalkan', 'saldo' => 0, 'jumlah_dibayar' => 130500]);
+        $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi', 'T12')->count());
+        $pay = route('admin.pesanan.record-refund', $order->id);
+        $receipt = ['referensi_keluar' => 'BANK:OUT', 'nominal' => max(1, $expected)];
+        if ($expected === 0) {
+            $this->assertDatabaseMissing('pembayaran', ['pesanan_id' => $order->id, 'jenis' => 'refund']);
+            $this->postJson($pay, $receipt)->assertConflict();
+            return;
+        }
+        $this->postJson($pay, array_replace($receipt, ['nominal' => 1]))->assertConflict();
+        $this->postJson($pay, $receipt)->assertCreated();
+        $this->postJson($pay, $receipt)->assertOk();
+        $this->postJson($pay, array_replace($receipt, ['referensi_keluar' => 'BANK:OTHER']))->assertConflict();
+        $this->assertDatabaseCount('referensi_mutasi_keluar', 1);
+        $this->assertDatabaseHas('pembayaran', ['pesanan_id' => $order->id, 'jenis' => 'refund', 'status' => 'terverifikasi', 'nominal_diterima' => $expected]);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];

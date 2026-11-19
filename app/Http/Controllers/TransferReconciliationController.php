@@ -48,6 +48,7 @@ final class TransferReconciliationController extends Controller
             abort_unless($receipt->hasil === 'perlu_rekonsiliasi' && (int) $receipt->nominal === $amount, 409,
                 'Hanya mutasi yang belum dikreditkan yang dapat dikembalikan, sebesar nominal masuk penuh.');
             try {
+                DB::table('referensi_mutasi_keluar')->insert(['referensi_keluar' => $ref]);
                 DB::table('pengembalian_mutasi')->insert(['mutasi_masuk_id' => $mutasi, 'pengguna_id' => $request->user('staff')->id,
                     'referensi_keluar' => $ref, 'nominal' => $amount, 'alasan' => $data['alasan'], 'dicatat_pada' => now()]);
             } catch (UniqueConstraintViolationException) {
