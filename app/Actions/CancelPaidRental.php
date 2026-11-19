@@ -16,7 +16,7 @@ final class CancelPaidRental
         $hash = hash('sha256', json_encode([$reason, $override, $overrideReason], JSON_THROW_ON_ERROR));
         return DB::transaction(function () use ($id, $actor, $reason, $override, $overrideReason, $hash, $fromRequest) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
-            abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $id)->exists(), 404);
+            abort_unless(DB::table('checkout_bank')->where('pesanan_id', $id)->exists(), 404);
             if ($fromRequest) {
                 $status = DB::table('permohonan_batal')->where('pesanan_id', $id)->value('status');
                 abort_if($status === null, 404);
@@ -41,7 +41,7 @@ final class CancelPaidRental
             $calculated = intdiv($paid * $percent, 100);
             $final = $override ?? $calculated;
             abort_unless($final >= 0 && $final <= $paid, 422, 'Refund melebihi pokok yang dibayar.');
-            DB::table('hari_reservasi')->where('pesanan_id', $id)->delete();
+            app(ReleaseOrderInventory::class)->release($order, $from === 'dikonfirmasi');
             DB::table('pembayaran')->where('pesanan_id', $id)->where('status', 'menunggu')->whereIn('jenis', ['dp','pelunasan','penuh'])
                 ->update(['status' => 'kedaluwarsa', 'nominal_tertunda' => null, 'diubah_pada' => $now]);
             $bill = $final === 0 ? null : DB::table('pembayaran')->insertGetId(['pesanan_id' => $id, 'jenis' => 'refund', 'status' => 'menunggu',

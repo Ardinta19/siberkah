@@ -125,6 +125,7 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->whereNumber('id')->name('admin.pesanan.show');
+        Route::post('pesanan/manual/buket', [AdminOrderController::class, 'manualBouquet'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-buket');
         Route::post('pesanan/manual/sewa', [AdminOrderController::class, 'manualStore'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
         Route::prefix('pesanan/{id}/retur')->where(['id' => '[0-9]+'])->middleware(RentalStaging::class)->group(function () {

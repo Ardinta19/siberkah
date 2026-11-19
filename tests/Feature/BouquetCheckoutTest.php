@@ -58,6 +58,24 @@ class BouquetCheckoutTest extends TestCase
         $this->assertSame('selesai', $order->fresh()->status);
     }
 
+    public function test_manual_custom_cancellation_after_production_restores_only_sale_stock(): void
+    {
+        $d = $this->cart() + ['pelanggan_id' => Pelanggan::sole()->id, 'persetujuan_pelanggan_diperiksa' => true];
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $id = $this->actingAs($admin, 'staff')->postJson(route('admin.pesanan.manual-buket'), $d)->assertOk()->json('pesanan_id');
+        $this->assertDatabaseHas('pesanan', ['id' => $id, 'asal' => 'admin', 'pengguna_id' => $admin->id]);
+        $bill = DB::table('pembayaran')->sole();
+        $this->postJson(route('admin.pesanan.verify-payment', $id), ['referensi' => 'DP:WA', 'pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan])->assertOk();
+        $this->post(route('staf.produksi.start'), ['pesanan_id' => $id])->assertRedirect();
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson(route('admin.pesanan.cancel-paid', $id), ['alasan' => 'Acara batal'])->assertOk()->assertJsonPath('nominal_refund', 67500);
+        }
+        $this->assertDatabaseHas('kapasitas_produksi_harian', ['terpakai' => 2]);
+        $this->assertDatabaseHas('varian_produk', ['stok' => 3]);
+        $this->assertDatabaseCount('stok_ditahan', 0);
+        $this->postJson(route('admin.pesanan.record-refund', $id), ['referensi_keluar' => 'OUT:WA', 'nominal' => 67500])->assertCreated();
+    }
+
     public function test_invalid_options_and_capacity_failure_roll_back_and_cancellation_restores_once(): void
     {
         $d = $this->cart();

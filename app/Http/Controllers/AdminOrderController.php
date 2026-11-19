@@ -54,6 +54,17 @@ class AdminOrderController extends BaseController
         return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor]);
     }
 
+    public function manualBouquet(Request $request, \App\Actions\CreateBouquetOrder $checkout)
+    {
+        $d = $request->validate(['pelanggan_id' => 'required|integer|min:1', 'persetujuan_pelanggan_diperiksa' => 'accepted', 'alasan_pengecualian' => 'prohibited']);
+        try {
+            $order = $checkout->create(\App\Models\Pelanggan::findOrFail($d['pelanggan_id']), $request->all(), $request->user('staff'));
+        } catch (\DomainException $e) {
+            abort(409, $e->getMessage());
+        }
+        return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor, 'total' => $order->total]);
+    }
+
     /**
      * Transition order status via T01-T14.
      *

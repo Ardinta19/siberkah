@@ -30,7 +30,11 @@ class PaidRentalCancellationController extends Controller
         $this->requireStaging();
         $data = $request->validate(['alasan' => 'required|string|max:300', 'nominal_override' => 'sometimes|required|integer|min:0',
             'alasan_override' => 'required_with:nominal_override|string|max:300']);
-        $amount = $action->decide($request->user('staff'), $id, $data['alasan'], isset($data['nominal_override']) ? (int) $data['nominal_override'] : null, $data['alasan_override'] ?? null, $fromRequest);
+        try {
+            $amount = $action->decide($request->user('staff'), $id, $data['alasan'], isset($data['nominal_override']) ? (int) $data['nominal_override'] : null, $data['alasan_override'] ?? null, $fromRequest);
+        } catch (\DomainException $e) {
+            abort(409, $e->getMessage());
+        }
         return response()->json(['status' => 'dibatalkan', 'nominal_refund' => $amount]);
     }
 

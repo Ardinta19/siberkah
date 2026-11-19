@@ -21,7 +21,7 @@ final class CancellationRequestController extends Controller
         [$status, $created] = DB::transaction(function () use ($request, $nomor, $reason) {
             $customer = $request->user('customer');
             $order = $customer->pesanan()->where('nomor', $nomor)->lockForUpdate()->firstOrFail();
-            abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $order->id)->exists(), 404);
+            abort_unless(DB::table('checkout_bank')->where('pesanan_id', $order->id)->exists(), 404);
             $existing = DB::table('permohonan_batal')->where('pesanan_id', $order->id)->first();
             if ($existing) {
                 abort_unless($existing->alasan === $reason, 409, 'Permohonan sudah tercatat.');

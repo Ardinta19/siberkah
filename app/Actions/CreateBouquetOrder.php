@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Pelanggan;
 use App\Models\Pesanan;
+use App\Models\Pengguna;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -11,8 +12,9 @@ use Illuminate\Support\Facades\Validator;
 /** One order/date, one delivery charge, one invoice for all non-rental lines. */
 final class CreateBouquetOrder
 {
-    public function create(Pelanggan $actor, array $input): Pesanan
+    public function create(Pelanggan $actor, array $input, ?Pengguna $staff = null): Pesanan
     {
+        abort_if($staff && (! $staff->aktif || ! $staff->canVerifyPayment()), 403);
         $d = Validator::make($input, [
             'kunci' => 'required|uuid', 'tanggal' => 'required|date_format:Y-m-d', 'pembayaran' => 'required|in:penuh,dp',
             'cara_serah' => 'required|in:ambil,antar', 'zona_antar_id' => 'required_if:cara_serah,antar|prohibited_if:cara_serah,ambil|integer|min:1',
@@ -25,8 +27,11 @@ final class CreateBouquetOrder
             'items.*.opsi.*.satuan' => 'sometimes|integer|between:1,100',
         ])->validate();
         $d['kunci'] = strtolower($d['kunci']);
+        if ($staff) {
+            $d['operator_id'] = $staff->id;
+        }
         $hash = hash('sha256', json_encode($d, JSON_THROW_ON_ERROR));
-        return DB::transaction(function () use ($actor, $d, $hash) {
+        return DB::transaction(function () use ($actor, $d, $hash, $staff) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($actor->id);
             abort_unless($customer->isActive() && $customer->isVerified() && filled($customer->nama), 403);
             $prior = DB::table('checkout_buket')->where(['pelanggan_id' => $customer->id, 'kunci' => $d['kunci']])->lockForUpdate()->first();
@@ -44,7 +49,7 @@ final class CreateBouquetOrder
                 $zone = DB::table('zona_antar')->where('id', $d['zona_antar_id'])->where('aktif', true)->where('jarak_maks_km', '<=', 15)->sharedLock()->first();
                 abort_unless($zone, 422, 'Zona tidak dilayani.');
             }
-            $order = Pesanan::create(['nomor' => $number, 'pelanggan_id' => $customer->id, 'nama_pemesan' => $customer->nama,
+            $order = Pesanan::create(['nomor' => $number, 'asal' => $staff ? 'admin' : 'situs', 'pengguna_id' => $staff?->id, 'pelanggan_id' => $customer->id, 'nama_pemesan' => $customer->nama,
                 'nomor_wa_pemesan' => $customer->nomor_wa, 'status' => 'menunggu_pembayaran', 'cara_serah' => $d['cara_serah'], 'tanggal_serah' => $date,
                 'zona_antar_id' => $zone?->id, 'alamat_antar' => $d['alamat_antar'] ?? null]);
             $custom = $subtotal = 0;
@@ -97,7 +102,7 @@ final class CreateBouquetOrder
             $order->update(['subtotal' => $subtotal, 'ongkir' => $fee, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
                 'tahan_hingga_pada' => $now->copy()->addMinutes($peak ? 30 : 60), 'batas_pelunasan_pada' => $dp ? $due : null]);
             app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
-            DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => 'pelanggan', 'dibuat_pada' => $now]);
+            DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => $staff ? 'staf' : 'pelanggan', 'pengguna_id' => $staff?->id, 'dibuat_pada' => $now]);
             DB::table('checkout_buket')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'], 'sidik' => $hash,
                 'versi_privasi' => $d['versi_privasi'], 'disetujui_pada' => $now, 'kapasitas_id' => $capacity?->id, 'jumlah_custom' => $custom]);
             return $order;
