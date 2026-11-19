@@ -34,6 +34,8 @@ final class InspectRental
                 abort_unless($order->status === $from, 409, 'Tahap inspeksi tidak sesuai status pesanan.');
                 $now = now('Asia/Jakarta');
                 if (! $return) {
+                    $slot = DB::table('desain_papan')->where('pesanan_id', $order->id)->value('jadwal_serah');
+                    abort_if($slot && $now->lt($slot), 409, 'Belum memasuki jadwal serah.');
                     abort_if(DB::table('permohonan_batal')->where('pesanan_id', $order->id)->where('status', 'menunggu')->exists(), 409, 'Putuskan permohonan pembatalan sebelum serah.');
                     abort_unless($order->saldo === 0 && $order->jumlah_dibayar === $order->total && $order->tanggal_serah->isSameDay($now), 409, 'Serah hanya pada hari acara setelah lunas.');
                 }
@@ -41,6 +43,7 @@ final class InspectRental
                 $rows = collect($data['inspeksi'])->keyBy('item_id');
                 abort_unless($items->count() === $rows->count() && $items->every(fn ($i) => $i->unit_sewa_id && $rows->has($i->id)), 422, 'Periksa seluruh unit milik pesanan ini.');
                 $late = 0;
+                $extraHours = $return ? (int) DB::table('perpanjangan_sewa')->where('pesanan_id', $order->id)->sum('jam') : 0;
                 foreach ($items as $item) {
                     $row = $rows[$item->id];
                     abort_if($row['kondisi'] !== 'baik' && (blank($row['catatan'] ?? null) || empty($row['foto'])), 422, 'Kondisi cacat/rusak memerlukan foto dan catatan.');
@@ -52,7 +55,7 @@ final class InspectRental
                         if ($row['kondisi'] !== 'baik') {
                             DB::table('unit_sewa')->where('id', $unit->id)->update(['status' => $row['kondisi'] === 'rusak' ? 'rusak' : 'perawatan', 'diubah_pada' => $now]);
                         }
-                        $end = $order->tanggal_serah->copy()->setTime(18, 0);
+                        $end = $order->tanggal_serah->copy()->setTime(18, 0)->addHours($extraHours);
                         $seconds = max(0, $now->getTimestamp() - $end->getTimestamp());
                         $late += min($item->harga_satuan, intdiv($seconds + 3599, 3600) * 25000);
                     } else {

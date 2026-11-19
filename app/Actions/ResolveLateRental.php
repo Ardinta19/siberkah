@@ -64,9 +64,12 @@ final class ResolveLateRental
         abort_unless($variant && $product->jenis === 'sewa', 409);
         $day = $order->tanggal_serah->toDateString();
         $blocked = DB::table('blokir_kalender')->where('tanggal', $day)->where(fn ($q) => $q->whereNull('produk_id')->orWhere('produk_id', $product->id))->exists();
-        $units = DB::table('unit_sewa')->where('varian_produk_id', $variant->id)->where('status', 'aktif')->whereNotIn('id',
+        $units = DB::table('unit_sewa')->where('varian_produk_id', $variant->id)->where('status', 'aktif')->whereNotIn('id', DB::table('blokir_unit_harian')->select('unit_sewa_id')->where('tanggal', $day))
+            ->when($day === $now->toDateString(), fn ($q) => $q->whereNotIn('id', DB::table('penguasaan_unit')->select('unit_sewa_id')))->whereNotIn('id',
             DB::table('hari_reservasi')->select('unit_sewa_id')->where('tanggal', $day))->orderBy('id')->limit($items->count())->lockForUpdate()->pluck('id');
-        $available = $day > $now->toDateString() && ! $blocked && $product->aktif && $variant->aktif && $units->count() === $items->count();
+        $design = DB::table('desain_papan')->where('pesanan_id', $id)->first();
+        $schedule = \App\Support\RentalSchedule::permits($day, $design?->metode, $design?->jadwal_serah ? substr($design->jadwal_serah, 11, 5) : null, $now->toImmutable());
+        $available = $schedule && ! $blocked && $product->aktif && $variant->aktif && $units->count() === $items->count();
         if (! $available) {
             return false;
         }

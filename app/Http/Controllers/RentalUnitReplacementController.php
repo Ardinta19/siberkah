@@ -30,7 +30,7 @@ final class RentalUnitReplacementController extends Controller
                     ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
                 abort_unless($units->count() === 2 && $units[$d['unit_baru_id']]->status === 'aktif', 409, 'Pilih unit aktif dari varian yang sama.');
                 $day = $order->tanggal_serah->toDateString();
-                abort_if(DB::table('penguasaan_unit')->where('unit_sewa_id', $d['unit_baru_id'])->exists() || DB::table('hari_reservasi')->where(['tanggal' => $day, 'unit_sewa_id' => $d['unit_baru_id']])->exists(), 409, 'Unit baru belum tersedia.');
+                abort_if(DB::table('blokir_unit_harian')->where(['tanggal' => $day, 'unit_sewa_id' => $d['unit_baru_id']])->lockForUpdate()->first() || DB::table('penguasaan_unit')->where('unit_sewa_id', $d['unit_baru_id'])->exists() || DB::table('hari_reservasi')->where(['tanggal' => $day, 'unit_sewa_id' => $d['unit_baru_id']])->exists(), 409, 'Unit baru belum tersedia.');
                 $updated = DB::table('hari_reservasi')->where(['pesanan_id' => $id, 'item_pesanan_id' => $item->id, 'tanggal' => $day, 'unit_sewa_id' => $item->unit_sewa_id])->update(['unit_sewa_id' => $d['unit_baru_id']]);
                 abort_unless($updated === 1, 409, 'Reservasi awal tidak cocok.');
                 DB::table('item_pesanan')->where('id', $item->id)->update(['unit_sewa_id' => $d['unit_baru_id'], 'diubah_pada' => now()]);

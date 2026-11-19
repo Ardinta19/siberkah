@@ -22,6 +22,7 @@ final class AnonymizeCustomer
                 ->where('hasil', 'perlu_rekonsiliasi')->exists() || DB::table('permohonan_batal')->whereIn('pesanan_id', $ids)->where('status', 'menunggu')->exists(),
                 409, 'Masih ada tagihan, refund, atau keputusan yang belum selesai.');
 
+            DB::table('desain_papan')->whereIn('pesanan_id', $ids)->update(['judul' => null, 'penerima' => null, 'pengirim' => null]);
             $items = DB::table('item_pesanan')->whereIn('pesanan_id', $ids);
             DB::table('opsi_item_pesanan')->whereIn('item_pesanan_id', (clone $items)->select('id'))->whereNull('nilai_opsi_id')->update(['teks_bebas' => null]);
             $items->update(['tulisan_kustom' => null]);

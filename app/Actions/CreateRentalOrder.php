@@ -21,6 +21,7 @@ final class CreateRentalOrder
             'kunci' => 'required|uuid', 'produk_id' => 'required|integer|min:1', 'varian_id' => 'required|integer|min:1',
             'jumlah' => 'required|integer|between:1,100', 'tanggal' => 'required|date_format:Y-m-d',
             'alamat_antar' => 'required|string|max:500', 'zona_antar_id' => 'required|integer|min:1',
+            'metode_teks' => 'sometimes|required|in:spidol,templat,cutting', 'jam_serah' => 'sometimes|required|date_format:H:i',
             'cara_serah' => 'sometimes|in:antar', 'opsi' => 'prohibited', 'tanggal_selesai' => 'prohibited',
             'pembayaran' => 'required|in:penuh,dp', 'setuju_privasi' => 'accepted', 'versi_privasi' => 'required|string|max:40',
         ])->validate();
@@ -52,12 +53,10 @@ final class CreateRentalOrder
             $this->check($d['versi_privasi'] === config('checkout.privacy_version'), 'Periksa versi kebijakan privasi.');
             $now = CarbonImmutable::now('Asia/Jakarta');
             $date = CarbonImmutable::parse($d['tanggal'], 'Asia/Jakarta')->startOfDay();
-            // Standard rental only. Same-day and custom lettering are not in this flow.
-            $earliest = $now->startOfDay()->addDays($now->gt($now->setTime(15, 0)) ? 2 : 1);
-            $this->check($date->gte($earliest), 'Tanggal sewa terlalu dekat.');
+            $this->check(\App\Support\RentalSchedule::permits($d['tanggal'], $d['metode_teks'] ?? null, $d['jam_serah'] ?? null, $now), 'Tanggal sewa terlalu dekat atau jadwal serah tidak sesuai.');
             $number = app(OrderNumber::class)->next($period);
             $product = DB::table('produk')->where('id', $d['produk_id'])->where('aktif', true)->where('jenis', 'sewa')->lockForUpdate()->first();
-            $this->check((bool) $product, 'Produk sewa tidak tersedia.');
+            $this->check($product && DB::table('kategori')->where('id', $product->kategori_id)->where('aktif', true)->exists(), 'Produk sewa tidak tersedia.');
             $this->check(! DB::table('opsi_produk')->where('produk_id', $product->id)->exists(), 'Produk dengan opsi memerlukan checkout khusus.');
             $variant = DB::table('varian_produk')->where('id', $d['varian_id'])->where('produk_id', $product->id)->where('aktif', true)->lockForUpdate()->first();
             $this->check($variant && $variant->harga > 0, 'Varian atau tarif tidak tersedia.');
@@ -66,6 +65,8 @@ final class CreateRentalOrder
             $blocked = DB::table('blokir_kalender')->where('tanggal', $d['tanggal'])->where(fn ($q) => $q->whereNull('produk_id')->orWhere('produk_id', $product->id))->exists();
             $this->check(! $blocked, 'Tanggal ini diblokir.');
             $units = DB::table('unit_sewa')->where('varian_produk_id', $variant->id)->where('status', 'aktif')
+                ->whereNotIn('id', DB::table('blokir_unit_harian')->select('unit_sewa_id')->where('tanggal', $d['tanggal']))
+                ->when($date->isSameDay($now), fn ($q) => $q->whereNotIn('id', DB::table('penguasaan_unit')->select('unit_sewa_id')))
                 ->whereNotIn('id', DB::table('hari_reservasi')->select('unit_sewa_id')->where('tanggal', $d['tanggal']))
                 ->orderBy('id')->limit($d['jumlah'])->lockForUpdate()->pluck('id');
             $this->check($units->count() === $d['jumlah'], 'Unit pada tanggal ini tidak mencukupi.');
@@ -82,6 +83,10 @@ final class CreateRentalOrder
                 'cara_serah' => 'antar', 'alamat_antar' => $d['alamat_antar'], 'zona_antar_id' => $zone->id, 'tanggal_serah' => $d['tanggal'],
                 'subtotal' => $subtotal, 'ongkir' => $zone->ongkir, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
                 'tahan_hingga_pada' => $now->addMinutes(BusinessSettings::value($peak ? 'tahan_puncak_menit' : 'tahan_normal_menit')), 'batas_pelunasan_pada' => $dp ? $due : null]);
+            if (isset($d['metode_teks'])) {
+                DB::table('desain_papan')->insert(['pesanan_id' => $order->id, 'metode' => $d['metode_teks'],
+                    'jadwal_serah' => isset($d['jam_serah']) ? $date->setTimeFromTimeString($d['jam_serah']) : null]);
+            }
             foreach ($units as $unit) {
                 $item = DB::table('item_pesanan')->insertGetId(['pesanan_id' => $order->id, 'produk_id' => $product->id, 'varian_produk_id' => $variant->id,
                     'unit_sewa_id' => $unit, 'nama_produk' => $product->nama, 'nama_varian' => $variant->nama, 'harga_satuan' => $variant->harga,

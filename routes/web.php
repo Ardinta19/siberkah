@@ -9,6 +9,7 @@ use App\Http\Controllers\CancellationRequestController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\BoardOperationsController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\CustomerProfileController;
@@ -148,6 +149,9 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('pesanan/{id}/reject-cancellation', [CancellationRequestController::class, 'reject'])->whereNumber('id')->name('admin.pesanan.reject-cancellation');
         Route::post('pesanan/{id}/cancel-paid', [PaidRentalCancellationController::class, 'cancel'])->whereNumber('id')->name('admin.pesanan.cancel-paid');
         Route::post('pesanan/{id}/record-refund', [PaidRentalCancellationController::class, 'record'])->whereNumber('id')->name('admin.pesanan.record-refund');
+        Route::post('pesanan/{id}/perpanjangan', [BoardOperationsController::class, 'extend'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.perpanjang');
+        Route::post('unit/{unit}/blokir', [BoardOperationsController::class, 'block'])->whereNumber('unit')->middleware(RentalStaging::class)->name('papan.blokir');
+        Route::delete('unit/{unit}/blokir/{blokir}', [BoardOperationsController::class, 'unblock'])->whereNumber('unit')->whereNumber('blokir')->middleware(RentalStaging::class)->name('papan.buka');
         Route::post('pesanan/{id}/ganti-unit', \App\Http\Controllers\RentalUnitReplacementController::class)->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.ganti-unit');
         Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reactivate-expired');
     });
@@ -203,6 +207,8 @@ Route::middleware('auth:staff')->group(function () {
     /** Staff Production */
     Route::prefix('staf/produksi')->middleware('role:owner,admin,staf_produksi')->group(function () {
         Route::get('/', [StaffProductionController::class, 'index'])->name('staf.produksi.index');
+        Route::get('/papan/{id}', [BoardOperationsController::class, 'show'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.show');
+        Route::put('/papan/{id}', [BoardOperationsController::class, 'edit'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.edit');
         Route::post('/start-production', [StaffProductionController::class, 'startProduction'])->name('staf.produksi.start');
         Route::post('/mark-ready', [StaffProductionController::class, 'markReady'])->name('staf.produksi.mark-ready');
     });

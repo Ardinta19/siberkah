@@ -37,6 +37,11 @@ class StaffProductionController extends Controller
             abort_if($types->isEmpty(), 409, 'Pesanan belum memiliki item.');
             $snapshot = DB::table('checkout_buket')->where('pesanan_id', $id)->value('jumlah_custom');
             $custom = $snapshot !== null ? $snapshot > 0 : $types->contains('custom');
+            $board = DB::table('desain_papan')->where('pesanan_id', $id)->first();
+            if ($board) {
+                $custom = true;
+                abort_if($start && (! $board->judul || ! $board->penerima || ! $board->pengirim), 409, 'Lengkapi teks papan sebelum produksi.');
+            }
             $from = $order->status;
             $code = match (true) {
                 $start && $from === 'dikonfirmasi' && $custom => 'T05',

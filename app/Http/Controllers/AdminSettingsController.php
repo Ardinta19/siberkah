@@ -68,15 +68,10 @@ class AdminSettingsController extends BaseController
             'alasan' => 'required|string|max:160',
         ]);
 
-        // Cek bentrok dengan pesanan aktif
-        $bentrok = Pesanan::where('tanggal_serah', $request->tanggal)
-            ->where('status', '!=', 'dibatalkan')
-            ->exists();
-
-        if ($bentrok && ! $request->has('produk_id')) {
-            return back()
-                ->with('error', 'Tanggal ini sudah memiliki pesanan aktif. Hanya bisa blokir untuk produk tertentu.');
-        }
+        $bentrok = Pesanan::whereDate('tanggal_serah', $request->tanggal)
+            ->whereIn('status', ['menunggu_pembayaran','dikonfirmasi','sedang_diproduksi','siap','sudah_diserahkan'])
+            ->when($request->filled('produk_id'), fn ($q) => $q->whereHas('items', fn ($i) => $i->where('produk_id', $request->produk_id)))
+            ->pluck('nomor');
 
         BlokirKalender::create([
             'tanggal' => $request->tanggal,
@@ -85,8 +80,10 @@ class AdminSettingsController extends BaseController
             'pengguna_id' => auth('staff')->id(),
         ]);
 
-        return back()
-            ->with('success', 'Kalender berhasil diblokir.');
+        if ($request->expectsJson()) {
+            return response()->json(['peringatan_pesanan_aktif' => $bentrok], 201);
+        }
+        return back()->with('success', 'Kalender berhasil diblokir.')->with('peringatan_pesanan_aktif', $bentrok->all());
     }
 
     /**
