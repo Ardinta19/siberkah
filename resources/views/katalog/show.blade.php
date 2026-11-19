@@ -22,6 +22,9 @@
         @if($produk->jenis === 'sewa')
             <form class="space-y-2"><label>Tanggal sewa <input type="date" required name="tanggal" value="{{ $tanggalRequest }}"></label><button class="btn-outline">Cek unit</button></form>
             @if($tersedia !== null)<p role="status">{{ $tersedia ? 'Ada unit pada tanggal ini. Unit belum dipesan.' : 'Tidak tersedia pada tanggal ini.' }}</p>@endif
+            @if($saran)
+                <p>Tanggal kosong terdekat:</p><ul>@foreach($saran as $hari)<li><a href="{{ route('catalog.show', ['slug' => $produk->slug, 'tanggal' => $hari]) }}">{{ $hari }}</a></li>@endforeach</ul>
+            @endif
         @endif
         <p class="text-sm">Pemesanan online belum dibuka.</p>
     </section>

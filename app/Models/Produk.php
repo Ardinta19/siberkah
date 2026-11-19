@@ -82,12 +82,7 @@ class Produk extends Model
     /** Date-specific catalog estimate; checkout must still lock and reserve the units. */
     public function scopeBisaDisewaPada(Builder $query, string $date): Builder
     {
-        return $query->where('jenis', 'sewa')
-            ->whereNotExists(fn ($blocks) => $blocks->selectRaw('1')->from('blokir_kalender')
-                ->where('tanggal', $date)->where(fn ($b) => $b->whereNull('produk_id')->orWhereColumn('produk_id', 'produk.id')))
-            ->whereHas('unitSewa', fn ($unit) => $unit->where('unit_sewa.status', 'aktif')->where('varian_produk.aktif', true)
-                ->whereNotExists(fn ($days) => $days->selectRaw('1')->from('hari_reservasi')
-                    ->whereColumn('unit_sewa_id', 'unit_sewa.id')->where('tanggal', $date)));
+        return $query->where('jenis', 'sewa')->whereHas('varianProduk', fn ($q) => $q->tersediaPada($date));
     }
 
     /**

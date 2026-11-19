@@ -7,16 +7,18 @@
         <p class="text-xs font-bold uppercase tracking-widest text-primary">SIBERKAH / Katalog Produk</p>
         <h1 class="mt-2 font-display text-4xl font-bold text-primary">Koleksi Estetik</h1>
         <p class="mt-2 text-outline-600">Temukan papan ucapan, akrilik, dan dekorasi untuk acara Anda.</p>
-        <form class="my-5 flex gap-2" action="{{ route('catalog.index') }}">
-            @foreach(request()->only(['kategori', 'jenis', 'tanggal']) as $key => $value)
+        <form class="my-5 flex flex-wrap gap-2" action="{{ route('catalog.index') }}">
+            @foreach(request()->only(['kategori', 'jenis']) as $key => $value)
                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
             @endforeach
             <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama produk atau kategori" aria-label="Cari produk" class="min-w-0 w-full max-w-lg rounded-md border border-outline-200 bg-white px-4">
+            <label>Tanggal sewa <input type="date" name="tanggal" value="{{ request('tanggal') }}"></label>
+            <label>Urutan <select name="urut"><option value="">Katalog</option><option value="harga_naik" @selected(request('urut') === 'harga_naik')>Harga terendah</option><option value="harga_turun" @selected(request('urut') === 'harga_turun')>Harga tertinggi</option></select></label>
             <button class="btn-primary">Cari</button>
         </form>
         <nav aria-label="Kategori produk" class="flex gap-2 overflow-x-auto pb-4">
             @foreach(collect([null => 'Semua'])->union($kategoris->pluck('nama', 'id')) as $id => $nama)
-                <a href="{{ route('catalog.index', array_filter(array_merge(request()->only(['q','jenis','tanggal']), ['kategori' => $id]), fn ($v) => $v !== '')) }}" @class(['shrink-0 rounded-full border px-4 py-2 text-sm font-semibold', 'bg-primary text-white border-primary' => (string)$filterKategori === (string)$id, 'bg-white border-outline-200' => (string)$filterKategori !== (string)$id])>{{ $nama }}</a>
+                <a href="{{ route('catalog.index', array_filter(array_merge(request()->only(['q','jenis','tanggal','urut']), ['kategori' => $id]), fn ($v) => $v !== '')) }}" @class(['shrink-0 rounded-full border px-4 py-2 text-sm font-semibold', 'bg-primary text-white border-primary' => (string)$filterKategori === (string)$id, 'bg-white border-outline-200' => (string)$filterKategori !== (string)$id])>{{ $nama }}</a>
             @endforeach
         </nav>
         <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -37,7 +39,7 @@
                         <details class="mb-3 text-sm text-outline-600"><summary class="cursor-pointer">Ringkasan · {{ $p->varianProduk->count() }} varian</summary>{{ $p->deskripsi ?: 'Belum ada deskripsi.' }}</details>
                         <div class="mt-auto flex items-center justify-between gap-2 border-t border-outline-200 pt-4">
                             <strong class="text-primary">Rp{{ number_format($p->harga_dasar, 0, ',', '.') }}</strong>
-                            <a class="btn-primary" href="{{ route('catalog.show', $p->slug) }}">Lihat detail</a>
+                            <a class="btn-primary" href="{{ route('catalog.show', ['slug' => $p->slug, 'tanggal' => $filterTanggal]) }}">Lihat detail</a>
                         </div>
                     </div>
                 </article>
@@ -45,6 +47,7 @@
                 <p class="rounded-md border border-outline-200 bg-white p-5">Tidak ada produk yang ditemukan. <a class="text-primary underline" href="{{ route('catalog.index') }}">Lihat semua produk</a></p>
             @endforelse
         </div>
+        {{ $produk->links() }}
     </div>
 </section>
 @endsection

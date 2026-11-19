@@ -37,6 +37,10 @@ jobs:
         env:
           CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
         run: bash scripts/ci/restore-drill.sh
+      - name: Uji HTTP katalog 200 produk, 5.000 reservasi dan 50 klien
+        env:
+          CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
+        run: bash scripts/ci/catalog-benchmark.sh
       - run: php artisan test --log-junit "$RUNNER_TEMP/backend-results.xml"
       - name: Ringkasan kegagalan pengujian
         if: failure()

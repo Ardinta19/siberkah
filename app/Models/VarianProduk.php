@@ -26,6 +26,16 @@ class VarianProduk extends Model
         'aktif' => 'boolean',
     ];
 
+    /** Catalog estimate only; checkout owns the final reservation. */
+    public function scopeTersediaPada(\Illuminate\Database\Eloquent\Builder $query, string $date): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('varian_produk.aktif', true)
+            ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('blokir_kalender')->where('tanggal', $date)
+                ->where(fn ($b) => $b->whereNull('produk_id')->orWhereColumn('produk_id', 'varian_produk.produk_id')))
+            ->whereHas('unitSewa', fn ($q) => $q->where('status', 'aktif')->whereNotExists(fn ($r) => $r->selectRaw('1')->from('hari_reservasi')
+                ->whereColumn('hari_reservasi.unit_sewa_id', 'unit_sewa.id')->where('tanggal', $date)));
+    }
+
     /**
      * Produk induk.
      */
