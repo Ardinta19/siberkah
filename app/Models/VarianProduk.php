@@ -31,6 +31,7 @@ class VarianProduk extends Model
     {
         if (! \App\Support\RentalSchedule::searchable($date)) { return $query->whereRaw('1 = 0'); }
         return $query->where('varian_produk.aktif', true)
+            ->when($date === today()->toDateString(), fn ($q) => $q->whereHas('produk', fn ($p) => $p->where('izin_hari_sama', true)))
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('blokir_kalender')->where('tanggal', $date)
                 ->where(fn ($b) => $b->whereNull('produk_id')->orWhereColumn('produk_id', 'varian_produk.produk_id')))
             ->whereHas('unitSewa', fn ($q) => $q->where('status', 'aktif')->whereNotIn('unit_sewa.id', \Illuminate\Support\Facades\DB::table('blokir_unit_harian')->select('unit_sewa_id')->where('tanggal', $date))

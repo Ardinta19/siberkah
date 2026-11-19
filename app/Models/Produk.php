@@ -24,6 +24,7 @@ class Produk extends Model
         'deskripsi',
         'harga_dasar',
         'lead_custom_hari',
+        'izin_hari_sama',
         'foto_utama',
         'aktif',
     ];

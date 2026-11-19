@@ -57,6 +57,7 @@ final class CreateRentalOrder
             $number = app(OrderNumber::class)->next($period);
             $product = DB::table('produk')->where('id', $d['produk_id'])->where('aktif', true)->where('jenis', 'sewa')->lockForUpdate()->first();
             $this->check($product && DB::table('kategori')->where('id', $product->kategori_id)->where('aktif', true)->exists(), 'Produk sewa tidak tersedia.');
+            $this->check(! $date->isSameDay($now) || $product->izin_hari_sama, 'Produk ini tidak melayani hari yang sama.');
             $this->check(! DB::table('opsi_produk')->where('produk_id', $product->id)->exists(), 'Produk dengan opsi memerlukan checkout khusus.');
             $variant = DB::table('varian_produk')->where('id', $d['varian_id'])->where('produk_id', $product->id)->where('aktif', true)->lockForUpdate()->first();
             $this->check($variant && $variant->harga > 0, 'Varian atau tarif tidak tersedia.');
@@ -78,11 +79,15 @@ final class CreateRentalOrder
             $due = $date->subDay()->setTime(18, 0);
             $this->check(! $dp || ($total >= BusinessSettings::value('ambang_dp_rupiah') && $due->gt($now)), 'Pilihan DP tidak tersedia.');
             $peak = DB::table('tanggal_puncak')->whereBetween('tanggal', [$now->toDateString(), $now->addDays(2)->toDateString()])->exists();
+            $holdUntil = $now->addMinutes(BusinessSettings::value($peak ? 'tahan_puncak_menit' : 'tahan_normal_menit'));
+            if (isset($d['jam_serah'])) {
+                $holdUntil = $holdUntil->min($date->setTimeFromTimeString($d['jam_serah'])->subHours(2));
+            }
             $order = Pesanan::create(['nomor' => $number, 'status' => 'menunggu_pembayaran', 'pelanggan_id' => $customer->id,
                 'asal' => $operator ? 'admin' : 'situs', 'pengguna_id' => $operator?->id, 'nama_pemesan' => $customer->nama, 'nomor_wa_pemesan' => $customer->nomor_wa,
                 'cara_serah' => 'antar', 'alamat_antar' => $d['alamat_antar'], 'zona_antar_id' => $zone->id, 'tanggal_serah' => $d['tanggal'],
                 'subtotal' => $subtotal, 'ongkir' => $zone->ongkir, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
-                'tahan_hingga_pada' => $now->addMinutes(BusinessSettings::value($peak ? 'tahan_puncak_menit' : 'tahan_normal_menit')), 'batas_pelunasan_pada' => $dp ? $due : null]);
+                'tahan_hingga_pada' => $holdUntil, 'batas_pelunasan_pada' => $dp ? $due : null]);
             if (isset($d['metode_teks'])) {
                 DB::table('desain_papan')->insert(['pesanan_id' => $order->id, 'metode' => $d['metode_teks'],
                     'jadwal_serah' => isset($d['jam_serah']) ? $date->setTimeFromTimeString($d['jam_serah']) : null]);

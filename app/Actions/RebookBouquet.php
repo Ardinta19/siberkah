@@ -42,6 +42,7 @@ final class RebookBouquet
                 }
                 $custom += $item->jumlah;
             } elseif ($p->jenis === 'jual' && $v) {
+                if ($day === $now->toDateString() && (! $p->izin_hari_sama || $now->gt($now->copy()->setTime(15, 0)))) { return false; }
                 $stock[$v->id] = ($stock[$v->id] ?? 0) + $item->jumlah;
                 if ($stock[$v->id] > $v->stok) {
                     return false;

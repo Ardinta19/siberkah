@@ -70,9 +70,10 @@ class CustomerOrderController extends BaseController
             ->where('nomor', $nomor)
             ->firstOrFail();
 
-        return view('pelanggan.rincian', [
+        return response()->view('pelanggan.rincian', [
+            'riwayat' => \Illuminate\Support\Facades\DB::table('riwayat_status_pesanan')->where('pesanan_id', $pesanan->id)->orderBy('id')->get(['status_baru','dibuat_pada']),
             'pesanan' => $pesanan,
-        ]);
+        ])->header('Cache-Control', 'private, no-store');
     }
 
     /**

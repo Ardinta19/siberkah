@@ -70,6 +70,7 @@ final class CreateBouquetOrder
                 abort_if(! $variant && DB::table('varian_produk')->where('produk_id', $p->id)->exists(), 422, 'Pilih varian aktif.');
                 $qty = (int) $line['jumlah'];
                 if ($p->jenis === 'jual') {
+                    abort_if($date->isSameDay($now) && (! $p->izin_hari_sama || $now->gt($now->copy()->setTime(15, 0))), 409, 'Produk atau jam pemesanan tidak mengizinkan hari yang sama.');
                     abort_unless($variant && $variant->stok >= $qty, 409, 'Stok siap jual tidak mencukupi.');
                     DB::table('varian_produk')->where('id', $variant->id)->decrement('stok', $qty);
                 } else {

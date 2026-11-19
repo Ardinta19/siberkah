@@ -69,7 +69,7 @@ final class ResolveLateRental
             DB::table('hari_reservasi')->select('unit_sewa_id')->where('tanggal', $day))->orderBy('id')->limit($items->count())->lockForUpdate()->pluck('id');
         $design = DB::table('desain_papan')->where('pesanan_id', $id)->first();
         $schedule = \App\Support\RentalSchedule::permits($day, $design?->metode, $design?->jadwal_serah ? substr($design->jadwal_serah, 11, 5) : null, $now->toImmutable());
-        $available = $schedule && ! $blocked && $product->aktif && $variant->aktif && $units->count() === $items->count();
+        $available = $schedule && ($day !== $now->toDateString() || $product->izin_hari_sama) && ! $blocked && $product->aktif && $variant->aktif && $units->count() === $items->count();
         if (! $available) {
             return false;
         }

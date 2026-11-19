@@ -338,6 +338,7 @@ class RentalCheckoutTest extends TestCase
         $admin = Pengguna::factory()->create(['peran' => 'admin']);
         $courier = Pengguna::factory()->create(['peran' => 'staf_kurir']);
         $unit = DB::table('unit_sewa')->value('id');
+        DB::table('produk')->where('id', $data['produk_id'])->update(['izin_hari_sama' => true]);
         $block = ['tanggal' => $data['tanggal'], 'alasan' => 'Perawatan harian'];
         $blockUrl = route('papan.blokir', $unit);
         $blocked = $this->actingAs($admin, 'staff')->postJson($blockUrl, $block)->assertCreated()->json('blokir_id');

@@ -15,9 +15,13 @@
 
         <div class="bg-white dark:bg-neutral-900 rounded-xl p-6 shadow-sm border border-neutral-200 dark:border-neutral-700">
             <p class="text-neutral-600 dark:text-neutral-400">
-                Selamat datang di Dashboard Owner. Kelola semua aspek bisnis SIBERKAH di sini.
+                Agenda {{ $tanggal }} (WIB)
+                @foreach($ringkasan as $tugas => $jumlah)<span class="block">{{ ucfirst($tugas) }}: {{ $jumlah }}</span>@endforeach
             </p>
         </div>
+        @foreach($peringatan as $unit)
+            <p role="status">Unit {{ $unit->kode }} belum kembali dari {{ $unit->pesanan_sekarang }}; diperlukan untuk {{ $unit->pesanan_berikut }} pada {{ $unit->tanggal }}.</p>
+        @endforeach
     </div>
 </div>
 @endsection
