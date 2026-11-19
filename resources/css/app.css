@@ -4,6 +4,218 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Colors */
+    --color-primary-50: #FFF5F7;
+    --color-primary-100: #FEE8EC;
+    --color-primary-200: #FECACA;
+    --color-primary-300: #FCA5A5;
+    --color-primary-400: #F87171;
+    --color-primary-500: #881337;
+    --color-primary-600: #B91C1C;
+    --color-primary-700: #991B1B;
+    --color-primary-800: #7F1D1D;
+    --color-primary-900: #450D18;
+    --color-primary-950: #450D18;
+    --color-secondary-50: #FECDD3;
+    --color-secondary-100: #FCE8EC;
+    --color-secondary-200: #FAC2C2;
+    --color-secondary-300: #F89999;
+    --color-secondary-400: #F56565;
+    --color-secondary-500: #4C0519;
+    --color-secondary-600: #3F0213;
+    --color-secondary-700: #360110;
+    --color-secondary-800: #2D0007;
+    --color-secondary-900: #1A0000;
+    --color-secondary-950: #1A0000;
+    --color-warning-50: #FEF3C7;
+    --color-warning-100: #FDE68A;
+    --color-warning-200: #FBD38D;
+    --color-warning-300: #F6AD55;
+    --color-warning-400: #F39F3F;
+    --color-warning-500: #B45309;
+    --color-warning-600: #92400E;
+    --color-warning-700: #78350F;
+    --color-warning-800: #5F270F;
+    --color-warning-900: #471A0E;
+    --color-warning-950: #1C0E04;
+    --color-error-50: #FEE2E2;
+    --color-error-100: #FECACA;
+    --color-error-200: #FCA5A5;
+    --color-error-300: #F87171;
+    --color-error-400: #F87171;
+    --color-error-500: #991B1B;
+    --color-error-600: #7F1D1D;
+    --color-error-700: #651a1a;
+    --color-error-800: #4d1010;
+    --color-error-900: #320a0a;
+    --color-error-950: #1a0505;
+    --color-outline-50: #E7DBD5;
+    --color-outline-100: #E7DBD5;
+    --color-outline-200: #E7DBD5;
+    --color-outline-300: #E7DBD5;
+    --color-outline-400: #E7DBD5;
+    --color-outline-500: #6E5459;
+    --color-outline-600: #5A454A;
+    --color-outline-700: #47353A;
+    --color-outline-800: #35262B;
+    --color-outline-900: #1E191A;
+    --color-outline-950: #0D090A;
+    --color-success-50: #DCFCE7;
+    --color-success-100: #A7F3D0;
+    --color-success-200: #81E6C6;
+    --color-success-300: #5EEAD4;
+    --color-success-400: #2DD4BF;
+    --color-success-500: #15803D;
+    --color-success-600: #145A29;
+    --color-success-700: #124A23;
+    --color-success-800: #103A1E;
+    --color-success-900: #082F1D;
+    --color-success-950: #042612;
+    --color-primary: var(--color-primary-500);
+
+    --color-secondary-500: #4C0519;
+    --color-secondary: var(--color-secondary-500);
+
+    --color-accent-500: #BE123C;
+    --color-accent: var(--color-accent-500);
+
+    --color-surface-50: #FFFDF9;
+    --color-surface: var(--color-surface-50);
+
+    --color-on-surface-900: #261318;
+    --color-on-surface: var(--color-on-surface-900);
+
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'Red Hat Mono', monospace;
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius: 12px;
+}
+
+@layer base {
+  /* Container Siklar */
+  .container-siberkah {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply bg-primary-50 dark:bg-primary-950/50 border border-primary-200/20 rounded-2xl;
+  }
+
+  /* Section within container */
+  .container-siberkah > .section {
+    @apply py-12;
+  }
+
+  /* Page margin */
+  .container-siberkah > .page-margin {
+    @apply my-16;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-body antialiased;
+  }
+}
+
+/* Status Badge Styles */
+.status-badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium font-display font-bold;
+    animation: status-bounce 2s ease-in-out infinite;
+}
+
+@keyframes status-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.stat-card {
+    @apply bg-white dark:bg-neutral-900 rounded-xl p-4 text-center shadow-sm transition-all hover:shadow-md lifted;
+    @apply flex flex-col items-center py-2;
+}
+
+.stat-value {
+    @apply text-3xl font-bold font-display text-primary-900 dark:text-primary-50 mb-1;
+}
+
+.stat-label {
+    @apply text-neutral-500 dark:text-neutral-400 text-sm mt-0.5;
+}
+
+.pagination-btn {
+    @apply inline-block px-4 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors-150 bg-primary-50 dark:bg-primary-950/50;
+}
+
+.pagination-btn.active {
+    @apply bg-primary text-primary-900 dark:text-primary-50;
+}
+
+.status-available {
+    @apply bg-primary-100/30 border border-primary-200 text-primary-800;
+    animation-delay: 100ms;
+}
+
+.status-reserving {
+    @apply bg-warning-100/30 border border-warning-200 text-warning-800;
+    animation-delay: 100ms;
+}
+
+.status-out-of-stock {
+    @apply bg-error-100/30 border border-error-200 text-error-800;
+    animation-delay: 100ms;
+}
+
+.status-maintenance {
+    @apply bg-accent-100/30 border border-accent-200 text-accent-800;
+    animation-delay: 100ms;
+}
+
+.status-damaged {
+    @apply bg-error-100/30 border border-error-200 text-error-800;
+    animation-delay: 100ms;
+}
+
+.status-custom {
+    @apply bg-outline-100/30 border border-outline-variant text-on-surface-variant;
+    animation-delay: 100ms;
+}
+
+.status-new {
+    @apply bg-accent-100/40 border border-accent-200 text-accent-800;
+    animation-delay: 200ms;
+}
+
+.status-promo {
+    @apply bg-warning-100/40 border border-warning-200 text-warning-800;
+    animation-delay: 300ms;
+}
+
+.btn-primary {
+    @apply bg-primary text-light-primary hover:bg-primary-600 dark:hover:bg-primary-400 text-label-md font-body font-bold rounded-DEFAULT py-2.5 px-6 transition-colors shadow-sm hover:shadow-md;
+}
+
+.btn-outline {
+    @apply border border-light-outline-variant text-light-on-surface hover:bg-primary-50 dark:hover:bg-primary-950/50 py-2.5 px-6 transition-colors;
+}
+
+.btn-icon-sm {
+    @apply p-2 rounded-full bg-white/90 backdrop-blur-sm text-[20px] hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all;
+}
+
+.card {
+    @apply bg-white dark:bg-neutral-900 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-1 hover:shadow-xl duration-300;
+}
+
+.lifted {
+    @apply transition-colors duration-150 ease-out;
+}
+
+.hover:shadow-xl {
+    @apply shadow-xl;
+}
+
+.hover:translate-y-1 {
+    @apply translate-y-1;
 }
