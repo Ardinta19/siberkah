@@ -44,6 +44,7 @@ final class CreateBouquetOrder
                 abort_unless($prior->sidik === $hash, 409, 'Isi keranjang berbeda untuk kunci yang sama.');
                 return Pesanan::findOrFail($prior->pesanan_id);
             }
+            abort_unless($staff || $customer->isOnboarded(), 403, 'Lengkapi nama dan persetujuan privasi pada profil.');
             abort_unless($d['versi_privasi'] === config('checkout.privacy_version'), 409);
             $now = now('Asia/Jakarta');
             $date = Carbon::parse($d['tanggal'], 'Asia/Jakarta')->startOfDay();

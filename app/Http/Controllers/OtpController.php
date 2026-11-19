@@ -95,7 +95,7 @@ class OtpController extends Controller
         Auth::guard('customer')->login($customer);
         $request->session()->regenerate();
         $request->session()->put('otp.verified', ['id' => $customer->id, 'at' => now()->timestamp]);
-        return redirect()->route('catalog.index');
+        return redirect()->route($customer->isOnboarded() ? 'catalog.index' : 'profile.edit');
     }
 
     public function logout(Request $request)

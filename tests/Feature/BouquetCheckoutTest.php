@@ -17,7 +17,7 @@ class BouquetCheckoutTest extends TestCase
     private function cart(): array
     {
         config(['checkout.staging' => true, 'checkout.privacy_version' => 'v1']);
-        $this->actingAs(Pelanggan::create(['nama' => 'Penguji', 'nomor_wa' => '628111111111', 'aktif' => true, 'nomor_terverifikasi_pada' => now()]), 'customer');
+        $this->actingAs(Pelanggan::forceCreate(['versi_kebijakan' => 'v1', 'disetujui_pada' => now(), 'nama' => 'Penguji', 'nomor_wa' => '628111111111', 'aktif' => true, 'nomor_terverifikasi_pada' => now()]), 'customer');
         $cat = DB::table('kategori')->insertGetId(['nama' => 'Buket', 'slug' => 'buket']);
         $sale = DB::table('produk')->insertGetId(['kategori_id' => $cat, 'jenis' => 'jual', 'nama' => 'Siap', 'slug' => 'siap']);
         $variant = DB::table('varian_produk')->insertGetId(['produk_id' => $sale, 'nama' => 'Putih', 'harga' => 40000, 'stok' => 3]);

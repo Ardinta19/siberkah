@@ -49,6 +49,7 @@ final class CreateRentalOrder
                 $this->check($receipt->sidik === $fingerprint, 'Kunci checkout sudah digunakan dengan isi berbeda.');
                 return Pesanan::findOrFail($receipt->pesanan_id);
             }
+            abort_unless($operator || $customer->isOnboarded(), 403, 'Lengkapi nama dan persetujuan privasi pada profil.');
             $this->check(filled($customer->nama), 'Lengkapi nama pemesan.');
             $this->check($d['versi_privasi'] === config('checkout.privacy_version'), 'Periksa versi kebijakan privasi.');
             $now = CarbonImmutable::now('Asia/Jakarta');

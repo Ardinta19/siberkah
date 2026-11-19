@@ -14,8 +14,21 @@ class CustomerProfileController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate(['nama' => 'required|string|max:100']);
-        \App\Models\Pelanggan::whereKey($request->user('customer')->id)->where('aktif', true)->whereNull('dihapus_pada')->update($data);
-        return back()->with('status', 'Profil berhasil diperbarui.');
+        $onboarding = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data) {
+            $customer = \App\Models\Pelanggan::lockForUpdate()->findOrFail($request->user('customer')->id);
+            abort_unless($customer->isActive() && $customer->isVerified(), 403);
+            $first = ! $customer->isOnboarded();
+            if ($first) {
+                $version = config('checkout.privacy_version');
+                abort_unless(is_string($version) && filled($version) && mb_strlen($version) <= 40, 503, 'Versi kebijakan privasi belum tersedia.');
+                $request->validate(['setuju_privasi' => 'accepted', 'versi_privasi' => ['required', 'string', \Illuminate\Validation\Rule::in([$version])]]);
+                $customer->versi_kebijakan = $version;
+                $customer->disetujui_pada = now('Asia/Jakarta');
+            }
+            $customer->fill($data)->save();
+            return $first;
+        });
+        return ($onboarding ? redirect()->route('catalog.index') : back())->with('status', 'Profil berhasil diperbarui.');
     }
 
     public function destroy(Request $request, \App\Actions\AnonymizeCustomer $action)

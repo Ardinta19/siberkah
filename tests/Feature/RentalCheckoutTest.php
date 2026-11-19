@@ -20,7 +20,7 @@ class RentalCheckoutTest extends TestCase
 
     private function customer(string $phone): Pelanggan
     {
-        return Pelanggan::create(['nama' => 'Pemesan', 'nomor_wa' => $phone, 'aktif' => true, 'nomor_terverifikasi_pada' => now()]);
+        return Pelanggan::forceCreate(['versi_kebijakan' => 'test-v1', 'disetujui_pada' => now(), 'nama' => 'Pemesan', 'nomor_wa' => $phone, 'aktif' => true, 'nomor_terverifikasi_pada' => now()]);
     }
 
     private function fixture(): array

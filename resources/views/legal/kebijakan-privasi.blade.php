@@ -8,6 +8,7 @@
 
         <h1 class="text-3xl font-bold text-primary-900 dark:text-primary-50 mb-6">Kebijakan Privasi</h1>
 
+        @if(filled(config('checkout.privacy_version'))) <p>Versi: {{ config('checkout.privacy_version') }}</p> @endif
         <div class="prose prose-lg prose-inDark:prose-inDarkDark">
             <p>Kami menghargai privasi Anda. Kebijakan privasi ini menjelaskan cara kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda saat menggunakan layanan SIBERKAH.</p>
 

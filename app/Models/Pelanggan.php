@@ -22,8 +22,6 @@ class Pelanggan extends Authenticatable
         'nomor_terverifikasi_pada',
         'masuk_terakhir_pada',
         'dihapus_pada',
-        'persetujuan_kebijakan',
-        'versi_kebijakan',
     ];
 
     protected $casts = [
@@ -31,7 +29,7 @@ class Pelanggan extends Authenticatable
         'nomor_terverifikasi_pada' => 'datetime',
         'masuk_terakhir_pada' => 'datetime',
         'dihapus_pada' => 'datetime',
-        'persetujuan_kebijakan' => 'boolean',
+        'disetujui_pada' => 'datetime',
         'versi_kebijakan' => 'string',
     ];
 
@@ -117,7 +115,8 @@ class Pelanggan extends Authenticatable
      */
     public function isOnboarded(): bool
     {
-        return $this->persetujuan_kebijakan && ! is_null($this->versi_kebijakan) && $this->masuk_terakhir_pada !== null;
+        return filled($this->nama) && $this->disetujui_pada !== null && filled($this->versi_kebijakan)
+            && $this->versi_kebijakan === config('checkout.privacy_version');
     }
 
     /**
@@ -195,6 +194,7 @@ class Pelanggan extends Authenticatable
     {
         return $query->where('aktif', true)
             ->whereNotNull('nomor_terverifikasi_pada')
-            ->where('persetujuan_kebijakan', true);
+            ->whereNotNull('nama')->where('nama', '!=', '')->whereNotNull('disetujui_pada')
+            ->whereNotNull('versi_kebijakan')->where('versi_kebijakan', '!=', '')->where('versi_kebijakan', config('checkout.privacy_version'));
     }
 }
