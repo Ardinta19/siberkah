@@ -433,6 +433,23 @@ class RentalCheckoutTest extends TestCase
         $this->assertStringNotContainsString($customer->nomor_wa, $csv);
     }
 
+    public function test_manual_wa_order_uses_rental_rules_and_records_staff_identity(): void
+    {
+        config(['checkout.staging' => true]);
+        $customer = $this->customer('628111111111');
+        $data = $this->fixture() + ['pelanggan_id' => $customer->id, 'persetujuan_pelanggan_diperiksa' => true];
+        $url = route('admin.pesanan.manual-store');
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_produksi']), 'staff')->postJson($url, $data)->assertForbidden();
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $this->actingAs($admin, 'staff')->postJson($url, $data + ['alasan_pengecualian' => 'Lewati stok'])->assertUnprocessable();
+        $id = $this->postJson($url, $data)->assertOk()->json('pesanan_id');
+        $this->postJson($url, $data)->assertOk()->assertJsonPath('pesanan_id', $id);
+        $this->getJson(route('admin.pesanan.index'))->assertOk()->assertJsonPath('total', 1);
+        $this->getJson(route('admin.pesanan.show', $id))->assertOk()->assertJsonPath('asal', 'admin');
+        $this->assertDatabaseHas('riwayat_status_pesanan', ['pesanan_id' => $id, 'pelaku' => 'staf', 'pengguna_id' => $admin->id]);
+        $this->assertDatabaseCount('hari_reservasi', 1);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];

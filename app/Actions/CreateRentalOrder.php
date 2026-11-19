@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Pelanggan;
 use App\Models\Pesanan;
+use App\Models\Pengguna;
 use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -12,8 +13,9 @@ use Illuminate\Support\Facades\Validator;
 /** Checkout satu varian sewa standar, satu tanggal kalender, diantar. */
 final class CreateRentalOrder
 {
-    public function create(Pelanggan $actor, array $input): Pesanan
+    public function create(Pelanggan $actor, array $input, ?Pengguna $operator = null): Pesanan
     {
+        abort_if($operator && (! $operator->aktif || ! $operator->canVerifyPayment()), 403);
         $d = Validator::make($input, [
             'kunci' => 'required|uuid', 'produk_id' => 'required|integer|min:1', 'varian_id' => 'required|integer|min:1',
             'jumlah' => 'required|integer|between:1,100', 'tanggal' => 'required|date_format:Y-m-d',
@@ -27,10 +29,13 @@ final class CreateRentalOrder
         $d['kunci'] = strtolower($d['kunci']);
         $d['cara_serah'] = 'antar';
         $d['setuju_privasi'] = true;
+        if ($operator) {
+            $d['operator_id'] = $operator->id;
+        }
         ksort($d);
         $fingerprint = hash('sha256', json_encode($d, JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($actor, $d, $fingerprint) {
+        return DB::transaction(function () use ($actor, $d, $fingerprint, $operator) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($actor->id);
             abort_unless($customer->isActive() && $customer->isVerified(), 403);
             $receipt = DB::table('checkout_sewa')->where('pelanggan_id', $customer->id)->where('kunci', $d['kunci'])->lockForUpdate()->first();
@@ -68,7 +73,7 @@ final class CreateRentalOrder
             $this->check(! $dp || ($total >= 250000 && $due->gt($now)), 'Pilihan DP tidak tersedia.');
             $peak = DB::table('tanggal_puncak')->whereBetween('tanggal', [$now->toDateString(), $now->addDays(2)->toDateString()])->exists();
             $order = Pesanan::create(['nomor' => $number, 'status' => 'menunggu_pembayaran', 'pelanggan_id' => $customer->id,
-                'asal' => 'situs', 'nama_pemesan' => $customer->nama, 'nomor_wa_pemesan' => $customer->nomor_wa,
+                'asal' => $operator ? 'admin' : 'situs', 'pengguna_id' => $operator?->id, 'nama_pemesan' => $customer->nama, 'nomor_wa_pemesan' => $customer->nomor_wa,
                 'cara_serah' => 'antar', 'alamat_antar' => $d['alamat_antar'], 'zona_antar_id' => $zone->id, 'tanggal_serah' => $d['tanggal'],
                 'subtotal' => $subtotal, 'ongkir' => $zone->ongkir, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
                 'tahan_hingga_pada' => $now->addMinutes($peak ? 30 : 60), 'batas_pelunasan_pada' => $dp ? $due : null]);
@@ -79,7 +84,7 @@ final class CreateRentalOrder
                 DB::table('hari_reservasi')->insert(['pesanan_id' => $order->id, 'item_pesanan_id' => $item, 'unit_sewa_id' => $unit, 'tanggal' => $d['tanggal'], 'dibuat_pada' => $now]);
             }
             app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
-            DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => 'pelanggan', 'dibuat_pada' => $now]);
+            DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => $operator ? 'staf' : 'pelanggan', 'pengguna_id' => $operator?->id, 'dibuat_pada' => $now]);
             DB::table('checkout_sewa')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'],
                 'sidik' => $fingerprint, 'versi_privasi' => $d['versi_privasi'], 'disetujui_pada' => $now]);
             return $order;

@@ -25,78 +25,33 @@ class AdminOrderController extends BaseController
      */
     public function index(Request $request)
     {
+        $filters = $request->validate(['status' => 'sometimes|string|max:30', 'tanggal' => 'sometimes|date_format:Y-m-d', 'pelanggan' => 'sometimes|integer|min:1']);
         $query = Pesanan::query();
-
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        foreach (['status' => 'status', 'tanggal' => 'tanggal_serah', 'pelanggan' => 'pelanggan_id'] as $field => $column) {
+            if (isset($filters[$field])) {
+                $query->where($column, $filters[$field]);
+            }
         }
-
-        // Filter by tanggal
-        if ($request->has('tanggal')) {
-            $query->whereDate('tanggal_serah', $request->tanggal);
-        }
-
-        // Filter by pelanggan
-        if ($request->has('pelanggan')) {
-            $query->where('pelanggan_id', $request->pelanggan);
-        }
-
-        $pesanan = $query->latest()->paginate(20);
-
-        // Get filter options
-        $statuses = ['menunggu_pembayaran', 'dikonfirmasi', 'sedang_diproduksi', 'siap', 'sudah_diserahkan', 'sudah_dikembalikan', 'selesai', 'dibatalkan'];
-
-        return view('admin.pesanan.index', [
-            'pesanan' => $pesanan,
-            'filterStatus' => $request->get('status'),
-            'filterTanggal' => $request->get('tanggal'),
-            'statuses' => $statuses,
-        ]);
+        return response()->json($query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo']))
+            ->header('Cache-Control', 'private, no-store');
     }
 
-    /**
-     * Show a specific order detail.
-     *
-     * @param  int  $id
-     * @return View
-     */
-    public function show($id)
+    public function show(int $id)
     {
-        $pesanan = Pesanan::with(['itemPesanan', 'pembayaran', 'pelanggan'])->findOrFail($id);
-
-        return view('admin.pesanan.show', [
-            'pesanan' => $pesanan,
-        ]);
+        $order = Pesanan::with(['items', 'pembayaran'])->findOrFail($id);
+        return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
 
-    /**
-     * Manual store order (from WA input).
-     * K-08: Admin Pesanan - manual input (form sama pelanggan + alasan pengecualian)
-     *
-     * @return RedirectResponse
-     */
-    public function manualStore(Request $request)
+    public function manualStore(Request $request, \App\Actions\CreateRentalOrder $checkout)
     {
-        $request->validate([
-            'pelanggan_id' => 'required|exists:pelanggan,id',
-            'produk_id' => 'required|exists:produk,id',
-            'varian_id' => 'sometimes|exists:varian_produk,id',
-            'tanggal_serah' => 'required|date',
-            'cara_serah' => 'required|in:antar,ambil',
-            'alamat_antar' => 'sometimes|string',
-            'zona_antar_id' => 'sometimes|exists:zona_antar,id',
-            'jam_serah_mulai' => 'sometimes|date_format:H:i',
-            'jam_serah_selesai' => 'sometimes|date_format:H:i',
-            'catatan' => 'sometimes|string',
-            'alasan_pengecualian' => 'sometimes|string',
-        ]);
-
-        // TODO: Implement order creation from manual input
-        // Similar to CustomerOrderController::store but with admin notes
-
-        return back()
-            ->with('success', 'Pesanan manual berhasil dibuat.');
+        $data = $request->validate(['pelanggan_id' => 'required|integer|min:1', 'persetujuan_pelanggan_diperiksa' => 'accepted', 'alasan_pengecualian' => 'prohibited']);
+        $customer = \App\Models\Pelanggan::findOrFail($data['pelanggan_id']);
+        try {
+            $order = $checkout->create($customer, $request->all(), $request->user('staff'));
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
+        return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor]);
     }
 
     /**

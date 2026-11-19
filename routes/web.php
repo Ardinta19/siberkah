@@ -123,8 +123,8 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('penjualan-toko', [StoreSaleController::class, 'store'])->middleware(RentalStaging::class)->name('toko.store');
         Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
-        Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->name('admin.pesanan.show');
-        Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->middleware('pending.transaction')->name('admin.pesanan.manual-store');
+        Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->whereNumber('id')->name('admin.pesanan.show');
+        Route::post('pesanan/manual/sewa', [AdminOrderController::class, 'manualStore'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
         Route::prefix('pesanan/{id}/retur')->where(['id' => '[0-9]+'])->middleware(RentalStaging::class)->group(function () {
             Route::get('inspeksi', [RentalCloseoutController::class, 'evidence']);
