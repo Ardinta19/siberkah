@@ -10,14 +10,12 @@ final class OrderNumber
 {
     public function next(string $period): string
     {
-        $counter = DB::table('urutan_nomor_pesanan');
-        $counter->insertOrIgnore(['periode' => $period, 'terakhir' => 0]);
-        $row = $counter->where('periode', $period)->lockForUpdate()->first();
-        $n = $row->terakhir + 1;
+        // MariaDB: acquire an exclusive counter lock directly (no shared-lock upgrade).
+        DB::statement('INSERT INTO urutan_nomor_pesanan (periode, terakhir) VALUES (?, 1) ON DUPLICATE KEY UPDATE terakhir = terakhir + 1', [$period]);
+        $n = DB::table('urutan_nomor_pesanan')->where('periode', $period)->lockForUpdate()->value('terakhir');
         if ($n > 9999) {
             throw new DomainException('Nomor pesanan bulan ini habis.');
         }
-        $counter->update(['terakhir' => $n]);
         return sprintf('BK-%s-%04d', $period, $n);
     }
 }

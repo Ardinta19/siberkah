@@ -38,3 +38,17 @@ Artisan::command('privasi:tinjau-retensi', function () {
     })->count();
     $this->info("Tinjauan saja: {$old} pesanan selesai/batal sebelum {$cutoff->toDateString()} ({$years} tahun). Tidak ada data yang dihapus.");
 })->purpose('Hitung transaksi lama untuk tinjauan retensi tanpa menampilkan identitas atau menghapus data');
+
+Artisan::command('reservations:audit', function () {
+    // One consistent read; T09/T11 retain historical reservation rows, T03/T04/T12 must release them.
+    $n = \Illuminate\Support\Facades\DB::selectOne("SELECT
+        (SELECT COUNT(*) FROM hari_reservasi h JOIN pesanan p ON p.id=h.pesanan_id
+         JOIN item_pesanan i ON i.id=h.item_pesanan_id
+         WHERE p.status IN ('dibatalkan','kedaluwarsa') OR h.tanggal<>p.tanggal_serah OR i.pesanan_id<>p.id
+         OR i.unit_sewa_id IS NULL OR i.unit_sewa_id<>h.unit_sewa_id) AS tidak_cocok,
+        (SELECT COUNT(*) FROM checkout_sewa c JOIN pesanan p ON p.id=c.pesanan_id JOIN item_pesanan i ON i.pesanan_id=p.id
+         WHERE p.status NOT IN ('dibatalkan','kedaluwarsa','selesai','sudah_dikembalikan') AND NOT EXISTS
+         (SELECT 1 FROM hari_reservasi h WHERE h.pesanan_id=p.id AND h.item_pesanan_id=i.id AND h.unit_sewa_id=i.unit_sewa_id AND h.tanggal=p.tanggal_serah)) AS hilang");
+    $this->line("Reservasi tidak cocok: {$n->tidak_cocok}; item sewa aktif tanpa reservasi: {$n->hilang}.");
+    return ($n->tidak_cocok || $n->hilang) ? 1 : 0;
+})->purpose('Audit reservasi sewa tanpa mengubah data atau menampilkan identitas');

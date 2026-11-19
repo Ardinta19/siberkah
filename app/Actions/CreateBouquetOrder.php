@@ -35,7 +35,7 @@ final class CreateBouquetOrder
         return DB::transaction(function () use ($actor, $d, $hash, $staff) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($actor->id);
             abort_unless($customer->isActive() && $customer->isVerified() && filled($customer->nama), 403);
-            $prior = DB::table('checkout_buket')->where(['pelanggan_id' => $customer->id, 'kunci' => $d['kunci']])->lockForUpdate()->first();
+            $prior = DB::table('checkout_buket')->where(['pelanggan_id' => $customer->id, 'kunci' => $d['kunci']])->first();
             if ($prior) {
                 abort_unless($prior->sidik === $hash, 409, 'Isi keranjang berbeda untuk kunci yang sama.');
                 return Pesanan::findOrFail($prior->pesanan_id);

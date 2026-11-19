@@ -94,15 +94,18 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('pembayaran', 999);
     }
 
-    public function test_two_connections_compete_for_last_unit(): void
+    public function test_fifty_connections_compete_for_last_unit(): void
     {
         $data = $this->fixture();
         $jobs = [];
-        foreach (['628111111111', '628111111112'] as $phone) {
+        foreach (range(1, 50) as $i) {
+            $phone = sprintf('62811111%04d', $i);
             $jobs[] = ['op' => 'checkout', 'customer' => $this->customer($phone)->id, 'payload' => $data];
         }
         $outcomes = $this->race($jobs);
-        $this->assertEqualsCanonicalizing(['RESERVED', 'UNAVAILABLE'], $outcomes);
+        $this->assertSame(1, count(array_keys($outcomes, 'RESERVED', true)));
+        $this->assertSame(49, count(array_keys($outcomes, 'UNAVAILABLE', true)));
+        $this->artisan('reservations:audit')->assertSuccessful();
         foreach (['pesanan', 'item_pesanan', 'hari_reservasi', 'pembayaran', 'riwayat_status_pesanan', 'checkout_sewa'] as $table) {
             $this->assertDatabaseCount($table, 1);
         }
@@ -498,7 +501,7 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('hari_reservasi', 1);
     }
 
-    public function test_two_carts_compete_for_last_production_slot_without_partial_stock_debit(): void
+    public function test_twenty_carts_compete_for_last_production_slot_without_partial_stock_debit(): void
     {
         $rental = $this->fixture();
         $cat = DB::table('kategori')->value('id');
@@ -509,15 +512,32 @@ class RentalCheckoutTest extends TestCase
         $cart = ['tanggal' => $rental['tanggal'], 'versi_privasi' => 'test-v1', 'setuju_privasi' => true, 'cara_serah' => 'ambil', 'pembayaran' => 'penuh',
             'items' => [['produk_id' => $sale, 'varian_id' => $variant, 'jumlah' => 1], ['produk_id' => $custom, 'jumlah' => 1]]];
         $jobs = [];
-        foreach (['628123411111', '628123411112'] as $phone) {
+        foreach (range(1, 20) as $i) {
+            $phone = sprintf('62812341%04d', $i);
             $jobs[] = ['op' => 'bouquet', 'customer' => $this->customer($phone)->id, 'payload' => $cart + ['kunci' => (string) Str::uuid()]];
         }
-        $this->assertEqualsCanonicalizing(['RESERVED','UNAVAILABLE'], $this->race($jobs));
+        $outcomes = $this->race($jobs);
+        $this->assertSame(1, count(array_keys($outcomes, 'RESERVED', true)));
+        $this->assertSame(19, count(array_keys($outcomes, 'UNAVAILABLE', true)));
         $this->assertDatabaseCount('checkout_buket', 1);
         $this->assertDatabaseCount('pesanan', 1);
         $this->assertDatabaseCount('pembayaran', 1);
         $this->assertDatabaseHas('varian_produk', ['id' => $variant, 'stok' => 1]);
         $this->assertDatabaseHas('kapasitas_produksi_harian', ['terpakai' => 1]);
+    }
+
+    public function test_fifty_successful_simultaneous_checkouts_have_distinct_monthly_numbers(): void
+    {
+        $data = $this->fixture();
+        $jobs = [];
+        foreach (range(1, 50) as $i) {
+            $jobs[] = ['op' => 'checkout', 'customer' => $this->customer(sprintf('62811111%04d', $i))->id,
+                'payload' => array_replace($data, ['tanggal' => today()->addDays(7 + $i)->toDateString()])];
+        }
+        $this->assertSame(array_fill(0, 50, 'RESERVED'), $this->race($jobs));
+        $this->assertSame(50, DB::table('pesanan')->distinct()->count('nomor'));
+        $this->assertDatabaseHas('urutan_nomor_pesanan', ['terakhir' => 50]);
+        $this->artisan('reservations:audit')->assertSuccessful();
     }
 
     private function race(array $jobs): array
@@ -530,7 +550,7 @@ class RentalCheckoutTest extends TestCase
             foreach ($jobs as $job) {
                 $input = json_encode($job + ['barrier' => $path,
                     'database' => config('database.connections.'.DB::getDefaultConnection())], JSON_THROW_ON_ERROR)."\n";
-                $worker = new Process([PHP_BINARY, base_path('tests/Support/rental-checkout-worker.php')], base_path(), ['APP_ENV' => 'testing'], $input, 20);
+                $worker = new Process([PHP_BINARY, base_path('tests/Support/rental-checkout-worker.php')], base_path(), ['APP_ENV' => 'testing'], $input, 120);
                 $worker->start();
                 $workers[] = $worker;
                 $this->assertTrue($worker->waitUntil(fn ($type, $output) => str_contains($output, 'READY')), $worker->getErrorOutput());

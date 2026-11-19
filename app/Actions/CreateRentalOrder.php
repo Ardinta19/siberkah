@@ -39,7 +39,7 @@ final class CreateRentalOrder
         return DB::transaction(function () use ($actor, $d, $fingerprint, $operator) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($actor->id);
             abort_unless($customer->isActive() && $customer->isVerified(), 403);
-            $receipt = DB::table('checkout_sewa')->where('pelanggan_id', $customer->id)->where('kunci', $d['kunci'])->lockForUpdate()->first();
+            $receipt = DB::table('checkout_sewa')->where('pelanggan_id', $customer->id)->where('kunci', $d['kunci'])->first();
             if ($receipt) {
                 $this->check($receipt->sidik === $fingerprint, 'Kunci checkout sudah digunakan dengan isi berbeda.');
                 return Pesanan::findOrFail($receipt->pesanan_id);
