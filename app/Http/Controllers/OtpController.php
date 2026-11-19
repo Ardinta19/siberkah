@@ -7,7 +7,7 @@ use App\Models\Pelanggan;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use App\Services\OtpQuota;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -20,13 +20,13 @@ class OtpController extends Controller
         return view('pelanggan.masuk');
     }
 
-    public function issue(Request $request)
+    public function issue(Request $request, OtpQuota $quota)
     {
         $number = $request->validate(['nomor_wa' => ['required', 'string', 'regex:/^(?:0|\+?62)8\d{7,12}$/D']])['nomor_wa'];
         $number = preg_replace('/^(?:0|\+62)/', '62', $number);
         $config = config('services.whatsapp');
         abort_unless($config['token'] && $config['phone_id'] && $config['template'] && $config['version'], 503, 'Layanan OTP belum dikonfigurasi.');
-        abort_unless(Cache::add('otp:send:'.hash('sha256', $number), true, 60), 429, 'Tunggu satu menit sebelum meminta kode lagi.');
+        $quota->consume($number, (string) $request->ip());
 
         $code = (string) random_int(100000, 999999);
         $otp = KodeOtp::create(['nomor_wa' => $number, 'kode_hash' => Hash::make($code), 'alamat_ip' => $request->ip(),
