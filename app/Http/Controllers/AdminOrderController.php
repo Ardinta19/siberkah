@@ -138,7 +138,7 @@ class AdminOrderController extends BaseController
         } catch (\DomainException $exception) {
             abort(409, $exception->getMessage());
         }
-        return response()->json(['hasil' => $result], $result === 'terverifikasi' ? 200 : 202);
+        return response()->json(['hasil' => $result], $result === 'perlu_rekonsiliasi' ? 202 : 200);
     }
 
     /**

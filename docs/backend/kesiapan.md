@@ -64,3 +64,7 @@ docker compose -f compose.backend-test.yaml down -v
 ```
 
 Keputusan operasional: setujui teks dan versi kebijakan privasi, template OTP dan nomor uji di staging; tentukan siapa yang menyelesaikan daftar rekonsiliasi dan menyetujui refund. Jangan pernah membagikan token/OTP/rekening pelanggan untuk debugging.
+
+### Rekonsiliasi: pencatatan transfer keluar penuh (staging)
+
+Admin/owner membaca antrean JSON di `GET /admin/rekonsiliasi`. Untuk dana masuk **yang tidak dikreditkan**, setelah mencocokkan mutasi masuk dan pengembalian yang **sudah dilakukan** pada rekening, catat `POST /admin/rekonsiliasi/{mutasi}/pengembalian` dengan `referensi_keluar` unik, `nominal` persis sebesar mutasi masuk dan `alasan`. Di staging gunakan data simulasi, bukan transfer bank nyata. Respons pencatatan pertama 201; retry identik 200; data/referensi bentrok 409. Catatan dan audit disimpan atomik. Operasi ini tidak mengirim uang, tidak melunasi tagihan, tidak mengubah saldo pesanan, dan tidak memesan ulang unit. Ini bukan refund proporsional pembatalan atas pembayaran terverifikasi (BR-13), bukan penerimaan selisih nominal, dan bukan reaktivasi T13. Fitur-fitur tersebut tetap tertutup.

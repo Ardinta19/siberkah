@@ -178,6 +178,40 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('riwayat_status_pesanan', 2);
     }
 
+    public function test_manual_return_of_uncredited_transfer_is_full_audited_and_idempotent(): void
+    {
+        $order = app(CreateRentalOrder::class)->create($this->customer('628111111119'), $this->fixture());
+        $staff = Pengguna::factory()->create(['peran' => 'admin']);
+        $this->actingAs($staff, 'staff');
+        $queue = route('admin.rekonsiliasi.index');
+        config(['checkout.staging' => false]);
+        $this->getJson($queue)->assertServiceUnavailable();
+        config(['checkout.staging' => true]);
+        $verify = route('admin.pesanan.verify-payment', $order->id);
+        $bill = DB::table('pembayaran')->where('pesanan_id', $order->id)->first();
+        $incoming = ['referensi' => 'BANK:IN:A', 'nominal' => 120000, 'pembayaran_id' => $bill->id];
+        $this->postJson($verify, $incoming)->assertAccepted();
+        $this->postJson($verify, array_replace($incoming, ['referensi' => 'BANK:IN:B']))->assertAccepted();
+        $this->getJson($queue)->assertOk()->assertJsonPath('total', 2);
+        $id = DB::table('mutasi_masuk')->where('referensi', 'BANK:IN:A')->value('id');
+        $url = route('admin.rekonsiliasi.pengembalian', $id);
+        $refund = ['referensi_keluar' => 'BANK:OUT:1', 'nominal' => 120000, 'alasan' => 'Nominal transfer tidak cocok; pengembalian dicek pada mutasi keluar.'];
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_kurir']), 'staff')->postJson($url, $refund)->assertForbidden();
+        $this->actingAs($staff, 'staff')->postJson($url, array_replace($refund, ['nominal' => 110000]))->assertConflict();
+        $this->postJson($url, $refund)->assertCreated();
+        $this->postJson($url, $refund)->assertOk();
+        $this->postJson($url, array_replace($refund, ['referensi_keluar' => 'BANK:OUT:2']))->assertConflict();
+        $other = DB::table('mutasi_masuk')->where('referensi', 'BANK:IN:B')->value('id');
+        $this->postJson(route('admin.rekonsiliasi.pengembalian', $other), $refund)->assertConflict();
+        $this->postJson($verify, $incoming)->assertOk()->assertJsonPath('hasil', 'dikembalikan');
+        $this->getJson($queue)->assertJsonPath('total', 1);
+        $this->assertDatabaseCount('pengembalian_mutasi', 1);
+        $this->assertDatabaseHas('log_aktivitas', ['aksi' => 'pengembalian_mutasi', 'subjek_id' => $id, 'pengguna_id' => $staff->id]);
+        $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'saldo' => $order->total, 'jumlah_dibayar' => 0, 'status' => 'menunggu_pembayaran']);
+        $this->assertDatabaseHas('pembayaran', ['id' => $bill->id, 'status' => 'menunggu']);
+        $this->assertDatabaseCount('hari_reservasi', 1);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];

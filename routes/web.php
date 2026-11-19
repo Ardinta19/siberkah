@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\TransferReconciliationController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\CatalogController;
@@ -115,6 +116,9 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->name('admin.pesanan.show');
         Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->middleware('pending.transaction')->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
+        Route::get('rekonsiliasi', [TransferReconciliationController::class, 'index'])->name('admin.rekonsiliasi.index');
+        Route::post('rekonsiliasi/{mutasi}/pengembalian', [TransferReconciliationController::class, 'recordReturn'])
+            ->whereNumber('mutasi')->name('admin.rekonsiliasi.pengembalian');
         Route::post('pesanan/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('admin.pesanan.verify-payment');
         Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->middleware('pending.transaction')->name('admin.pesanan.reject-payment');
         Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->middleware('pending.transaction')->name('admin.pesanan.record-cash');
