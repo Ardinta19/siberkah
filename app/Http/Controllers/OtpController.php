@@ -25,7 +25,9 @@ class OtpController extends Controller
         $number = $request->validate(['nomor_wa' => ['required', 'string', 'regex:/^(?:0|\+?62)8\d{7,12}$/D']])['nomor_wa'];
         $number = preg_replace('/^(?:0|\+62)/', '62', $number);
         $config = config('services.whatsapp');
-        abort_unless($config['token'] && $config['phone_id'] && $config['template'] && $config['version'], 503, 'Layanan OTP belum dikonfigurasi.');
+        if (! ($config['token'] && $config['phone_id'] && $config['template'] && $config['version'])) {
+            return $this->unavailable($request);
+        }
         $quota->consume($number, (string) $request->ip());
 
         $code = (string) random_int(100000, 999999);
@@ -46,12 +48,23 @@ class OtpController extends Controller
             $sent = false;
         }
         $otp->update(['status_kirim' => $sent ? 'terkirim' : 'gagal']);
-        abort_unless($sent, 503, 'Kode belum dapat dikirim. Silakan coba lagi nanti.');
+        if (! $sent) {
+            return $this->unavailable($request);
+        }
         KodeOtp::where('nomor_wa', $number)->where('id', '<', $otp->id)
             ->whereNull('dipakai_pada')->update(['status_kirim' => 'diganti']);
         $request->session()->put('otp.challenge', $otp->id);
 
         return redirect()->route('otp.form')->with('status', 'Periksa kode pada WhatsApp Anda.');
+    }
+
+    private function unavailable(Request $request)
+    {
+        $message = 'Kode belum dapat dikirim. Coba lagi nanti. Jangan berikan kode OTP kepada siapa pun.';
+        $link = \App\Services\WhatsAppLinks::contact('Halo Admin, saya perlu bantuan masuk ke SIBERKAH.');
+        return $request->expectsJson()
+            ? response()->json(['message' => $message, 'bantuan' => $link], 503)->header('Cache-Control', 'no-store')
+            : response()->view('pelanggan.masuk', ['otpError' => $message, 'supportLink' => $link], 503)->header('Cache-Control', 'no-store');
     }
 
     public function verify(Request $request)

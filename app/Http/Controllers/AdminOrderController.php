@@ -39,6 +39,7 @@ class AdminOrderController extends BaseController
     public function show(int $id)
     {
         $order = Pesanan::with(['items', 'pembayaran'])->findOrFail($id);
+        $order->setAttribute('tautan_whatsapp', \App\Services\WhatsAppLinks::order($order, true));
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
 

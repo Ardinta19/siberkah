@@ -3,6 +3,10 @@
 @section('content')
 <section class="mx-auto my-12 grid max-w-md gap-5 p-5">
     <h1 class="text-2xl font-bold">Masuk dengan WhatsApp</h1>
+    @isset($otpError)
+        <p role="alert">{{ $otpError }}</p>
+        @if($supportLink)<a href="{{ $supportLink }}" rel="noopener noreferrer">Hubungi Admin lewat WhatsApp</a>@endif
+    @endisset
     @if($errors->any()) <p role="alert">{{ $errors->first() }}</p> @endif
     @if(session('status')) <p role="status">{{ session('status') }}</p> @endif
     @if(session('otp.challenge'))

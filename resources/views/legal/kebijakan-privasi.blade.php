@@ -22,7 +22,7 @@
             <p>Kami menggunakan data Anda untuk:</p>
             <ul>
                 <li>Memproses pesanan dan pembayaran</li>
-                <li>Mengirimkan notifikasi mengenai status pesanan</li>
+                <li>Memverifikasi akun dengan OTP dan menyediakan tautan percakapan pesanan yang dibuka secara manual</li>
                 <li>Meningkatkan layanan kami</li>
             </ul>
 

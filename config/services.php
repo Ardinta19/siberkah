@@ -15,6 +15,7 @@ return [
     */
 
     'whatsapp' => [
+        'admin_number' => env('WHATSAPP_ADMIN_NUMBER'),
         'token' => env('WHATSAPP_TOKEN'),
         'phone_id' => env('WHATSAPP_PHONE_ID'),
         'version' => env('WHATSAPP_GRAPH_VERSION'),
