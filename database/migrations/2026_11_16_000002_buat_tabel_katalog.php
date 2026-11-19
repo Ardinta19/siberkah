@@ -29,6 +29,7 @@ return new class extends Migration
             $tabel->unsignedInteger('harga_dasar')->default(0);
             $tabel->string('foto_utama')->nullable();
             $tabel->boolean('aktif')->default(true);
+            $tabel->unsignedSmallInteger('urutan')->default(0);
             $tabel->catatWaktu();
 
             $tabel->index(['kategori_id', 'aktif'], 'idx_produk_kategori_aktif');

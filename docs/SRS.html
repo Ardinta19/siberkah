@@ -1,0 +1,1297 @@
+Ini SRS SIBERKAH lengkap dari sampul sampai Lampiran B, dalam satu file HTML. Bahasanya saya buat lebih sederhana: label teknis seperti tanda kurung siku dan panah diganti kata biasa, dan angka batas ditulis dengan kata ("paling lambat", "paling banyak").
+
+**Cara memakai**
+1. Ganti seluruh isi file lama dengan kode di bawah, dari `<!DOCTYPE html>` sampai `</html>`. Kalau sebelumnya Anda sudah mengubah ukuran huruf atau warna di `<style>`, pertahankan `<style>` lama Anda dan salin hanya bagian `<body>`.
+2. Cetak lewat Ctrl+P, ukuran A4, aktifkan Background graphics, matikan Headers and footers.
+3. Nomor halaman di daftar isi masih `__`. Isi setelah PDF jadi, dengan mencocokkan nomor yang tampil di bawah tiap halaman.
+4. Semua tulisan berlatar kuning harus Anda isi: nama, NIM, dosen, program studi, tanggal observasi, versi PHP dan Laravel, serta alamat toko. Nama berkas bukti di Lampiran B juga berlatar kuning.
+
+**Yang berubah dari bagian 1 yang pernah saya kirim**
+- Nomor aturan bisnis dirapikan menjadi BR-01 sampai BR-26 tanpa lompatan.
+- Jumlah kebutuhan sudah dihitung ulang dari tabel: 73 kebutuhan, yaitu 43 Must, 22 Should, 2 Could, dan 6 Won't. Angka ini dicek ulang di Lampiran A.
+- Harga per produk belum dimasukkan karena K10 menyusul. Hanya "sewa mulai Rp75.000" yang dicantumkan, dan baris khusus untuk daftar harga ada di Lampiran B.
+- Tidak ada angka harga pasar yang dikutip sebagai fakta.
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SRS SIBERKAH 1.1-Draf</title>
+<style>
+@page{size:A4;margin:2.5cm 2.2cm;@bottom-center{content:counter(page);font:10pt Arial,sans-serif}}
+@page :first{@bottom-center{content:none}}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:"Times New Roman",Times,serif;font-size:12pt;line-height:1.3;text-align:justify;color:#000;margin:0}
+h1{font-size:12pt;text-transform:uppercase;font-weight:bold;margin:22pt 0 8pt;padding-bottom:2pt;border-bottom:1.5px solid #1F3864;break-after:avoid;text-align:left}
+h2{font-size:12pt;font-weight:bold;margin:14pt 0 4pt;break-after:avoid;text-align:left}
+h3{font-size:12pt;font-weight:bold;margin:10pt 0 3pt;break-after:avoid;text-align:left}
+p{margin:0 0 6pt}
+ul,ol{margin:2pt 0 6pt;padding-left:22pt}
+li{margin-bottom:1pt}
+table{width:100%;border-collapse:collapse;margin:6pt 0 10pt;font-size:11pt;text-align:left}
+th{background:#1F3864;color:#fff;padding:4pt 6pt;border:0.5pt solid #1F3864;text-align:center}
+td{padding:3pt 6pt;border:0.5pt solid #BFBFBF;vertical-align:top}
+thead{display:table-header-group}
+tr{break-inside:avoid}
+tbody tr:nth-child(even) td{background:#F2F2F2}
+table.k td:first-child{font-weight:bold}
+table.uc td:first-child{background:#DCE6F2;font-weight:bold;width:22%}
+table.uc tbody tr:nth-child(even) td:not(:first-child){background:#fff}
+table.uc td ol,table.uc td ul{margin:0;padding-left:16pt}
+table.req{font-size:10pt}
+table.req th:nth-child(1){width:11%}
+table.req th:nth-child(2){width:22%}
+table.req th:nth-child(3){width:9%}
+table.req th:nth-child(5){width:7%}
+table.req td:first-child{font-weight:bold}
+table.sm{font-size:10pt}
+.cover{margin-top:30pt}
+.cover td:first-child{background:#D9E5F5;font-weight:bold;width:30%}
+.cover tbody tr:nth-child(even) td:not(:first-child){background:#fff}
+.judul{text-align:center;font-weight:bold;font-size:14pt;margin-top:40pt;padding-bottom:6pt;border-bottom:1.5px solid #1F3864}
+.sub{text-align:center;margin-top:16pt;font-size:13pt}
+.pb{break-before:page}
+.isi{background:#FFF2A8}
+.catatan{border:1px solid #8EA9DB;background:#EEF3FB;padding:6pt 10pt;margin:8pt 0;font-size:11pt}
+.toc div{display:flex;align-items:baseline;margin-bottom:1.5pt}
+.toc i{flex:1;border-bottom:1px dotted #333;margin:0 4px}
+.toc .l1{font-weight:bold;margin-top:3pt}
+.toc .l2{padding-left:24pt}
+.tc{text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ================= SAMPUL ================= -->
+<div class="judul">DOKUMEN<br>SOFTWARE REQUIREMENTS SPECIFICATION<br>(SRS)</div>
+<div class="sub"><b>SIBERKAH</b><br>Sistem Informasi Berkah Kreatif<br>Pemesanan dan Penyewaan Papan Akrilik, Buket, dan Papan Bunga Berbasis Web</div>
+
+<table class="cover">
+<tbody>
+<tr><td>Nama Sistem</td><td>SIBERKAH (Sistem Informasi Berkah Kreatif)</td></tr>
+<tr><td>Nama Proyek</td><td>Sistem Pemesanan dan Penyewaan Berkah Kreatif Berbasis Web</td></tr>
+<tr><td>Nomor Proyek</td><td>001</td></tr>
+<tr><td>Versi Dokumen</td><td>1.1-Draf</td></tr>
+<tr><td>Tanggal Dibuat</td><td>14 November 2026</td></tr>
+<tr><td>Tanggal Observasi</td><td>14 November 2026</td></tr>
+<tr><td>Pengembang</td><td>Ardinata Saputra (701240133)</td></tr>
+<tr><td>Dosen Pembimbing</td><td>M. Taufik Isti Nugraha, M.Kom</td></tr>
+<tr><td>Program Studi</td><td>Sistem Informasi, Kelas A</td></tr>
+<tr><td>Institusi</td><td>UIN Sulthan Thaha Saifuddin Jambi</td></tr>
+<tr><td>Dokumen Acuan</td><td>SRS versi 1 oleh Rifa Nadliaul Jannah (701240136), UIN STS Jambi, 2026 (dengan izin); Dikerjakan bersama tim: Ardinata Saputra (701240133), Muhammad Alparabi (701240131), Muhammad Zaki Akbar (701240135); Dibimbing oleh M. Taufik Isti Nugraha, M.Kom</td></tr>
+<tr><td>Versi PHP</td><td>8.5.11</td></tr>
+<tr><td>Versi Laravel</td><td>13.42.0</td></tr>
+<tr><td>Alamat Toko</td><td>Jl. Raya Jambi - Muara Bulian No. 123, Jambi (perlu konfirmasi pemilik)</td></tr>
+<tr><td>Target Rilis</td><td>30 November 2026</td></tr>
+<tr><td>Status Validasi Pemilik</td><td>Belum dikonfirmasi</td></tr>
+</tbody>
+</table>
+
+<h3>Riwayat Revisi</h3>
+<table class="k sm">
+<thead><tr><th>Versi</th><th>Tanggal</th><th>Perubahan</th></tr></thead>
+<tbody>
+<tr><td>1.0-Draf</td><td>14 Nov 2026</td><td>Draf pertama, disusun dari SRS versi 1 dan pengamatan awal.</td></tr>
+<tr><td>1.1-Draf</td><td>14 Nov 2026</td><td>Menggabungkan tambahan kebutuhan dan seluruh hasil pengamatan pengembang. Dokumen disusun ulang secara utuh.</td></tr>
+<tr><td>1.1</td><td>16 November 2026</td><td>Pemeriksaan akhir oleh pengembang.</td></tr>
+<tr><td>1.1-Final</td><td>16 November 2026</td><td>Pengesahan oleh pemilik usaha, bila akses ke pemilik tersedia.</td></tr>
+</tbody>
+</table>
+
+<!-- ================= DAFTAR ISI ================= -->
+<div class="pb"></div>
+<h1 style="border:none;text-align:center;font-size:14pt">DAFTAR ISI</h1>
+<div class="toc">
+<div class="l1"><span>DAFTAR ISI</span><i></i><b>2</b></div>
+<div class="l1"><span>1. Pendahuluan</span><i></i><b>__</b></div>
+<div class="l2"><span>1.1 Tujuan Dokumen</span><i></i><b>__</b></div>
+<div class="l2"><span>1.2 Ruang Lingkup Sistem</span><i></i><b>__</b></div>
+<div class="l2"><span>1.3 Definisi, Istilah, dan Singkatan</span><i></i><b>__</b></div>
+<div class="l2"><span>1.4 Referensi</span><i></i><b>__</b></div>
+<div class="l2"><span>1.5 Konvensi Dokumen</span><i></i><b>__</b></div>
+<div class="l1"><span>2. Gambaran Umum Sistem</span><i></i><b>__</b></div>
+<div class="l2"><span>2.1 Perspektif Produk</span><i></i><b>__</b></div>
+<div class="l2"><span>2.2 Fungsi Produk</span><i></i><b>__</b></div>
+<div class="l2"><span>2.3 Karakteristik Pengguna</span><i></i><b>__</b></div>
+<div class="l2"><span>2.4 Asumsi dan Ketergantungan</span><i></i><b>__</b></div>
+<div class="l1"><span>3. Kebutuhan Fungsional</span><i></i><b>__</b></div>
+<div class="l2"><span>3.1 SCP-01 Masuk dengan OTP dan Pengaturan Peran</span><i></i><b>__</b></div>
+<div class="l2"><span>3.2 SCP-02 Katalog dan Pencarian Berdasarkan Tanggal</span><i></i><b>__</b></div>
+<div class="l2"><span>3.3 SCP-03 Pemesanan dan Pencegahan Pesanan Ganda</span><i></i><b>__</b></div>
+<div class="l2"><span>3.4 SCP-04 Pembayaran dan Verifikasi</span><i></i><b>__</b></div>
+<div class="l2"><span>3.5 SCP-05 Pelacakan Pesanan dan Tautan WhatsApp</span><i></i><b>__</b></div>
+<div class="l2"><span>3.6 SCP-06 Operasional Harian</span><i></i><b>__</b></div>
+<div class="l2"><span>3.7 SCP-07 Pengelolaan Katalog dan Pengaturan</span><i></i><b>__</b></div>
+<div class="l2"><span>3.8 SCP-08 Rekap dan Laporan</span><i></i><b>__</b></div>
+<div class="l2"><span>3.9 Alur Status Pesanan</span><i></i><b>__</b></div>
+<div class="l2"><span>3.10 Aturan Bisnis</span><i></i><b>__</b></div>
+<div class="l2"><span>3.11 Matriks Peran dan Hak Akses</span><i></i><b>__</b></div>
+<div class="l1"><span>4. Kebutuhan Non-Fungsional</span><i></i><b>__</b></div>
+<div class="l2"><span>4.1 Performa</span><i></i><b>__</b></div>
+<div class="l2"><span>4.2 Keamanan</span><i></i><b>__</b></div>
+<div class="l2"><span>4.3 Kemudahan Penggunaan</span><i></i><b>__</b></div>
+<div class="l2"><span>4.4 Keandalan</span><i></i><b>__</b></div>
+<div class="l2"><span>4.5 Kompatibilitas dan Lokalisasi</span><i></i><b>__</b></div>
+<div class="l2"><span>4.6 Kualitas Kode</span><i></i><b>__</b></div>
+<div class="l1"><span>5. Design Sistem</span><i></i><b>__</b></div>
+<div class="l2"><span>5.1 Arsitektur Sistem</span><i></i><b>__</b></div>
+<div class="l2"><span>5.2 Entity Relationship Diagram (ERD)</span><i></i><b>__</b></div>
+<div class="l2"><span>5.3 Use Case Diagram</span><i></i><b>__</b></div>
+<div class="l2"><span>5.4 Activity Diagram dan Alur Kerja</span><i></i><b>__</b></div>
+<div class="l2"><span>5.5 Design Antarmuka (UI/UX)</span><i></i><b>__</b></div>
+<div class="l1"><span>6. Batasan Sistem</span><i></i><b>__</b></div>
+<div class="l1"><span>7. Rencana Implementasi</span><i></i><b>__</b></div>
+<div class="l2"><span>7.1 Jadwal Pengerjaan</span><i></i><b>__</b></div>
+<div class="l2"><span>7.2 Kriteria Selesai dan Pengujian</span><i></i><b>__</b></div>
+<div class="l2"><span>7.3 Cara Menjalankan di Komputer Lokal</span><i></i><b>__</b></div>
+<div class="l2"><span>7.4 Rencana Peralihan, Pemangkasan Lingkup, dan Risiko</span><i></i><b>__</b></div>
+<div class="l1"><span>Lampiran A Matriks Keterlacakan</span><i></i><b>__</b></div>
+<div class="l1"><span>Lampiran B Register Nilai Bisnis dan Status Validasi</span><i></i><b>__</b></div>
+</div>
+
+<!-- ================= BAB 1 ================= -->
+<div class="pb"></div>
+<h1 style="margin-top:0">1. Pendahuluan</h1>
+
+<h2>1.1 Tujuan Dokumen</h2>
+<p>Dokumen ini menjelaskan apa saja yang harus bisa dilakukan oleh SIBERKAH, sistem informasi untuk Berkah Kreatif. Berkah Kreatif adalah usaha di Jambi yang menyewakan papan akrilik, menjual dan merangkai buket, serta melayani bunga wisuda dan papan bunga. Dokumen ini menjadi pegangan pengembang saat membangun sistem, sekaligus bahan pemeriksaan bagi pemilik usaha dan dosen pembimbing.</p>
+<p>Dokumen ini disusun dari SRS versi 1 karya Rifa Nadliaul Jannah (701240136) dan dari pengamatan langsung pengembang pada akun Instagram dan TikTok @berkahkreatif_. Dibandingkan versi 1, dokumen ini menambahkan lima hal: tingkat prioritas serta kriteria penerimaan yang bisa diuji untuk setiap kebutuhan, masuk memakai nomor HP dan OTP, ketersediaan yang dihitung per tanggal dan per unit, aturan bisnis serta alur status pesanan yang tertulis jelas, dan tabel keterlacakan antara kebutuhan, pengujian, dan aturan.</p>
+<p>Pembaca yang dituju adalah pengembang, pemilik Berkah Kreatif sebagai calon pengguna utama, admin dan staf yang kelak memakai sistem, serta dosen pembimbing.</p>
+<div class="catatan"><b>Status validasi.</b> Seluruh angka dan aturan bisnis dalam dokumen ini berasal dari pengamatan dan keputusan pengembang. Pemilik usaha belum mengonfirmasinya. Karena itu semua angka disimpan sebagai pengaturan yang bisa diubah tanpa mengubah kode program. Daftar lengkap beserta status buktinya ada di Lampiran B.</div>
+
+<h2>1.2 Ruang Lingkup Sistem</h2>
+<p>SIBERKAH adalah sistem berbasis web yang memindahkan proses pemesanan Berkah Kreatif dari percakapan WhatsApp ke satu tempat yang rapi. Pengunjung dapat melihat katalog tanpa login. Saat akan memesan, pelanggan masuk memakai nomor HP aktif dan kode OTP, lalu memesan langsung di sistem. Sistem memeriksa ketersediaan per tanggal, menahan unit agar tidak dipesan dua orang sekaligus, dan menampilkan petunjuk pembayaran. Pembayaran pada versi pertama diverifikasi manual oleh admin dengan bantuan kode unik, tanpa payment gateway.</p>
+<p>Produk yang dilayani adalah sebagai berikut.</p>
+<ul>
+<li><b>Disewakan:</b> papan akrilik berdiri (bulat 60 cm dan persegi) dalam tiga warna, serta papan bunga besar.</li>
+<li><b>Dijual:</b> papan akrilik meja dan papan mini.</li>
+<li><b>Dibuat sesuai pesanan (custom):</b> buket segar, buket uang, buket snack, dan bunga wisuda.</li>
+<li><b>Stok siap jual:</b> buket bunga artifisial dan buket pita satin. Jenis ini juga bisa dipesan custom.</li>
+</ul>
+<p>Sistem terdiri atas delapan modul yang saling terhubung: masuk dengan OTP dan pengaturan peran, katalog dan pencarian tanggal, pemesanan dengan pencegahan pesanan ganda, pembayaran dan verifikasi, pelacakan pesanan dan tautan WhatsApp, operasional harian, pengelolaan katalog dan pengaturan, serta rekap dan laporan. Hal-hal yang tidak dikerjakan pada versi ini tercantum di Bab 6.</p>
+<div class="catatan"><b>Catatan.</b> Uji penerimaan oleh pemilik dan admin hanya bisa dilakukan bila akses ke mereka tersedia. Bila tidak, pengujian dilakukan dengan skenario dan data contoh, dan hasilnya dilaporkan apa adanya tanpa mengklaim penerapan nyata.</div>
+
+<h2>1.3 Definisi, Istilah, dan Singkatan</h2>
+<table class="k">
+<thead><tr><th style="width:24%">Istilah</th><th>Pengertian</th></tr></thead>
+<tbody>
+<tr><td>SIBERKAH</td><td>Sistem Informasi Berkah Kreatif, nama sistem yang dikembangkan.</td></tr>
+<tr><td>SRS</td><td>Software Requirements Specification, dokumen yang mencatat kebutuhan perangkat lunak.</td></tr>
+<tr><td>SCP</td><td>Scope item, kode untuk tiap modul dalam ruang lingkup.</td></tr>
+<tr><td>UC</td><td>Use case, satu tujuan yang ingin dicapai pengguna lewat sistem.</td></tr>
+<tr><td>BR</td><td>Business rule, aturan bisnis yang harus dipatuhi sistem.</td></tr>
+<tr><td>MoSCoW</td><td>Cara menentukan prioritas: Must (wajib), Should (sebaiknya ada), Could (bila waktu cukup), Won't (tidak dikerjakan pada versi ini).</td></tr>
+<tr><td>OTP</td><td>One-time password, kode sekali pakai yang dikirim ke nomor HP untuk membuktikan nomor itu aktif.</td></tr>
+<tr><td>Unit sewa</td><td>Satu benda fisik yang disewakan, misalnya satu papan dengan kode AKR-003.</td></tr>
+<tr><td>Varian</td><td>Pilihan tetap pada satu produk, misalnya ukuran dan warna papan.</td></tr>
+<tr><td>Opsi</td><td>Pilihan tambahan pada pesanan, misalnya tema warna bunga, teks, atau jumlah lembar uang.</td></tr>
+<tr><td>Pesanan ganda</td><td>Keadaan ketika satu unit yang sama terjual atau tersewa untuk dua pesanan pada tanggal yang sama (double booking).</td></tr>
+<tr><td>Penahanan</td><td>Unit ditahan sementara untuk pelanggan yang sudah memesan tetapi belum membayar. Penahanan dilepas otomatis bila waktunya habis.</td></tr>
+<tr><td>Kode unik</td><td>Angka tiga digit yang ditambahkan ke jumlah tagihan supaya admin mudah mengenali transfer yang masuk.</td></tr>
+<tr><td>Lead time</td><td>Jarak waktu minimal antara hari memesan dan hari acara.</td></tr>
+<tr><td>Hari yang sama</td><td>Pesanan yang diambil atau dipakai pada hari yang sama dengan hari memesan.</td></tr>
+<tr><td>Custom</td><td>Produk yang dibuat setelah ada pesanan, sesuai pilihan pelanggan.</td></tr>
+<tr><td>Siap jual</td><td>Produk yang sudah ada stoknya dan bisa langsung dibeli.</td></tr>
+<tr><td>Salinan harga</td><td>Harga dan pilihan yang disimpan di dalam pesanan, sehingga perubahan harga di katalog tidak mengubah pesanan lama.</td></tr>
+<tr><td>DP</td><td>Uang muka, yaitu sebagian pembayaran di awal.</td></tr>
+<tr><td>QRIS</td><td>Standar kode QR pembayaran di Indonesia. Pada versi ini QRIS statis dan diverifikasi manual.</td></tr>
+<tr><td>Zona antar</td><td>Pembagian jarak pengantaran yang menentukan ongkos antar.</td></tr>
+<tr><td>WIB</td><td>Waktu Indonesia Barat. Sistem memakai zona waktu Asia/Jakarta.</td></tr>
+<tr><td>UAT</td><td>User acceptance test, pengujian oleh pengguna akhir.</td></tr>
+<tr><td>ERD</td><td>Entity relationship diagram, gambar hubungan antartabel basis data.</td></tr>
+<tr><td>MVC</td><td>Model, View, Controller, pola penyusunan program yang memisahkan data, tampilan, dan pengendali.</td></tr>
+<tr><td>ORM</td><td>Object relational mapping, teknik menghubungkan objek program dengan tabel basis data (Eloquent pada Laravel).</td></tr>
+<tr><td>Peran</td><td>Jenis akses pengguna: Pelanggan, Owner, Admin CS dan Keuangan, serta Staf Produksi dan Kurir.</td></tr>
+</tbody>
+</table>
+
+<h2>1.4 Referensi</h2>
+<ul>
+<li>SRS versi 1 sistem pemesanan Berkah Kreatif, Rifa Nadliaul Jannah (701240136), UIN STS Jambi, 2026. Dipakai sebagai dasar dengan pengakuan kepada penulisnya.</li>
+<li>ISO/IEC/IEEE 29148:2018, Systems and software engineering, Life cycle processes, Requirements engineering.</li>
+<li>Pengamatan akun Instagram dan TikTok @berkahkreatif_, tanggal pengamatan 14 November 2026.</li>
+<li>Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi.</li>
+<li>Web Content Accessibility Guidelines (WCAG) 2.1 tingkat AA.</li>
+<li>Dokumentasi Laravel, https://laravel.com/docs.</li>
+<li>SRS SIMALUN (Azka Laundry, 13 Mei 2026), dipakai hanya sebagai acuan susunan dokumen.</li>
+<li>Bimbingan dan validasi oleh M. Taufik Isti Nugraha, M.Kom (Dosen Pembimbing, UIN STS Jambi).</li>
+</ul>
+
+<h2>1.5 Konvensi Dokumen</h2>
+<ul>
+<li><b>Status nilai bisnis.</b> Setiap angka atau aturan diberi salah satu status: <i>Pengamatan</i> (dilihat langsung oleh pengembang), <i>Asumsi</i> (dugaan yang perlu dipastikan), <i>Keputusan perancang</i> (diputuskan pengembang karena alasan teknis atau keamanan), <i>Belum jelas</i> (belum ada jawaban), dan <i>Dikutip</i> (diambil dari dokumen lain).</li>
+<li><b>Prioritas.</b> Dokumen ini memuat 73 kebutuhan fungsional: 43 Must, 22 Should, 2 Could, dan 6 Won't. Kebutuhan Must harus selesai sebelum 30 November 2026.</li>
+<li><b>Penomoran.</b> SCP untuk modul, UC untuk use case, BR untuk aturan bisnis, T untuk transisi status, NFR untuk kebutuhan non-fungsional, R untuk risiko. Kebutuhan fungsional memakai awalan sesuai topik, misalnya AUTH, KAT, PSN, BYR, OPS.</li>
+<li><b>Uang dan waktu.</b> Semua uang berupa bilangan bulat rupiah. Semua waktu memakai WIB (Asia/Jakarta).</li>
+<li><b>Kode jenis uji.</b> U untuk uji unit, F untuk uji fitur, K untuk uji konkurensi (banyak permintaan bersamaan), P untuk uji performa, M untuk uji manual.</li>
+</ul>
+
+<!-- ================= BAB 2 ================= -->
+<h1>2. Gambaran Umum Sistem</h1>
+
+<h2>2.1 Perspektif Produk</h2>
+<p>SIBERKAH berdiri sendiri sebagai situs web yang dibuka lewat browser di ponsel maupun komputer. Sistem ini menggantikan proses yang sekarang berjalan lewat percakapan WhatsApp, yaitu menanyakan ketersediaan, mencatat pesanan, dan menagih pembayaran secara manual. Tampilannya dirancang mulai dari layar ponsel terlebih dahulu (mobile-first), karena pelanggan datang dari tautan Instagram dan TikTok.</p>
+<p>Sistem dibangun dengan Laravel dalam pola MVC berbentuk satu aplikasi utuh (monolit). Logika bisnis penting ditaruh pada kelas Action tersendiri, bukan di controller. Data disimpan di MySQL. Tampilan memakai Blade, Alpine.js, dan Tailwind CSS. Pesanan yang masuk lewat WhatsApp tetap diterima, lalu dimasukkan oleh admin lewat formulir pesanan manual. WhatsApp hanya dipakai sebagai saluran komunikasi lewat tautan, bukan sebagai sistem otomatis.</p>
+
+<h2>2.2 Fungsi Produk</h2>
+<p>Secara garis besar SIBERKAH memiliki delapan fungsi utama:</p>
+<ul>
+<li>Mengatur masuk pelanggan dengan nomor HP dan OTP, serta akses staf berdasarkan peran.</li>
+<li>Menampilkan katalog tanpa login dan mencari produk sewa yang masih tersedia pada tanggal tertentu.</li>
+<li>Memproses pemesanan langsung di sistem dan menjamin satu unit tidak dipesan dua kali pada tanggal yang sama.</li>
+<li>Menyediakan petunjuk pembayaran dengan kode unik dan membantu admin memverifikasinya.</li>
+<li>Menampilkan status pesanan kepada pelanggan dan menyediakan tautan WhatsApp berisi pesan yang sudah terisi.</li>
+<li>Membantu kegiatan harian: antrean produksi, agenda antar dan jemput, serah terima, pengembalian, denda, dan pesanan manual.</li>
+<li>Memungkinkan Owner mengelola produk, unit sewa, harga, dan pengaturan bisnis.</li>
+<li>Merangkum pesanan dan pendapatan per periode, serta menyediakan data anonim untuk keperluan penelitian.</li>
+</ul>
+
+<h2>2.3 Karakteristik Pengguna</h2>
+<table class="k">
+<thead><tr><th style="width:15%">Peran</th><th>Deskripsi</th><th>Keahlian Teknis</th><th>Akses Utama</th></tr></thead>
+<tbody>
+<tr><td>Pelanggan</td><td>Mahasiswa berusia 18 sampai 24 tahun, keluarga wisudawan, pengurus BEM dan HIMA, serta instansi.</td><td>Terbiasa memakai ponsel dan media sosial, tidak butuh keahlian khusus.</td><td>Melihat katalog, memesan, membayar, melacak pesanan, mengelola profil.</td></tr>
+<tr><td>Owner</td><td>Pemilik usaha yang memutuskan harga, katalog, dan pengecualian aturan.</td><td>Pengguna dasar komputer dan ponsel.</td><td>Semua fitur, termasuk rekap keuangan, pengaturan, dan persetujuan pengecualian.</td></tr>
+<tr><td>Admin CS dan Keuangan</td><td>Pihak yang melayani pelanggan dan memeriksa pembayaran sehari-hari.</td><td>Terbiasa memakai WhatsApp dan aplikasi perbankan di ponsel.</td><td>Verifikasi pembayaran, pesanan manual, jadwal desain dan pengiriman, pencatatan refund sesuai hasil hitung sistem.</td></tr>
+<tr><td>Staf Produksi dan Kurir</td><td>Karyawan yang merangkai pesanan serta mengantar dan menjemput barang.</td><td>Pengguna ponsel dasar dengan kamera.</td><td>Antrean rangkai, agenda antar dan jemput, foto serah terima dan pengembalian, status produksi.</td></tr>
+</tbody>
+</table>
+
+<h2>2.4 Asumsi dan Ketergantungan</h2>
+<ul>
+<li>Pelanggan memiliki internet, browser yang masih diperbarui, dan nomor HP aktif yang bisa menerima pesan.</li>
+<li>Penyedia pengiriman OTP sudah dipilih paling lambat 19 November 2026. Selama pengembangan di komputer sendiri, OTP hanya ditulis ke berkas log lokal.</li>
+<li>Hosting dan domain sudah diputuskan paling lambat 22 November 2026 dengan biaya tidak lebih dari Rp500.000 per bulan, dan hosting itu mendukung tugas terjadwal setiap menit serta antrean.</li>
+<li>Admin menandai sendiri palet bunga artifisial yang sedang habis, karena stok bahan tidak dihitung sistem.</li>
+<li>Staf produksi menandai pesanan sebagai Sedang Diproduksi dan Siap lewat ponsel mereka.</li>
+<li>Pembayaran diperiksa manual oleh admin dengan membandingkan mutasi rekening atau QRIS.</li>
+<li>Foto produk asli tersedia sebelum katalog diisi, tidak memakai foto stok.</li>
+<li>Staf memiliki ponsel dengan kamera untuk foto serah terima dan pengembalian.</li>
+<li>Pemilik bersedia memeriksa angka bisnis di Lampiran B bila akses ke pemilik terbuka.</li>
+</ul>
+
+<!-- ================= BAB 3 ================= -->
+<h1>3. Kebutuhan Fungsional</h1>
+<p>Bab ini menjelaskan semua hal yang harus bisa dilakukan sistem. Setiap modul memuat deskripsi fungsi, aktor, skenario use case, dan tabel kebutuhan. Tabel kebutuhan mencantumkan prioritas, kriteria penerimaan yang bisa diuji, dan jenis ujinya.</p>
+
+<h2>3.1 SCP-01 Masuk dengan OTP dan Pengaturan Peran</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Pelanggan masuk memakai nomor HP dan kode OTP, tanpa kata sandi. Staf masuk memakai email dan sandi lewat halaman terpisah. Setiap peran hanya bisa membuka halaman yang menjadi haknya.</p>
+<h3>Aktor: Pelanggan, Owner, Admin, Staf Produksi dan Kurir</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-03 Masuk dengan OTP, UC-04 Keluar, UC-10 Masuk Staf, UC-23 Kelola Akun Staf, UC-27 Kelola Profil dan Hapus Akun</td></tr>
+<tr><td>Aktor Utama</td><td>Pelanggan (UC-03, UC-04, UC-27), Owner, Admin, dan Staf (UC-10, UC-04), Owner meminta UC-23 dan pengembang menjalankannya</td></tr>
+<tr><td>Precondition</td><td>Untuk UC-03: pelanggan punya nomor HP aktif. Untuk UC-10: akun staf sudah dibuat.</td></tr>
+<tr><td>Main Flow Pelanggan</td><td><ol>
+<li>Pelanggan menekan Masuk saat akan memesan atau membuka Pesanan Saya.</li>
+<li>Pelanggan mengisi nomor HP. Sistem mengubahnya ke format 628 dan seterusnya.</li>
+<li>Sistem mengirim kode OTP enam digit lewat penyedia pesan.</li>
+<li>Pelanggan memasukkan kode.</li>
+<li>Sistem memeriksa bahwa kode benar, belum kedaluwarsa, dan belum dipakai.</li>
+<li>Jika nomor baru, sistem membuat akun, lalu pelanggan mengisi nama dan menyetujui Kebijakan Privasi.</li>
+<li>Pelanggan kembali ke halaman yang tadi dibuka.</li>
+</ol></td></tr>
+<tr><td>Main Flow Staf</td><td><ol>
+<li>Staf membuka halaman masuk staf dan mengisi email serta sandi.</li>
+<li>Sistem memeriksa data. Pada masuk pertama, sistem meminta sandi diganti.</li>
+<li>Sistem mengarahkan staf ke dasbor sesuai perannya.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Kode salah: sistem menampilkan "Kode tidak sesuai" dan sisa percobaan. Setelah lima kali salah, kode hangus.</li>
+<li>Kode kedaluwarsa: pelanggan diminta meminta kode baru setelah jeda 60 detik.</li>
+<li>Permintaan terlalu sering: sistem meminta pelanggan menunggu.</li>
+<li>Pesan OTP gagal terkirim: pelanggan melihat tombol untuk menghubungi Admin lewat WhatsApp.</li>
+<li>Sandi staf salah: pesan umum "Email atau sandi tidak sesuai" tanpa menyebut mana yang keliru.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Pengguna berhasil masuk dan hanya melihat menu sesuai perannya.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>AUTH-01</td><td>Masuk dengan nomor HP dan OTP</td><td class="tc">Must</td><td>Nomor diubah ke format 628 dan satu nomor hanya punya satu akun. Pelanggan baru dibuatkan akun otomatis setelah kode benar.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-02</td><td>Keamanan kode OTP</td><td class="tc">Must</td><td>Kode enam digit, disimpan dalam bentuk hash, berlaku 5 menit, hanya sekali pakai, dan hangus setelah 5 kali salah.</td><td class="tc">U</td></tr>
+<tr><td>AUTH-03</td><td>Pembatasan permintaan OTP</td><td class="tc">Must</td><td>Paling banyak 3 permintaan dalam 15 menit untuk setiap nomor dan setiap alamat IP. Kirim ulang baru bisa setelah jeda 60 detik.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-05</td><td>Sesi dan keluar</td><td class="tc">Must</td><td>Pelanggan bisa keluar kapan saja. Setelah keluar, halaman yang membutuhkan login tidak dapat dibuka lagi.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-07</td><td>Peran dan hak akses</td><td class="tc">Must</td><td>Setiap peran hanya membuka halaman miliknya. Halaman tanpa izin menghasilkan respons 403, dan pesanan milik orang lain menghasilkan respons 404.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-08</td><td>Masuk staf yang aman</td><td class="tc">Must</td><td>Sandi minimal 10 karakter, paling banyak 5 percobaan per menit, sesi berakhir setelah 120 menit tidak aktif, wajib ganti sandi saat masuk pertama, dan tidak ada akun bawaan.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-09</td><td>Nama dan persetujuan saat masuk pertama</td><td class="tc">Must</td><td>Pelanggan mengisi nama dan menyetujui kebijakan privasi. Versi dan waktu persetujuan tersimpan.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-06</td><td>Ubah nama di profil</td><td class="tc">Should</td><td>Pelanggan dapat mengubah nama. Nomor HP tidak dapat diubah pada versi ini.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-10</td><td>Hapus akun</td><td class="tc">Should</td><td>Data pribadi diganti data anonim, sedangkan riwayat transaksi tetap ada untuk pembukuan. Penghapusan ditolak bila masih ada pesanan aktif.</td><td class="tc">F</td></tr>
+<tr><td>AUTH-11</td><td>Cadangan saat OTP gagal</td><td class="tc">Should</td><td>Bila pesan OTP gagal terkirim, pelanggan melihat tombol untuk menghubungi Admin lewat WhatsApp.</td><td class="tc">M</td></tr>
+<tr><td>AKN-02</td><td>Akun staf lewat perintah artisan</td><td class="tc">Should</td><td>Akun staf dibuat dan dinonaktifkan lewat perintah artisan oleh pengembang atas permintaan Owner. Halaman kelola akun belum ada pada versi ini.</td><td class="tc">M</td></tr>
+</tbody>
+</table>
+
+<h2>3.2 SCP-02 Katalog dan Pencarian Berdasarkan Tanggal</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Siapa pun dapat melihat katalog tanpa login. Login baru diminta ketika pengunjung menekan tombol Pesan. Pengunjung bisa mengisi tanggal acara, dan sistem hanya menampilkan produk sewa yang masih punya unit kosong pada tanggal tersebut. Setiap jenis produk berperilaku berbeda: produk sewa meminta tanggal, produk custom meminta pilihan dan teks, produk siap jual meminta jumlah.</p>
+<h3>Aktor: Pengunjung dan Pelanggan</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-01 Lihat Katalog, UC-02 Cari Berdasarkan Tanggal</td></tr>
+<tr><td>Aktor Utama</td><td>Pengunjung dan Pelanggan</td></tr>
+<tr><td>Precondition</td><td>Tidak ada. Login tidak diperlukan.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Pengunjung membuka beranda atau halaman katalog.</li>
+<li>Pengunjung memilih kategori produk.</li>
+<li>Pengunjung membuka detail produk yang memuat foto, deskripsi, harga mulai dari, varian, dan opsi.</li>
+<li>Untuk produk sewa, pengunjung mengisi tanggal acara.</li>
+<li>Sistem menampilkan tiap varian sebagai tersedia atau habis berdasarkan jumlah unit kosong pada tanggal itu.</li>
+<li>Pengunjung menekan Pesan. Bila belum login, pengunjung diarahkan ke UC-03 lalu kembali ke halaman ini.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Tanggal lebih awal dari tanggal paling awal yang boleh dipesan: sistem menampilkan tanggal paling awal.</li>
+<li>Tanggal ditutup oleh toko: sistem memberi tahu bahwa toko tutup pada tanggal itu.</li>
+<li>Tidak ada unit kosong: sistem menyarankan paling banyak tiga tanggal kosong terdekat dalam 14 hari.</li>
+<li>Stok buket siap jual habis: produk diberi label Habis.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Tidak ada data yang berubah. Proses ini hanya membaca.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>KAT-01</td><td>Katalog tanpa login</td><td class="tc">Must</td><td>Beranda, daftar produk, dan detail produk bisa dibuka tanpa login. Hanya produk aktif yang tampil.</td><td class="tc">F</td></tr>
+<tr><td>KAT-02</td><td>Cari berdasarkan tanggal</td><td class="tc">Must</td><td>Hasil hanya memuat varian yang punya minimal satu unit kosong pada tanggal itu. Waktu respons paling lama 500 milidetik untuk 200 produk dan 5.000 baris reservasi.</td><td class="tc">P</td></tr>
+<tr><td>KAT-06</td><td>Perilaku tiap jenis produk</td><td class="tc">Must</td><td>Produk sewa meminta tanggal, produk custom meminta pilihan dan teks, produk siap jual meminta jumlah. Isian dan tombol mengikuti jenis produk.</td><td class="tc">F</td></tr>
+<tr><td>KAT-07</td><td>Varian dan opsi</td><td class="tc">Must</td><td>Produk dapat memiliki varian (ukuran, warna) dan opsi berjenis pilihan, teks dengan batas karakter, atau per satuan. Harga tambahan dihitung oleh server.</td><td class="tc">F</td></tr>
+<tr><td>LGL-01</td><td>Syarat Sewa dan Kebijakan Privasi</td><td class="tc">Must</td><td>Kedua halaman bisa dibuka dari bagian bawah situs dan dari langkah konfirmasi pesanan. Isinya memuat aturan denda, refund, dan data pribadi yang dipakai.</td><td class="tc">M</td></tr>
+<tr><td>KAT-03</td><td>Filter kategori</td><td class="tc">Should</td><td>Pengunjung dapat menyaring produk berdasarkan kategori dan mengurutkan berdasarkan harga.</td><td class="tc">F</td></tr>
+<tr><td>KAT-04</td><td>Halaman detail yang lengkap</td><td class="tc">Should</td><td>Detail produk menampilkan galeri foto, teks pengganti gambar, dan keterangan ketersediaan.</td><td class="tc">F</td></tr>
+<tr><td>KAT-05</td><td>Saran tanggal terdekat</td><td class="tc">Should</td><td>Bila tanggal penuh, sistem menyarankan paling banyak 3 tanggal kosong terdekat dalam rentang 14 hari.</td><td class="tc">F</td></tr>
+<tr><td>KON-01</td><td>Kontak dan lokasi</td><td class="tc">Should</td><td>Halaman kontak memuat alamat, tautan peta, jam buka, dan tombol WhatsApp.</td><td class="tc">M</td></tr>
+<tr><td>ANI-01</td><td>Animasi yang membantu</td><td class="tc">Should</td><td>Animasi dipakai untuk menjelaskan perubahan tampilan, bukan sekadar hiasan. Semua animasi mati bila perangkat meminta gerakan dikurangi.</td><td class="tc">M</td></tr>
+</tbody>
+</table>
+
+<h2>3.3 SCP-03 Pemesanan dan Pencegahan Pesanan Ganda</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Pelanggan memesan langsung di sistem. Saat pesanan dibuat, sistem dalam satu transaksi basis data memeriksa kapasitas, mengunci satu unit kosong pada tanggal yang dipilih, membuat nomor pesanan, menyimpan salinan harga, dan membuat tagihan. Jaminan terakhir terhadap pesanan ganda adalah batasan unik di basis data pada pasangan unit dan tanggal. Pada versi ini satu pesanan memuat satu produk.</p>
+<h3>Aktor: Pelanggan, Admin, Owner</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-05 Buat Pesanan, UC-06 Isi Pilihan dan Ucapan, UC-17 Batalkan Pesanan, UC-28 Aktifkan Kembali Pesanan Kedaluwarsa</td></tr>
+<tr><td>Aktor Utama</td><td>Pelanggan (UC-05, UC-06, UC-17), Admin atau Owner (UC-28)</td></tr>
+<tr><td>Precondition</td><td>Pelanggan sudah masuk dengan OTP dan produk yang dipilih tersedia.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Pelanggan memilih tanggal (untuk produk sewa), varian, opsi, dan jumlah.</li>
+<li>Pelanggan mengisi teks papan: judul, nama penerima, dan nama pengirim. Pratinjau berubah saat pelanggan mengetik.</li>
+<li>Pelanggan memilih cara serah: diantar (alamat, titik peta, zona) atau diambil sendiri (khusus buket).</li>
+<li>Sistem menghitung harga di server dan menampilkan ringkasan: harga, ongkos antar, dan total.</li>
+<li>Bila total sama dengan atau lebih dari Rp250.000, pelanggan memilih DP 50 persen atau lunas.</li>
+<li>Pelanggan menyetujui Syarat Sewa dan menekan Pesan.</li>
+<li>Dalam satu transaksi, sistem memeriksa kapasitas, mengunci unit, membuat nomor pesanan, menyimpan salinan harga dan opsi, menetapkan batas waktu penahanan, dan membuat tagihan dengan kode unik.</li>
+<li>Sistem menampilkan halaman pembayaran (SCP-04).</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Unit terakhir diambil orang lain pada saat yang sama: sistem menampilkan "Tanggal ini baru saja terisi" disertai tanggal alternatif.</li>
+<li>Stok siap jual habis atau kapasitas produksi penuh: pesanan ditolak dengan penjelasan.</li>
+<li>Pesan setelah pukul 15.00 WIB: tanggal paling awal bergeser satu hari.</li>
+<li>Alamat di luar zona layanan: sistem menyatakan belum tersedia dan menyarankan menghubungi toko.</li>
+<li>UC-17: pelanggan menekan Batalkan di Pesanan Saya selama status Menunggu Pembayaran, dan unit dilepas. Setelah itu pelanggan hanya dapat menekan Ajukan Pembatalan, yang diproses sesuai BR-13 dan BR-14.</li>
+<li>UC-28: bila ada pembayaran yang terlambat pada pesanan kedaluwarsa, Admin atau Owner mengaktifkan kembali pesanan tersebut hanya jika tanggalnya masih kosong. Jika tidak, dana dikembalikan penuh.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Pesanan tersimpan berstatus Menunggu Pembayaran dan unit tertahan sampai batas waktu penahanan.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>PSN-01</td><td>Alur pesan yang singkat</td><td class="tc">Must</td><td>Setelah login, pelanggan menyelesaikan pesanan dalam paling banyak 5 langkah.</td><td class="tc">M</td></tr>
+<tr><td>PSN-02</td><td>Satu unit, satu pesanan, per tanggal</td><td class="tc">Must</td><td>Pada 50 permintaan bersamaan untuk unit terakhir, tepat 1 berhasil dan sisanya menerima pesan penuh. Basis data juga menolak pasangan unit dan tanggal yang sama.</td><td class="tc">K</td></tr>
+<tr><td>PSN-03</td><td>Penahanan dan kedaluwarsa</td><td class="tc">Must</td><td>Unit ditahan 60 menit (30 menit pada periode puncak). Penahanan yang lewat dilepas paling lambat 2 menit kemudian oleh penjadwal yang berjalan tiap menit.</td><td class="tc">F</td></tr>
+<tr><td>PSN-04</td><td>Ringkasan dan harga dari server</td><td class="tc">Must</td><td>Harga selalu dihitung ulang di server dari data terbaru dan nilai dari browser tidak dipercaya. Harga dan opsi disimpan sebagai salinan di pesanan.</td><td class="tc">U</td></tr>
+<tr><td>PSN-05</td><td>Teks papan tiga kolom</td><td class="tc">Must</td><td>Judul paling banyak 25 karakter, nama penerima 45, nama pengirim 40. Teks bisa diubah sampai status Sedang Diproduksi.</td><td class="tc">F</td></tr>
+<tr><td>PSN-08</td><td>Cara serah</td><td class="tc">Must</td><td>Papan sewa hanya diantar dan dijemput, sedangkan buket boleh diambil atau diantar. Ongkos antar mengikuti zona.</td><td class="tc">F</td></tr>
+<tr><td>PSN-10</td><td>Kapasitas produksi</td><td class="tc">Must</td><td>Buket custom dibatasi 15 per hari. Pada 20 permintaan bersamaan saat kapasitas tersisa 1, tepat 1 berhasil.</td><td class="tc">K</td></tr>
+<tr><td>PSN-13</td><td>Pembatalan oleh pelanggan</td><td class="tc">Must</td><td>Pelanggan hanya bisa membatalkan sendiri saat Menunggu Pembayaran. Setelahnya hanya tersedia tombol Ajukan Pembatalan.</td><td class="tc">F</td></tr>
+<tr><td>PSN-14</td><td>Harga, DP, dan nomor pesanan</td><td class="tc">Must</td><td>Total di bawah Rp250.000 wajib lunas. Total sama dengan atau di atasnya boleh DP 50 persen atau lunas. Nomor berformat BK-YYMM-NNNN dan tetap unik pada 50 pesanan bersamaan.</td><td class="tc">U</td></tr>
+<tr><td>PSN-15</td><td>Batas jam dan pesanan hari yang sama</td><td class="tc">Must</td><td>Tanggal paling awal adalah hari ini ditambah lead time produk, dan ditambah satu hari bila lewat pukul 15.00 WIB. Pesanan hari yang sama hanya untuk produk yang mengizinkannya.</td><td class="tc">U</td></tr>
+<tr><td>STK-01</td><td>Stok siap jual</td><td class="tc">Must</td><td>Stok berkurang secara atomik saat pesanan dibuat dan kembali bila pesanan kedaluwarsa atau batal. Stok tidak pernah di bawah nol.</td><td class="tc">K</td></tr>
+<tr><td>PSN-06</td><td>Pratinjau teks langsung</td><td class="tc">Should</td><td>Pratinjau berubah paling lama 200 milidetik setelah pelanggan mengetik.</td><td class="tc">P</td></tr>
+<tr><td>PSN-07</td><td>Aktifkan kembali pesanan kedaluwarsa</td><td class="tc">Should</td><td>Berjalan sesuai BR-15 dan seluruhnya dalam satu transaksi.</td><td class="tc">F</td></tr>
+<tr><td>PSN-11</td><td>Beberapa produk dalam satu pesanan</td><td class="tc">Could</td><td>Keranjang dengan lebih dari satu produk. Dikerjakan hanya bila waktu tersisa. Paket dan diskon bundling tidak termasuk.</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+
+<h2>3.4 SCP-04 Pembayaran dan Verifikasi</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Pembayaran pada versi pertama dilakukan lewat transfer bank atau QRIS statis, lalu diperiksa manual oleh admin. Supaya admin mudah mengenali transfer yang masuk, setiap tagihan diberi kode unik tiga digit yang ditambahkan ke jumlahnya. Sistem tidak pernah memverifikasi pembayaran yang jumlahnya berbeda secara otomatis. Sistem tidak mengirim uang apa pun, termasuk refund. Sistem hanya menghitung dan mencatat.</p>
+<h3>Aktor: Pelanggan, Admin, Owner</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-07 Bayar Pesanan, UC-11 Verifikasi Pembayaran, UC-18 Tangani Pembayaran Tidak Sesuai, UC-19 Catat Pelunasan dan Tunai, UC-20 Catat Refund dan Jaminan</td></tr>
+<tr><td>Aktor Utama</td><td>Pelanggan (UC-07), Admin dan Owner (UC-11, UC-18, UC-19, UC-20)</td></tr>
+<tr><td>Precondition</td><td>Pesanan berstatus Menunggu Pembayaran, atau pesanan sudah Dikonfirmasi dan memiliki saldo.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Pelanggan melihat jumlah yang harus dibayar (sudah termasuk kode unik), daftar rekening dan QRIS, serta sisa waktu.</li>
+<li>Pelanggan membayar sesuai jumlah persis, lalu menekan Saya Sudah Bayar.</li>
+<li>Admin membuka daftar pembayaran yang menunggu dan mencocokkannya dengan mutasi rekening.</li>
+<li>Bila jumlah sama persis, Admin menekan Verifikasi. Sistem mencatat siapa dan kapan, dan pesanan menjadi Dikonfirmasi.</li>
+<li>Menjelang pelunasan, sistem membuat tagihan baru dengan kode unik baru. Admin memverifikasinya dengan cara yang sama.</li>
+<li>Pembayaran tunai hanya untuk pembelian langsung produk siap jual di toko dan untuk deposit jaminan yang diterima kurir. Admin atau Owner mencatatnya setelah setoran dari kurir dikonfirmasi.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Jumlah berbeda dari tagihan: Admin memilih Tolak (disertai alasan) atau Terima dengan catatan.</li>
+<li>Batas waktu pembayaran lewat: pesanan menjadi Kedaluwarsa dan unit dilepas.</li>
+<li>Pembayaran masuk setelah kedaluwarsa: diproses lewat UC-28.</li>
+<li>Pembatalan setelah ada pembayaran: sistem menghitung refund sesuai BR-13 dan Admin mencatat bahwa transfer sudah dilakukan.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Status pembayaran dan status pesanan tercatat dengan pelaku dan waktu.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>BYR-01</td><td>Pembayaran manual dengan kode unik</td><td class="tc">Must</td><td>Jumlah tagihan ditambah kode unik 1 sampai 999. Tidak ada dua pembayaran berstatus menunggu dengan jumlah tagihan yang sama.</td><td class="tc">U</td></tr>
+<tr><td>BYR-02</td><td>Verifikasi oleh pihak berwenang</td><td class="tc">Must</td><td>Hanya Admin atau Owner yang dapat memverifikasi, dengan catatan pelaku dan waktu. Jumlah tagihan terverifikasi tidak melebihi total pesanan.</td><td class="tc">F</td></tr>
+<tr><td>BYR-04</td><td>Status dan riwayat pembayaran</td><td class="tc">Must</td><td>Pelanggan dan staf melihat status tiap pembayaran: menunggu, terverifikasi, ditolak, atau kedaluwarsa, beserta alasan penolakan.</td><td class="tc">F</td></tr>
+<tr><td>BYR-06</td><td>Jenis pembayaran</td><td class="tc">Must</td><td>Jenis yang dikenal: DP, pelunasan, jaminan, dan refund. Pesanan yang saldonya belum nol tidak bisa diserahkan.</td><td class="tc">F</td></tr>
+<tr><td>BYR-07</td><td>Tolak atau terima dengan catatan</td><td class="tc">Must</td><td>Pembayaran yang jumlahnya berbeda tidak pernah diverifikasi otomatis. Admin atau Owner memilih tolak dengan alasan atau terima dengan catatan.</td><td class="tc">F</td></tr>
+<tr><td>BYR-08</td><td>Pembayaran tunai</td><td class="tc">Must</td><td>Tunai hanya untuk pembelian langsung produk siap jual di toko dan deposit jaminan dari kurir. Deposit berstatus ditahan, lalu dikembalikan atau disita.</td><td class="tc">F</td></tr>
+<tr><td>BYR-09</td><td>Refund dan jaminan hanya dicatat</td><td class="tc">Must</td><td>Sistem menghitung nominal refund. Admin mencatat bahwa transfer sudah dilakukan. Sistem tidak mengirim uang.</td><td class="tc">F</td></tr>
+<tr><td>BYR-10</td><td>Petunjuk pembayaran</td><td class="tc">Must</td><td>Halaman pembayaran menampilkan jumlah persis, rekening tujuan, batas waktu, dan hitung mundur sisa waktu.</td><td class="tc">M</td></tr>
+<tr><td>BYR-11</td><td>Akun pembayaran</td><td class="tc">Must</td><td>Rekening bank (BCA, BRI atau Mandiri, Bank Jambi) dan QRIS statis disimpan sebagai data yang bisa diubah Owner, bukan di dalam kode.</td><td class="tc">F</td></tr>
+<tr><td>BYR-05</td><td>Unggah bukti transfer</td><td class="tc">Could</td><td>Pelanggan dapat mengunggah foto bukti. Bukti membantu pencocokan, tetapi tidak menggantikan pengecekan mutasi rekening.</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+
+<h2>3.5 SCP-05 Pelacakan Pesanan dan Tautan WhatsApp</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Pelanggan dapat melihat semua pesanannya dan memantau perkembangan tiap pesanan. Sistem tidak mengirim pesan otomatis. Sebagai gantinya, tombol WhatsApp membuka percakapan dengan pesan yang sudah terisi, sehingga pelanggan maupun admin tinggal menekan kirim.</p>
+<h3>Aktor: Pelanggan, Admin</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-08 Lacak Pesanan, UC-09 Hubungi Toko lewat WhatsApp, UC-26 Lihat Riwayat Pesanan</td></tr>
+<tr><td>Aktor Utama</td><td>Pelanggan (UC-08, UC-09, UC-26), Admin (tautan WhatsApp untuk pelanggan)</td></tr>
+<tr><td>Precondition</td><td>Pelanggan sudah masuk dan memiliki minimal satu pesanan.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Pelanggan membuka Pesanan Saya dan melihat daftar pesanan.</li>
+<li>Pelanggan memilih satu pesanan. Sistem menampilkan garis waktu status, teks penjelasan status, dan batas waktu bayar bila ada.</li>
+<li>Tombol yang tampil menyesuaikan status, misalnya Bayar, Batalkan, atau Ajukan Pembatalan.</li>
+<li>Pelanggan menekan Hubungi Toko. WhatsApp terbuka dengan pesan yang memuat nomor pesanan.</li>
+<li>Admin dapat menekan Kabari lewat WhatsApp pada detail pesanan, dengan pesan sesuai status.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Pelanggan membuka pesanan milik orang lain: sistem menampilkan halaman tidak ditemukan (404).</li>
+<li>Belum ada pesanan: sistem mengajak pelanggan melihat katalog.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Tidak ada data yang berubah.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>AKN-01</td><td>Pesanan Saya</td><td class="tc">Must</td><td>Pelanggan melihat daftar dan detail pesanan miliknya dengan garis waktu status. Halaman detail menyegarkan status setiap 60 detik selama terbuka. Pesanan milik orang lain menghasilkan respons 404.</td><td class="tc">F</td></tr>
+<tr><td>NTF-02</td><td>Tautan WhatsApp berisi pesan</td><td class="tc">Must</td><td>Tautan wa.me memuat pesan yang sudah terisi (nomor pesanan, status, nama) sepanjang paling banyak 1.000 karakter. Tidak ada pengiriman otomatis.</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+
+<h2>3.6 SCP-06 Operasional Harian</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Modul ini dipakai staf setiap hari: memantau pesanan masuk, memasukkan pesanan manual dari WhatsApp, menutup tanggal, merangkai pesanan, mengantar dan menjemput barang sewa, memeriksa kondisi barang, serta mencatat denda dan kerusakan. Setiap perubahan status harus lewat satu jalur resmi yang memeriksa tabel transisi pada subbab 3.9.</p>
+<h3>Aktor: Owner, Admin, Staf Produksi dan Kurir</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-12 Serah Terima Barang, UC-13 Terima Pengembalian, UC-21 Input Pesanan Manual, UC-22 Atur Blokir Tanggal dan Kapasitas, UC-25 Lihat Agenda Harian</td></tr>
+<tr><td>Aktor Utama</td><td>Staf Produksi dan Kurir (UC-12, UC-13, UC-25), Admin dan Owner (UC-21, UC-22, UC-25)</td></tr>
+<tr><td>Precondition</td><td>Staf sudah masuk dan pesanan berstatus sesuai tahap yang akan dikerjakan.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Staf membuka halaman Hari Ini: pesanan menunggu verifikasi, antaran, jemputan, dan produksi hari itu.</li>
+<li>Staf produksi membuka antrean rangkai, mengerjakan pesanan, lalu menandainya Sedang Diproduksi (teks terkunci) dan Siap.</li>
+<li>Saat mengantar barang sewa, kurir mengisi daftar periksa (permukaan akrilik, kaki atau easel, rangkaian bunga, lampu LED), mengunggah foto sampai 6 buah, memastikan saldo nol, lalu mengubah status menjadi Sudah Diserahkan.</li>
+<li>Saat menjemput, kurir memeriksa ulang, memotret kondisi barang, mencatat keterlambatan atau kerusakan, lalu mengubah status menjadi Sudah Dikembalikan.</li>
+<li>Untuk pesanan dari WhatsApp, Admin mengisi formulir pesanan manual dengan aturan yang sama seperti pesanan web.</li>
+<li>Owner atau Admin menutup tanggal toko, memblokir unit, atau mengatur kapasitas harian.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Saldo belum nol saat serah: sistem menolak perubahan status.</li>
+<li>Barang terlambat kembali: sistem menghitung denda sesuai BR-10 dan mencatatnya sebagai penyesuaian.</li>
+<li>Unit belum kembali padahal sudah dipesan untuk esok hari: dasbor Admin menampilkan peringatan.</li>
+<li>Tanggal yang diblokir sudah punya pesanan aktif: sistem menampilkan peringatan dan tidak membatalkan pesanan.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Status pesanan, inspeksi, foto, dan catatan tersimpan beserta pelaku dan waktu.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>OPS-01</td><td>Daftar pesanan</td><td class="tc">Must</td><td>Staf melihat daftar pesanan dengan filter status dan tanggal acara, serta pencarian berdasarkan nama atau nomor pesanan.</td><td class="tc">F</td></tr>
+<tr><td>OPS-02</td><td>Perubahan status lewat satu jalur</td><td class="tc">Must</td><td>Setiap perubahan status lewat satu proses yang memeriksa tabel transisi dan menulis log status. Perubahan yang tidak ada di tabel ditolak.</td><td class="tc">U</td></tr>
+<tr><td>OPS-05</td><td>Pesanan manual</td><td class="tc">Must</td><td>Admin dapat memasukkan pesanan dari WhatsApp atau toko dengan aturan yang sama seperti pesanan web. Pengecualian wajib beralasan dan hanya oleh Admin atau Owner.</td><td class="tc">F</td></tr>
+<tr><td>OPS-06</td><td>Blokir tanggal dan kapasitas</td><td class="tc">Must</td><td>Owner atau Admin dapat menutup tanggal toko, memblokir unit, dan mengatur kapasitas harian. Pesanan aktif yang bentrok tidak dibatalkan otomatis, hanya diberi peringatan.</td><td class="tc">F</td></tr>
+<tr><td>OPS-03</td><td>Ringkasan dasbor</td><td class="tc">Should</td><td>Dasbor Hari Ini menampilkan jumlah pesanan menunggu verifikasi, antaran dan jemputan hari ini, serta produksi hari ini.</td><td class="tc">F</td></tr>
+<tr><td>OPS-04</td><td>Peringatan unit belum kembali</td><td class="tc">Should</td><td>Bila unit belum kembali setelah jam batas dan sudah dipesan untuk esok hari, dasbor menampilkan peringatan, misalnya "Unit AKR-003 belum kembali, ada antaran besok pukul 06.00".</td><td class="tc">F</td></tr>
+<tr><td>OPS-07</td><td>Agenda harian</td><td class="tc">Should</td><td>Agenda antar dan jemput tersusun menurut jam, memuat alamat, tautan peta, dan nomor HP pelanggan.</td><td class="tc">F</td></tr>
+<tr><td>OPS-08</td><td>Inspeksi dan foto</td><td class="tc">Should</td><td>Saat serah dan kembali, staf mengisi daftar periksa dan mengunggah sampai 6 foto per pesanan.</td><td class="tc">F</td></tr>
+<tr><td>OPS-09</td><td>Denda dan kerusakan</td><td class="tc">Should</td><td>Denda dihitung sistem sesuai BR-10. Kerusakan dicatat memakai tarif dari tabel dan diputuskan Owner.</td><td class="tc">U</td></tr>
+<tr><td>OPS-10</td><td>Antrean produksi</td><td class="tc">Should</td><td>Staf produksi melihat antrean rangkai terurut menurut tanggal acara, lengkap dengan teks, pilihan, dan catatan.</td><td class="tc">F</td></tr>
+<tr><td>ADJ-01</td><td>Penyesuaian tagihan</td><td class="tc">Should</td><td>Denda, kerusakan, perpanjangan, atau potongan dicatat sebagai penyesuaian dengan nominal, alasan, dan pencatatnya, lalu dimasukkan ke total.</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+
+<h2>3.7 SCP-07 Pengelolaan Katalog dan Pengaturan</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Owner mengelola produk, varian, opsi, foto, unit sewa, dan semua nilai bisnis tanpa perlu mengubah kode. Perubahan harga tidak memengaruhi pesanan lama karena pesanan menyimpan salinan harga. Setiap perubahan penting dicatat di log aktivitas.</p>
+<h3>Aktor: Owner (Admin untuk unit sewa)</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-14 Kelola Katalog, UC-15 Kelola Pengaturan, UC-24 Kelola Unit Sewa</td></tr>
+<tr><td>Aktor Utama</td><td>Owner (UC-14, UC-15, UC-24), Admin (UC-24)</td></tr>
+<tr><td>Precondition</td><td>Pengguna sudah masuk sebagai Owner atau Admin.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Owner membuka Katalog dan menambah produk: nama, kategori, jenis, deskripsi, harga dasar, lead time, izin hari yang sama, dan cara serah.</li>
+<li>Owner menambah varian dan opsi.</li>
+<li>Owner mengunggah foto dan wajib mengisi teks pengganti gambar. Sistem mengubah foto ke format WebP.</li>
+<li>Owner menyimpan produk sebagai draf, lalu menerbitkannya.</li>
+<li>Untuk produk sewa, Owner atau Admin menambah unit dengan kode unik, misalnya AKR-001.</li>
+<li>Unit yang rusak dinonaktifkan sampai diperbaiki.</li>
+<li>Owner membuka Pengaturan untuk mengubah nilai bisnis. Setiap perubahan tercatat di log.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td><ul>
+<li>Berkas foto bukan JPG, PNG, atau WebP, lebih dari 5 MB, atau lebarnya kurang dari 800 piksel: ditolak dengan penjelasan.</li>
+<li>Produk pernah dipesan: tidak bisa dihapus, hanya diarsipkan.</li>
+</ul></td></tr>
+<tr><td>Postcondition</td><td>Perubahan tampil di katalog dan tercatat di log aktivitas.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>KTL-01</td><td>Kelola produk</td><td class="tc">Must</td><td>Owner menambah dan mengubah produk beserta varian dan opsinya. Harga baru tidak mengubah pesanan lama.</td><td class="tc">F</td></tr>
+<tr><td>KTL-02</td><td>Kelola unit sewa</td><td class="tc">Must</td><td>Setiap varian sewa memiliki unit berkode unik. Unit nonaktif tidak dihitung dalam ketersediaan.</td><td class="tc">F</td></tr>
+<tr><td>KTL-03</td><td>Arsip produk</td><td class="tc">Must</td><td>Produk yang pernah dipesan tidak dihapus permanen. Produk hanya diarsipkan dan hilang dari katalog.</td><td class="tc">F</td></tr>
+<tr><td>KTL-04</td><td>Unggah gambar</td><td class="tc">Must</td><td>Hanya JPG, PNG, atau WebP, paling besar 5 MB, lebar minimal 800 piksel. Gambar diubah ke WebP, data EXIF dihapus, dan teks pengganti wajib diisi.</td><td class="tc">F</td></tr>
+<tr><td>AUD-01</td><td>Log aktivitas</td><td class="tc">Must</td><td>Perubahan harga, status, pembayaran, pengaturan, dan peran dicatat dengan pelaku, waktu, serta nilai sebelum dan sesudah. Log tidak dapat diubah atau dihapus lewat antarmuka.</td><td class="tc">F</td></tr>
+<tr><td>KTL-05</td><td>Draf dan terbit</td><td class="tc">Should</td><td>Produk berstatus draf tidak tampil di katalog sampai Owner menerbitkannya.</td><td class="tc">F</td></tr>
+<tr><td>SET-01</td><td>Halaman pengaturan</td><td class="tc">Should</td><td>Owner mengubah nilai bisnis (jam batas, ambang DP, lama penahanan, denda, tarif zona, dan lainnya) tanpa mengubah kode. Setiap perubahan tercatat.</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+
+<h2>3.8 SCP-08 Rekap dan Laporan</h2>
+<h3>Deskripsi Fungsi</h3>
+<p>Owner dapat melihat ringkasan pesanan dan pendapatan per periode. Rekap hanya menghitung pembayaran yang sudah terverifikasi. Ekspor PDF dan Excel tidak dikerjakan pada versi ini. Sebagai gantinya tersedia unduhan data anonim dalam format CSV untuk keperluan penelitian.</p>
+<h3>Aktor: Owner</h3>
+<h3>Skenario Use Case</h3>
+<table class="uc">
+<thead><tr><th>Elemen</th><th>Deskripsi</th></tr></thead>
+<tbody>
+<tr><td>Use Case</td><td>UC-16 Lihat Rekap</td></tr>
+<tr><td>Aktor Utama</td><td>Owner</td></tr>
+<tr><td>Precondition</td><td>Owner sudah masuk dan sudah ada pesanan.</td></tr>
+<tr><td>Main Flow</td><td><ol>
+<li>Owner membuka Rekap dan memilih periode: harian, mingguan, atau bulanan.</li>
+<li>Sistem menampilkan jumlah pesanan, pendapatan terverifikasi, DP yang belum dilunasi, refund, denda, rincian per kategori produk, dan hari tersibuk.</li>
+<li>Owner dapat mengunduh data anonim dalam format CSV.</li>
+</ol></td></tr>
+<tr><td>Alternative Flow</td><td>Tidak ada data pada periode yang dipilih: sistem menampilkan keterangan bahwa belum ada transaksi.</td></tr>
+<tr><td>Postcondition</td><td>Tidak ada data yang berubah.</td></tr>
+</tbody>
+</table>
+<h3>Kebutuhan dan Kriteria Penerimaan</h3>
+<table class="req">
+<thead><tr><th>Kode</th><th>Kebutuhan</th><th>Prioritas</th><th>Kriteria Penerimaan</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td>LAP-01</td><td>Rekap pendapatan dan pesanan</td><td class="tc">Should</td><td>Rekap hanya menghitung pembayaran terverifikasi. Angka total sama dengan jumlah rincian transaksi pada periode yang sama.</td><td class="tc">F</td></tr>
+<tr><td>LAP-03</td><td>Data penelitian anonim</td><td class="tc">Should</td><td>Berkas CSV tidak memuat nama, nomor HP, dan alamat. Nomor pesanan diganti kode acak.</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+
+<h2>3.9 Alur Status Pesanan</h2>
+<p>Pesanan melewati sembilan status. Status hanya boleh berubah lewat satu proses resmi yang mencatat setiap perubahan beserta pelaku dan waktunya.</p>
+<table>
+<thead><tr><th style="width:5%">No.</th><th style="width:19%">Status</th><th style="width:17%">Kode di Sistem</th><th style="width:19%">Diubah Oleh</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td><b>Menunggu Pembayaran</b></td><td>awaiting_payment</td><td>Sistem</td><td>Pesanan baru dibuat dan unit ditahan.</td></tr>
+<tr><td class="tc">2</td><td><b>Kedaluwarsa</b></td><td>expired</td><td>Sistem (penjadwal)</td><td>Batas waktu bayar lewat dan unit dilepas.</td></tr>
+<tr><td class="tc">3</td><td><b>Dikonfirmasi</b></td><td>confirmed</td><td>Admin atau Owner</td><td>Pembayaran pertama sudah terverifikasi.</td></tr>
+<tr><td class="tc">4</td><td><b>Sedang Diproduksi</b></td><td>in_production</td><td>Staf Produksi</td><td>Khusus produk custom. Teks papan terkunci.</td></tr>
+<tr><td class="tc">5</td><td><b>Siap</b></td><td>ready</td><td>Staf Produksi</td><td>Barang siap diserahkan.</td></tr>
+<tr><td class="tc">6</td><td><b>Sudah Diserahkan</b></td><td>handed_over</td><td>Staf Kurir</td><td>Barang sudah di tangan pelanggan.</td></tr>
+<tr><td class="tc">7</td><td><b>Sudah Dikembalikan</b></td><td>returned</td><td>Staf Kurir</td><td>Khusus barang sewa yang sudah diterima kembali.</td></tr>
+<tr><td class="tc">8</td><td><b>Selesai</b></td><td>completed</td><td>Admin</td><td>Seluruh tagihan beres.</td></tr>
+<tr><td class="tc">9</td><td><b>Dibatalkan</b></td><td>cancelled</td><td>Pelanggan, Admin, Owner</td><td>Tidak bisa dilakukan setelah barang diserahkan.</td></tr>
+</tbody>
+</table>
+
+<h3>Tabel Transisi Status</h3>
+<table class="sm">
+<thead><tr><th style="width:6%">Kode</th><th style="width:17%">Dari</th><th style="width:17%">Ke</th><th style="width:20%">Dilakukan Oleh</th><th>Syarat dan Akibat</th></tr></thead>
+<tbody>
+<tr><td><b>T01</b></td><td>Baru</td><td>Menunggu Pembayaran</td><td>Pelanggan (Admin untuk pesanan manual)</td><td>Sistem membuat reservasi tertahan, tagihan dengan kode unik, salinan harga, dan nomor pesanan.</td></tr>
+<tr><td><b>T02</b></td><td>Menunggu Pembayaran</td><td>Dikonfirmasi</td><td>Admin atau Owner</td><td>Jumlah yang diterima sama dengan jumlah tagihan. Reservasi menjadi tetap.</td></tr>
+<tr><td><b>T03</b></td><td>Menunggu Pembayaran</td><td>Kedaluwarsa</td><td>Sistem, tiap menit</td><td>Waktu sekarang melewati batas penahanan. Unit dan stok dilepas.</td></tr>
+<tr><td><b>T04</b></td><td>Menunggu Pembayaran</td><td>Dibatalkan</td><td>Pelanggan, Admin, Owner</td><td>Unit dilepas. Tidak ada refund karena belum ada pembayaran terverifikasi.</td></tr>
+<tr><td><b>T05</b></td><td>Dikonfirmasi</td><td>Sedang Diproduksi</td><td>Staf Produksi</td><td>Hanya untuk item custom. Teks papan terkunci.</td></tr>
+<tr><td><b>T06</b></td><td>Dikonfirmasi</td><td>Siap</td><td>Staf Produksi</td><td>Untuk barang sewa dan siap jual yang tidak perlu diproduksi.</td></tr>
+<tr><td><b>T07</b></td><td>Sedang Diproduksi</td><td>Siap</td><td>Staf Produksi</td><td>Pekerjaan merangkai selesai.</td></tr>
+<tr><td><b>T08</b></td><td>Siap</td><td>Sudah Diserahkan</td><td>Staf Kurir</td><td>Saldo nol, jaminan tercatat bila ada, dan inspeksi serah sudah diisi.</td></tr>
+<tr><td><b>T09</b></td><td>Sudah Diserahkan</td><td>Sudah Dikembalikan</td><td>Staf Kurir</td><td>Hanya untuk sewa. Inspeksi kembali diisi, denda dan kerusakan dicatat.</td></tr>
+<tr><td><b>T10</b></td><td>Sudah Diserahkan</td><td>Selesai</td><td>Admin</td><td>Untuk pesanan tanpa item sewa.</td></tr>
+<tr><td><b>T11</b></td><td>Sudah Dikembalikan</td><td>Selesai</td><td>Admin</td><td>Tidak ada tagihan tersisa. Jaminan sudah dikembalikan atau diperhitungkan.</td></tr>
+<tr><td><b>T12</b></td><td>Dikonfirmasi, Sedang Diproduksi, atau Siap</td><td>Dibatalkan</td><td>Admin atau Owner</td><td>Alasan wajib diisi. Refund mengikuti BR-13. Mengubah nominal dari hasil hitung sistem hanya oleh Owner.</td></tr>
+<tr><td><b>T13</b></td><td>Kedaluwarsa</td><td>Dikonfirmasi</td><td>Admin atau Owner</td><td>Pembayaran terlambat masuk dan tanggal masih kosong. Unit dikunci ulang dalam satu transaksi.</td></tr>
+<tr><td><b>T14</b></td><td>Kedaluwarsa</td><td>Tetap Kedaluwarsa</td><td>Admin atau Owner</td><td>Pembayaran terlambat masuk tetapi tanggal sudah terambil. Dana dikembalikan penuh.</td></tr>
+</tbody>
+</table>
+<h3>Larangan</h3>
+<ul>
+<li>Pesanan Selesai dan Dibatalkan tidak bisa berubah lagi.</li>
+<li>Pesanan Sudah Diserahkan tidak bisa dibatalkan.</li>
+<li>Status tidak boleh mundur.</li>
+<li>Hanya penjadwal otomatis yang boleh menjalankan T03.</li>
+<li>Semua perubahan status lewat satu proses resmi yang menulis log status.</li>
+</ul>
+<h3>Teks Status untuk Pelanggan</h3>
+<table class="k sm">
+<thead><tr><th style="width:24%">Status</th><th>Teks yang Dilihat Pelanggan</th></tr></thead>
+<tbody>
+<tr><td>Menunggu Pembayaran</td><td>Pesanan Kakak sudah tercatat. Selesaikan pembayaran sebelum batas waktu supaya tanggalnya tetap aman.</td></tr>
+<tr><td>Kedaluwarsa</td><td>Batas waktu pembayaran sudah lewat dan tanggal dilepas. Kalau sudah terlanjur transfer, hubungi kami ya, Kak.</td></tr>
+<tr><td>Dikonfirmasi</td><td>Pembayaran sudah kami terima. Pesanan Kakak sudah masuk jadwal.</td></tr>
+<tr><td>Sedang Diproduksi</td><td>Pesanan sedang kami kerjakan. Teks sudah tidak bisa diubah.</td></tr>
+<tr><td>Siap</td><td>Pesanan sudah siap. Kami atur antar atau ambil sesuai pilihan Kakak.</td></tr>
+<tr><td>Sudah Diserahkan</td><td>Pesanan sudah ada di tangan Kakak. Untuk barang sewa, mohon dikembalikan paling lambat pukul 18.00.</td></tr>
+<tr><td>Sudah Dikembalikan</td><td>Barang sewa sudah kami terima kembali dan sedang diperiksa.</td></tr>
+<tr><td>Selesai</td><td>Pesanan selesai. Terima kasih sudah memilih Berkah Kreatif.</td></tr>
+<tr><td>Dibatalkan</td><td>Pesanan dibatalkan. Keterangan pengembalian dana ada di bawah bila berlaku.</td></tr>
+</tbody>
+</table>
+
+<h2>3.10 Aturan Bisnis</h2>
+<p>Angka di bawah ini adalah nilai awal. Semuanya disimpan sebagai pengaturan yang dapat diubah Owner, dan status buktinya ada di Lampiran B.</p>
+<table class="sm">
+<thead><tr><th style="width:8%">No.</th><th style="width:22%">Aturan</th><th>Rincian</th></tr></thead>
+<tbody>
+<tr><td><b>BR-01</b></td><td>Satu unit, satu pesanan</td><td>Satu unit sewa hanya boleh terikat pada satu pesanan aktif untuk satu tanggal.</td></tr>
+<tr><td><b>BR-02</b></td><td>Penahanan sementara</td><td>Unit ditahan 60 menit sejak pesanan dibuat. Pada periode puncak (dua hari sebelum acara sampai hari acara pada tanggal yang ditandai puncak) penahanan 30 menit.</td></tr>
+<tr><td><b>BR-03</b></td><td>Tanggal paling awal</td><td>Tanggal paling awal adalah hari ini ditambah lead time produk, lalu ditambah satu hari bila memesan setelah pukul 15.00 WIB. Lead time: satu hari untuk papan dengan stiker cutting dan buket artifisial custom, dua hari untuk buket segar. Pesanan hari yang sama hanya untuk buket siap jual dari katalog (sekitar 30 sampai 60 menit) dan papan sewa yang unitnya kosong dengan teks spidol atau templat (sekitar 2 sampai 3 jam).</td></tr>
+<tr><td><b>BR-04</b></td><td>Cara penagihan</td><td>Total di bawah Rp250.000 wajib dibayar lunas. Total sama dengan atau di atas Rp250.000 boleh DP 50 persen atau lunas. DP dihitung pada tingkat pesanan, bukan per item. Pelunasan paling lambat H-1 pukul 18.00 WIB. Pesanan custom tidak boleh bayar di tempat. Tunai hanya untuk pembelian langsung produk siap jual di toko.</td></tr>
+<tr><td><b>BR-05</b></td><td>Kode unik</td><td>Kode tiga digit antara 1 dan 999 ditambahkan ke jumlah tagihan transfer, termasuk QRIS statis. Tidak boleh ada dua pembayaran berstatus menunggu dengan jumlah tagihan sama. Kode itu dicatat sebagai selisih lebih.</td></tr>
+<tr><td><b>BR-06</b></td><td>Rumus harga</td><td>Sewa: harga per hari dikali jumlah hari. Custom: harga dasar ditambah jumlah semua opsi. Siap jual: harga dikali jumlah. Total adalah jumlah semua item ditambah ongkos antar ditambah penyesuaian. Hasil dibulatkan ke atas ke kelipatan Rp1.000. Buket uang: uang berasal dari pelanggan dan sistem hanya menagih jasa serta pembungkus.</td></tr>
+<tr><td><b>BR-07</b></td><td>Teks papan</td><td>Tiga kolom: judul paling banyak 25 karakter, nama penerima 45, nama pengirim 40. Teks ditulis oleh Admin atau staf desain dan terkunci saat status Sedang Diproduksi. Stiker cutting untuk pesanan H-1 atau H-2. Spidol kapur cair atau acrylic marker untuk pesanan hari yang sama. UV flatbed hanya untuk papan yang dijual.</td></tr>
+<tr><td><b>BR-08</b></td><td>Lama dan jam sewa</td><td>Sewa berlaku satu hari kalender. Papan diantar mulai pukul 07.00 dan dijemput pukul 17.00 sampai 18.00. Batas kembali pukul 18.00. Tanpa jeda antarsewa, sehingga unit boleh disewa lagi besok harinya.</td></tr>
+<tr><td><b>BR-09</b></td><td>Perpanjangan</td><td>Perpanjangan per jam dikenai 50 persen tarif harian dan dicatat manual sebagai penyesuaian, dibulatkan ke atas kelipatan Rp1.000. Contoh: tarif Rp75.000 menjadi Rp37.500, dibulatkan Rp38.000.</td></tr>
+<tr><td><b>BR-10</b></td><td>Denda terlambat</td><td>Denda adalah jumlah jam terlambat (dibulatkan ke atas) dikali Rp25.000, tetapi tidak lebih dari tarif sewa harian unit itu. Aturan ini sengaja dibuat naik terus agar adil: terlambat 3 jam berarti Rp75.000, 4 jam Rp100.000, dan seterusnya sampai batas tarif harian.</td></tr>
+<tr><td><b>BR-11</b></td><td>Kerusakan</td><td>Owner memutuskan berdasarkan foto sebelum dan sesudah. Tarif acuan: akrilik pecah Rp200.000, bunga hilang atau rusak Rp30.000 per tangkai, easel patah Rp100.000. Unit yang rusak dinonaktifkan sampai diperbaiki.</td></tr>
+<tr><td><b>BR-12</b></td><td>Jaminan</td><td>KTP dan KTM tidak diunggah. Staf mencatat "identitas diperiksa oleh" nama staf. Kurir boleh menerima deposit tunai Rp100.000 sampai Rp150.000. Deposit berstatus ditahan, lalu dikembalikan atau disita. Admin mengonfirmasi setoran dari kurir.</td></tr>
+<tr><td><b>BR-13</b></td><td>Refund</td><td>Refund adalah yang terkecil dari dua persentase. Menurut waktu: 100 persen bila batal H-2 atau lebih awal, 50 persen H-1, 0 persen pada hari acara. Menurut status: 100 persen bila Dikonfirmasi, 50 persen bila Sedang Diproduksi, 0 persen bila Siap. Biaya transfer awal Rp0. Admin menjalankan hasil hitung sistem, dan perubahan nominal hanya oleh Owner.</td></tr>
+<tr><td><b>BR-14</b></td><td>Pembatalan pelanggan</td><td>Pelanggan hanya bisa membatalkan sendiri saat Menunggu Pembayaran. Selebihnya mengajukan pembatalan yang diproses Admin atau Owner.</td></tr>
+<tr><td><b>BR-15</b></td><td>Bayar terlambat</td><td>Bila uang masuk setelah pesanan kedaluwarsa dan tanggal masih kosong, pesanan aktif kembali. Bila tanggal sudah terambil, dana dikembalikan penuh.</td></tr>
+<tr><td><b>BR-16</b></td><td>Selisih pembayaran</td><td>Pembayaran yang jumlahnya tidak sama dengan tagihan tidak pernah diverifikasi otomatis. Admin atau Owner memilih Tolak atau Terima dengan catatan.</td></tr>
+<tr><td><b>BR-17</b></td><td>Serah terima</td><td>Papan selalu diantar dan dijemput kurir, tanpa ambil sendiri. Buket boleh diambil atau diantar. Radius paling jauh 15 kilometer. Zona: 0 sampai 5 km Rp10.000, 5 sampai 10 km Rp20.000, 10 sampai 15 km Rp35.000. Zona 15 sampai 20 km belum dilayani. Jendela antar pukul 07.00 sampai 19.00. Kloter pagi pukul 06.00 sampai 07.30 hanya pada periode puncak.</td></tr>
+<tr><td><b>BR-18</b></td><td>Kapasitas</td><td>Buket custom paling banyak 15 per hari. Kapasitas papan sama dengan jumlah unit aktif pada varian itu.</td></tr>
+<tr><td><b>BR-19</b></td><td>Stok siap jual</td><td>Stok berkurang secara atomik saat pesanan dibuat dan tidak pernah di bawah nol.</td></tr>
+<tr><td><b>BR-20</b></td><td>Pesanan manual</td><td>Pesanan dari WhatsApp atau toko mengikuti aturan yang sama. Pengecualian wajib beralasan dan hanya oleh Admin atau Owner.</td></tr>
+<tr><td><b>BR-21</b></td><td>Blokir</td><td>Unit dapat diblokir per tanggal, dan toko dapat ditutup per tanggal. Pesanan aktif yang bentrok tidak dibatalkan otomatis, hanya diberi peringatan.</td></tr>
+<tr><td><b>BR-22</b></td><td>Nomor pesanan</td><td>Berformat BK-YYMM-NNNN, misalnya BK-2611-0001. Nomor tidak pernah dipakai dua kali.</td></tr>
+<tr><td><b>BR-23</b></td><td>Waktu dan uang</td><td>Semua waktu memakai zona Asia/Jakarta. Semua uang berupa bilangan bulat rupiah.</td></tr>
+<tr><td><b>BR-24</b></td><td>Data pribadi</td><td>Pelanggan menyetujui kebijakan privasi sebelum memesan. Penghapusan akun berupa anonimisasi. Data transaksi disimpan 3 tahun (nilai awal, perlu dipastikan). Penghapusan ditolak bila ada pesanan aktif.</td></tr>
+<tr><td><b>BR-25</b></td><td>Jalur status</td><td>Semua perubahan status lewat satu proses resmi dan ditulis ke log status.</td></tr>
+<tr><td><b>BR-26</b></td><td>Pelunasan sebelum serah</td><td>Pesanan dengan saldo belum nol tidak boleh diserahkan.</td></tr>
+</tbody>
+</table>
+
+<h2>3.11 Matriks Peran dan Hak Akses</h2>
+<table class="sm">
+<thead><tr><th style="width:38%">Kemampuan</th><th>Pelanggan</th><th>Owner</th><th>Admin</th><th>Staf</th></tr></thead>
+<tbody>
+<tr><td>Melihat katalog dan mencari tanggal</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Ya</td></tr>
+<tr><td>Memesan dan melihat pesanan sendiri</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Membatalkan pesanan yang menunggu pembayaran</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Melihat semua pesanan</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Terbatas pada tugasnya</td></tr>
+<tr><td>Memverifikasi pembayaran</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Mencatat tunai dan pelunasan</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Memasukkan pesanan manual</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengubah status produksi dan siap</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Ya</td></tr>
+<tr><td>Serah terima, pengembalian, inspeksi, dan foto</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Ya</td></tr>
+<tr><td>Mengatur jadwal desain dan pengiriman</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Lihat saja</td></tr>
+<tr><td>Mencatat refund sesuai hasil hitung sistem</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengubah nominal refund, denda, dan kerusakan</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Memblokir tanggal dan mengatur kapasitas</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengelola produk, varian, dan harga</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengelola unit sewa</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Ya</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengubah pengaturan bisnis</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Melihat rekap keuangan</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Melihat log aktivitas</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengelola akun staf (lewat pengembang)</td><td class="tc">Tidak</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+<tr><td>Mengubah profil dan menghapus akun sendiri</td><td class="tc">Ya</td><td class="tc">Tidak</td><td class="tc">Tidak</td><td class="tc">Tidak</td></tr>
+</tbody>
+</table>
+
+<!-- ================= BAB 4 ================= -->
+<h1>4. Kebutuhan Non-Fungsional</h1>
+<p>Bagian ini mengatur mutu sistem: seberapa cepat, aman, mudah dipakai, dan andal. Setiap standar disertai cara mengukurnya supaya bisa dibuktikan, bukan sekadar harapan.</p>
+
+<h2>4.1 Performa</h2>
+<table class="sm">
+<thead><tr><th style="width:9%">Kode</th><th style="width:22%">Aspek</th><th>Standar yang Harus Dipenuhi</th><th style="width:20%">Cara Ukur</th></tr></thead>
+<tbody>
+<tr><td><b>NFR-01</b></td><td>Skor Lighthouse</td><td>Skor Performance pada mode Mobile minimal 85 untuk beranda dan katalog.</td><td>Lighthouse</td></tr>
+<tr><td><b>NFR-02</b></td><td>Kecepatan tampil</td><td>Konten utama termuat paling lama 2,5 detik (LCP), dan pergeseran tata letak paling besar 0,1 (CLS), pada koneksi 4G simulasi.</td><td>Lighthouse</td></tr>
+<tr><td><b>NFR-03</b></td><td>Ukuran halaman</td><td>Total berkas satu halaman paling besar 1,5 MB.</td><td>Alat pengembang browser</td></tr>
+<tr><td><b>NFR-04</b></td><td>Pencarian tanggal</td><td>Respons paling lama 500 milidetik untuk 200 produk dan 5.000 baris reservasi.</td><td>Uji performa</td></tr>
+<tr><td><b>NFR-05</b></td><td>Pengguna bersamaan</td><td>Mampu melayani 50 pengguna bersamaan dengan galat di bawah 1 persen.</td><td>k6 atau JMeter</td></tr>
+<tr><td><b>NFR-06</b></td><td>Pratinjau teks</td><td>Pratinjau berubah paling lama 200 milidetik setelah pengetikan.</td><td>Uji manual dan alat pengembang</td></tr>
+<tr><td><b>NFR-07</b></td><td>Pelepasan penahanan</td><td>Penahanan yang kedaluwarsa dilepas paling lama 2 menit sesudah waktunya.</td><td>Uji fitur</td></tr>
+</tbody>
+</table>
+
+<h2>4.2 Keamanan</h2>
+<table class="sm">
+<thead><tr><th style="width:9%">Kode</th><th style="width:22%">Aspek</th><th>Standar yang Harus Dipenuhi</th><th style="width:20%">Cara Ukur</th></tr></thead>
+<tbody>
+<tr><td><b>NFR-08</b></td><td>Sandi staf</td><td>Sandi disimpan dalam bentuk hash memakai algoritma bawaan Laravel.</td><td>Pemeriksaan basis data</td></tr>
+<tr><td><b>NFR-09</b></td><td>Kode OTP</td><td>Kode OTP disimpan dalam bentuk hash dan tidak pernah ditulis ke log pada lingkungan produksi.</td><td>Uji unit dan pemeriksaan log</td></tr>
+<tr><td><b>NFR-10</b></td><td>CSRF dan validasi input</td><td>Semua formulir memakai token CSRF. Semua input divalidasi di server, kueri memakai parameter, dan keluaran di Blade diamankan dari skrip.</td><td>Uji fitur dan tinjauan kode</td></tr>
+<tr><td><b>NFR-11</b></td><td>Otorisasi</td><td>Setiap data dilindungi aturan kepemilikan dan peran. Mengakses data milik orang lain menghasilkan respons 404.</td><td>Uji fitur</td></tr>
+<tr><td><b>NFR-12</b></td><td>Konfigurasi server</td><td>Berkas .env tidak dapat dibuka publik, mode debug mati, dan situs hanya dilayani lewat HTTPS dengan cookie aman.</td><td>Pemeriksaan manual</td></tr>
+<tr><td><b>NFR-13</b></td><td>Batas percobaan masuk</td><td>Masuk staf dibatasi 5 percobaan per menit dan permintaan OTP dibatasi sesuai AUTH-03.</td><td>Uji fitur</td></tr>
+<tr><td><b>NFR-14</b></td><td>Unggahan berkas</td><td>Hanya JPG, PNG, dan WebP, paling besar 5 MB. Nama berkas diacak dan data EXIF dihapus.</td><td>Uji fitur</td></tr>
+<tr><td><b>NFR-15</b></td><td>Perlindungan data pribadi</td><td>Data yang disimpan seperlunya (tanpa KTP). Persetujuan pelanggan dicatat. Tersedia anonimisasi akun sesuai UU Nomor 27 Tahun 2022.</td><td>Uji fitur dan tinjauan</td></tr>
+<tr><td><b>NFR-16</b></td><td>Log aplikasi</td><td>Log tidak memuat data pribadi maupun kode OTP, dan dirotasi setiap 14 hari.</td><td>Pemeriksaan log</td></tr>
+<tr><td><b>NFR-17</b></td><td>Log audit</td><td>Tidak ada halaman atau perintah untuk mengubah atau menghapus log audit.</td><td>Tinjauan rute</td></tr>
+</tbody>
+</table>
+
+<h2>4.3 Kemudahan Penggunaan</h2>
+<table class="sm">
+<thead><tr><th style="width:9%">Kode</th><th style="width:22%">Aspek</th><th>Standar</th><th style="width:20%">Cara Ukur</th></tr></thead>
+<tbody>
+<tr><td><b>NFR-18</b></td><td>Responsif</td><td>Tampilan nyaman dipakai pada layar 360 sampai 414 piksel, tablet, hingga desktop.</td><td>Uji manual</td></tr>
+<tr><td><b>NFR-19</b></td><td>Alur pemesanan</td><td>Pelanggan menyelesaikan pesanan dalam paling banyak 5 langkah setelah login.</td><td>Uji manual</td></tr>
+<tr><td><b>NFR-20</b></td><td>Kepuasan pengguna</td><td>Skor SUS minimal 68, dengan target 75, dari paling sedikit 15 responden.</td><td>Kuesioner SUS</td></tr>
+<tr><td><b>NFR-21</b></td><td>Aksesibilitas</td><td>Memenuhi WCAG 2.1 tingkat AA. Rasio kontras teks minimal 4,5 banding 1.</td><td>Alat kontras dan Lighthouse</td></tr>
+<tr><td><b>NFR-22</b></td><td>Ukuran tombol</td><td>Area sentuh minimal 44 piksel.</td><td>Alat pengembang</td></tr>
+<tr><td><b>NFR-23</b></td><td>Bahasa</td><td>Antarmuka berbahasa Indonesia yang sederhana. Sapaan "Kak" dipakai pada konfirmasi dan WhatsApp, sedangkan halaman resmi memakai "Anda".</td><td>Tinjauan teks</td></tr>
+<tr><td><b>NFR-24</b></td><td>Umpan balik</td><td>Setiap tindakan pengguna memberi tanda berhasil, gagal, atau sedang memuat dalam waktu kurang dari 1 detik.</td><td>Uji manual</td></tr>
+<tr><td><b>NFR-25</b></td><td>Preferensi gerak</td><td>Animasi dinonaktifkan ketika perangkat meminta gerakan dikurangi.</td><td>Uji manual</td></tr>
+</tbody>
+</table>
+
+<h2>4.4 Keandalan</h2>
+<table class="sm">
+<thead><tr><th style="width:9%">Kode</th><th style="width:22%">Aspek</th><th>Standar</th><th style="width:20%">Cara Ukur</th></tr></thead>
+<tbody>
+<tr><td><b>NFR-26</b></td><td>Ketersediaan</td><td>Situs aktif minimal 95 persen dari waktu pemantauan per bulan.</td><td>UptimeRobot</td></tr>
+<tr><td><b>NFR-27</b></td><td>Cadangan data</td><td>Basis data dicadangkan setiap hari dan salinannya disimpan di luar server hosting.</td><td>Pemeriksaan jadwal</td></tr>
+<tr><td><b>NFR-28</b></td><td>Latihan pemulihan</td><td>Prosedur pemulihan dilatih sebelum 28 November 2026, dengan data hilang paling banyak 24 jam dan waktu pulih paling lama 4 jam.</td><td>Latihan terdokumentasi</td></tr>
+<tr><td><b>NFR-29</b></td><td>Integritas reservasi</td><td>Setelah uji konkurensi, perintah audit reservasi menemukan nol anomali.</td><td>Perintah reservations:audit</td></tr>
+<tr><td><b>NFR-30</b></td><td>Penanganan galat</td><td>Pengguna melihat pesan galat yang ramah dan tidak membocorkan rincian teknis. Galat dicatat di log.</td><td>Uji manual</td></tr>
+<tr><td><b>NFR-31</b></td><td>Retensi data</td><td>Data transaksi disimpan sesuai pengaturan retensi (nilai awal 3 tahun) dan dapat diubah Owner.</td><td>Tinjauan pengaturan</td></tr>
+</tbody>
+</table>
+
+<h2>4.5 Kompatibilitas dan Lokalisasi</h2>
+<table class="sm">
+<thead><tr><th style="width:9%">Kode</th><th style="width:22%">Aspek</th><th>Standar</th><th style="width:20%">Cara Ukur</th></tr></thead>
+<tbody>
+<tr><td><b>NFR-32</b></td><td>Peramban</td><td>Berfungsi baik di Chrome, Edge, Firefox, dan Safari di iOS.</td><td>Uji manual</td></tr>
+<tr><td><b>NFR-33</b></td><td>Browser dalam aplikasi</td><td>Berfungsi di browser bawaan Instagram dan TikTok, diuji pada minimal dua perangkat dengan tangkapan layar.</td><td>Uji manual</td></tr>
+<tr><td><b>NFR-34</b></td><td>Format lokal</td><td>Zona waktu Asia/Jakarta. Tanggal seperti "Sab, 14 Nov 2026". Uang seperti "Rp150.000". Nomor HP seperti "0812-3456-7890".</td><td>Uji unit dan tinjauan</td></tr>
+</tbody>
+</table>
+
+<h2>4.6 Kualitas Kode</h2>
+<table class="sm">
+<thead><tr><th style="width:9%">Kode</th><th style="width:22%">Aspek</th><th>Standar</th><th style="width:20%">Cara Ukur</th></tr></thead>
+<tbody>
+<tr><td><b>NFR-35</b></td><td>Gaya kode</td><td>Kode lolos pemeriksaan Laravel Pint tanpa temuan.</td><td>Pint</td></tr>
+<tr><td><b>NFR-36</b></td><td>Analisis statis</td><td>Kode lolos Larastan pada level 5.</td><td>Larastan</td></tr>
+<tr><td><b>NFR-37</b></td><td>Cakupan uji</td><td>Kelas Action memiliki cakupan uji minimal 70 persen.</td><td>Laporan cakupan Pest</td></tr>
+</tbody>
+</table>
+
+<!-- ================= BAB 5 ================= -->
+<h1>5. Design Sistem</h1>
+
+<h2>5.1 Arsitektur Sistem</h2>
+<p><b>Pola arsitektur: MVC monolit dengan lapisan Action.</b> SIBERKAH memakai pola MVC bawaan Laravel. Logika bisnis yang penting, seperti membuat pesanan atau memverifikasi pembayaran, ditaruh pada kelas Action yang masing-masing mengerjakan satu tugas, sehingga controller tetap tipis dan logika mudah diuji.</p>
+<table class="k sm">
+<thead><tr><th style="width:17%">Lapisan</th><th style="width:25%">Teknologi</th><th>Fungsi</th></tr></thead>
+<tbody>
+<tr><td>Model</td><td>Eloquent ORM</td><td>Mewakili tabel basis data dan relasinya.</td></tr>
+<tr><td>View</td><td>Blade, Alpine.js, Tailwind CSS dengan token desain sendiri</td><td>Menghasilkan tampilan yang responsif dan komponen yang bisa dipakai ulang.</td></tr>
+<tr><td>Controller</td><td>Controller Laravel</td><td>Menerima permintaan, memeriksa input, memanggil Action, dan mengembalikan tampilan.</td></tr>
+<tr><td>Action</td><td>Kelas PHP satu tugas: PlaceOrder, IssueOtp, VerifyPayment, ExpireStaleOrders, TransitionOrder</td><td>Menjalankan aturan bisnis, termasuk penguncian unit dan perubahan status.</td></tr>
+<tr><td>Basis data</td><td>MySQL atau MariaDB, mesin InnoDB, utf8mb4 (XAMPP di lokal)</td><td>Menyimpan semua data dan menjaga keunikan unit per tanggal.</td></tr>
+<tr><td>Antrean dan penjadwal</td><td>Antrean berbasis basis data dan scheduler Laravel setiap menit</td><td>Melepas penahanan kedaluwarsa dan mengerjakan tugas latar belakang.</td></tr>
+<tr><td>Pengirim OTP</td><td>Antarmuka OtpSender dengan metode send(nomor, pesan) yang mengembalikan berhasil atau gagal, batas waktu 5 detik</td><td>Mengirim kode OTP. Penyedia bisa diganti tanpa mengubah alur. Mode log hanya untuk lokal.</td></tr>
+<tr><td>Autentikasi</td><td>Dua guard Laravel: pelanggan (OTP) dan staf (email dan sandi)</td><td>Memisahkan sesi pelanggan dan staf.</td></tr>
+<tr><td>Pembayaran</td><td>Antarmuka PaymentMethod, versi pertama manual</td><td>Memungkinkan metode pembayaran lain ditambahkan kelak.</td></tr>
+<tr><td>WhatsApp</td><td>Tautan wa.me</td><td>Membuka percakapan dengan pesan terisi, tanpa integrasi otomatis.</td></tr>
+<tr><td>Hosting</td><td>Belum diputuskan (hosting bersama atau VPS)</td><td>Keputusan paling lambat 22 November 2026. Wajib mendukung cron setiap menit dan antrean, dengan anggaran paling banyak Rp500.000 per bulan.</td></tr>
+</tbody>
+</table>
+<h3>Alur Permintaan Sistem</h3>
+<p>Browser pengguna mengirim permintaan ke router Laravel. Permintaan melewati middleware (login dan peran), lalu controller memeriksa input dan memanggil Action. Action bekerja lewat Model ke basis data dalam satu transaksi bila perlu. Hasilnya dikembalikan ke controller, dirender oleh Blade, dan dikirim ke browser sebagai respons.</p>
+
+<h2>5.2 Entity Relationship Diagram (ERD)</h2>
+<p>Basis data terdiri dari kelompok tabel berikut. Daftar kolom lengkap, tipe data, dan diagram gambar disusun pada dokumen ERD dan kamus data tersendiri.</p>
+<table class="sm">
+<thead><tr><th style="width:24%">Entitas</th><th style="width:36%">Isi</th><th>Relasi Utama</th></tr></thead>
+<tbody>
+<tr><td><b>users</b></td><td>Akun staf: peran, status aktif, wajib ganti sandi, waktu masuk terakhir.</td><td>Satu staf banyak log aktivitas, log status, dan verifikasi pembayaran.</td></tr>
+<tr><td><b>customers</b></td><td>Pelanggan: nama, nomor HP, waktu verifikasi, persetujuan, penanda anonim.</td><td>Satu pelanggan banyak pesanan.</td></tr>
+<tr><td><b>otp_codes</b></td><td>Kode OTP dalam bentuk hash, masa berlaku, jumlah percobaan.</td><td>Terkait nomor pelanggan.</td></tr>
+<tr><td><b>categories</b></td><td>Kelompok produk.</td><td>Satu kategori banyak produk.</td></tr>
+<tr><td><b>products</b></td><td>Produk: jenis (sewa, custom, siap jual), lead time, izin hari yang sama, stok, status.</td><td>Satu produk banyak varian, opsi, dan gambar.</td></tr>
+<tr><td><b>product_variants</b></td><td>Ukuran dan warna beserta selisih harga.</td><td>Satu varian banyak unit sewa dan banyak item pesanan.</td></tr>
+<tr><td><b>product_options dan option_values</b></td><td>Opsi pilihan, teks, atau per satuan beserta nilainya.</td><td>Disalin ke opsi item pesanan saat memesan.</td></tr>
+<tr><td><b>product_images</b></td><td>Foto produk, teks pengganti, ukuran.</td><td>Milik produk.</td></tr>
+<tr><td><b>rental_units</b></td><td>Unit fisik berkode, status aktif.</td><td>Milik varian. Satu unit banyak baris reservasi.</td></tr>
+<tr><td><b>reservation_days</b></td><td>Satu baris untuk satu unit pada satu tanggal, jenis (sewa atau blokir), batas penahanan.</td><td>Unik pada pasangan unit dan tanggal. Terkait pesanan bila ada.</td></tr>
+<tr><td><b>calendar_blocks</b></td><td>Penutupan toko dan penanda periode puncak.</td><td>Dipakai saat menghitung tanggal dan penahanan.</td></tr>
+<tr><td><b>production_capacity_days</b></td><td>Kapasitas produksi per hari.</td><td>Dipakai saat membuat pesanan custom.</td></tr>
+<tr><td><b>orders</b></td><td>Header pesanan: pelanggan, tanggal acara, cara serah, zona, total, status, batas waktu.</td><td>Satu pesanan banyak item, pembayaran, penyesuaian, dan log status.</td></tr>
+<tr><td><b>order_items dan order_item_options</b></td><td>Salinan nama, harga, varian, unit, opsi, dan teks.</td><td>Milik pesanan.</td></tr>
+<tr><td><b>order_adjustments</b></td><td>Denda, kerusakan, perpanjangan, potongan: nominal, alasan, pencatat.</td><td>Milik pesanan.</td></tr>
+<tr><td><b>order_status_logs</b></td><td>Riwayat perubahan status beserta pelaku.</td><td>Milik pesanan.</td></tr>
+<tr><td><b>order_number_sequences</b></td><td>Urutan nomor pesanan per bulan.</td><td>Dipakai saat membuat nomor.</td></tr>
+<tr><td><b>payments</b></td><td>Jenis, metode, jumlah tagihan, kode unik, jumlah diterima, status, alasan tolak.</td><td>Milik pesanan. Refund menunjuk pembayaran asalnya.</td></tr>
+<tr><td><b>payment_accounts</b></td><td>Rekening bank dan QRIS, nama pemilik, status aktif.</td><td>Ditampilkan pada halaman pembayaran.</td></tr>
+<tr><td><b>rental_inspections</b></td><td>Daftar periksa serah dan kembali, catatan, foto.</td><td>Milik pesanan.</td></tr>
+<tr><td><b>delivery_zones</b></td><td>Zona jarak dan ongkos antar.</td><td>Satu zona banyak pesanan.</td></tr>
+<tr><td><b>damage_tariffs</b></td><td>Tarif acuan kerusakan.</td><td>Dipakai saat mencatat kerusakan.</td></tr>
+<tr><td><b>settings</b></td><td>Semua nilai bisnis yang bisa diubah.</td><td>Dibaca oleh seluruh Action.</td></tr>
+<tr><td><b>activity_logs</b></td><td>Jejak perubahan penting: pelaku, waktu, nilai sebelum dan sesudah.</td><td>Terkait pengguna staf.</td></tr>
+</tbody>
+</table>
+
+<h2>5.3 Use Case Diagram</h2>
+<p>Ringkasan use case untuk setiap aktor pada SIBERKAH:</p>
+<table class="sm">
+<thead><tr><th style="width:17%">Aktor</th><th style="width:30%">Use Case</th><th>Deskripsi Singkat</th></tr></thead>
+<tbody>
+<tr><td><b>Pengunjung, Pelanggan</b></td><td>UC-01 Lihat Katalog</td><td>Melihat produk, foto, dan harga tanpa login.</td></tr>
+<tr><td><b>Pengunjung, Pelanggan</b></td><td>UC-02 Cari Berdasarkan Tanggal</td><td>Mengetahui produk sewa yang tersedia pada tanggal acara.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-03 Masuk dengan OTP</td><td>Masuk memakai nomor HP dan kode sekali pakai.</td></tr>
+<tr><td><b>Pelanggan, Staf</b></td><td>UC-04 Keluar</td><td>Mengakhiri sesi.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-05 Buat Pesanan</td><td>Memesan produk dan menerima tagihan.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-06 Isi Pilihan dan Ucapan</td><td>Memilih varian, opsi, dan menulis teks papan.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-07 Bayar Pesanan</td><td>Membayar sesuai petunjuk dan jumlah persis.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-08 Lacak Pesanan</td><td>Memantau status pesanan.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-09 Hubungi Toko lewat WhatsApp</td><td>Membuka WhatsApp dengan pesan terisi.</td></tr>
+<tr><td><b>Owner, Admin, Staf</b></td><td>UC-10 Masuk Staf</td><td>Masuk dengan email dan sandi.</td></tr>
+<tr><td><b>Admin, Owner</b></td><td>UC-11 Verifikasi Pembayaran</td><td>Mencocokkan dan memverifikasi pembayaran.</td></tr>
+<tr><td><b>Staf Kurir</b></td><td>UC-12 Serah Terima Barang</td><td>Memeriksa, memotret, dan menyerahkan barang.</td></tr>
+<tr><td><b>Staf Kurir</b></td><td>UC-13 Terima Pengembalian</td><td>Memeriksa dan mencatat barang sewa yang kembali.</td></tr>
+<tr><td><b>Owner</b></td><td>UC-14 Kelola Katalog</td><td>Mengelola produk, varian, opsi, dan foto.</td></tr>
+<tr><td><b>Owner</b></td><td>UC-15 Kelola Pengaturan</td><td>Mengubah nilai bisnis.</td></tr>
+<tr><td><b>Owner</b></td><td>UC-16 Lihat Rekap</td><td>Melihat ringkasan pesanan dan pendapatan.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-17 Batalkan Pesanan</td><td>Membatalkan atau mengajukan pembatalan.</td></tr>
+<tr><td><b>Admin, Owner</b></td><td>UC-18 Tangani Pembayaran Tidak Sesuai</td><td>Menolak atau menerima dengan catatan.</td></tr>
+<tr><td><b>Admin, Owner</b></td><td>UC-19 Catat Pelunasan dan Tunai</td><td>Mencatat pelunasan dan pembayaran tunai.</td></tr>
+<tr><td><b>Admin, Owner</b></td><td>UC-20 Catat Refund dan Jaminan</td><td>Mencatat refund dan status deposit.</td></tr>
+<tr><td><b>Admin, Owner</b></td><td>UC-21 Input Pesanan Manual</td><td>Memasukkan pesanan dari WhatsApp atau toko.</td></tr>
+<tr><td><b>Owner, Admin</b></td><td>UC-22 Atur Blokir Tanggal dan Kapasitas</td><td>Menutup tanggal dan mengatur kapasitas.</td></tr>
+<tr><td><b>Owner</b></td><td>UC-23 Kelola Akun Staf</td><td>Meminta pembuatan atau penonaktifan akun lewat pengembang.</td></tr>
+<tr><td><b>Owner, Admin</b></td><td>UC-24 Kelola Unit Sewa</td><td>Menambah, mengaktifkan, dan menonaktifkan unit.</td></tr>
+<tr><td><b>Staf, Admin, Owner</b></td><td>UC-25 Lihat Agenda Harian</td><td>Melihat antaran, jemputan, dan antrean produksi.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-26 Lihat Riwayat Pesanan</td><td>Melihat seluruh pesanan lama.</td></tr>
+<tr><td><b>Pelanggan</b></td><td>UC-27 Kelola Profil dan Hapus Akun</td><td>Mengubah nama atau menganonimkan akun.</td></tr>
+<tr><td><b>Admin, Owner</b></td><td>UC-28 Aktifkan Kembali Pesanan Kedaluwarsa</td><td>Menghidupkan kembali pesanan bila tanggal masih kosong.</td></tr>
+</tbody>
+</table>
+
+<h2>5.4 Activity Diagram dan Alur Kerja</h2>
+<p>Berikut alur kerja untuk proses-proses utama dalam SIBERKAH.</p>
+<h3>A. Alur Pemesanan (Pelanggan)</h3>
+<table class="k sm">
+<thead><tr><th style="width:6%">No.</th><th style="width:28%">Aktivitas</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Membuka katalog</td><td>Pelanggan melihat produk tanpa login.</td></tr>
+<tr><td class="tc">2</td><td>Memilih tanggal dan varian</td><td>Sistem hanya menampilkan unit yang masih kosong.</td></tr>
+<tr><td class="tc">3</td><td>Mengisi opsi dan teks</td><td>Pratinjau teks tampil langsung.</td></tr>
+<tr><td class="tc">4</td><td>Memilih cara serah</td><td>Diantar dengan alamat dan titik peta, atau diambil sendiri untuk buket.</td></tr>
+<tr><td class="tc">5</td><td>Masuk dengan OTP</td><td>Bila belum login, pelanggan masuk lalu kembali ke langkah terakhir.</td></tr>
+<tr><td class="tc">6</td><td>Memeriksa ringkasan</td><td>Server menghitung harga, ongkos antar, total, dan aturan DP.</td></tr>
+<tr><td class="tc">7</td><td>Menyetujui Syarat Sewa dan memesan</td><td>Sistem mengunci unit dan membuat nomor pesanan dan tagihan.</td></tr>
+<tr><td class="tc">8</td><td>Membayar</td><td>Pelanggan transfer sesuai jumlah persis sebelum batas waktu.</td></tr>
+<tr><td class="tc">9</td><td>Menunggu verifikasi</td><td>Admin memeriksa dan memverifikasi. Status menjadi Dikonfirmasi.</td></tr>
+</tbody>
+</table>
+<h3>B. Alur Penanganan Pesanan (Admin dan Staf)</h3>
+<table class="k sm">
+<thead><tr><th style="width:6%">No.</th><th style="width:28%">Aktivitas</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Memeriksa pembayaran masuk</td><td>Admin mencocokkan mutasi dengan daftar tagihan menunggu.</td></tr>
+<tr><td class="tc">2</td><td>Memverifikasi atau menolak</td><td>Selisih jumlah ditolak atau diterima dengan catatan.</td></tr>
+<tr><td class="tc">3</td><td>Mengatur jadwal desain dan antar</td><td>Admin memastikan teks dan jadwal pengiriman.</td></tr>
+<tr><td class="tc">4</td><td>Memproduksi</td><td>Staf produksi menandai Sedang Diproduksi dan teks terkunci.</td></tr>
+<tr><td class="tc">5</td><td>Menandai siap</td><td>Barang siap diserahkan.</td></tr>
+<tr><td class="tc">6</td><td>Mengantar dan menyerahkan</td><td>Kurir mengisi daftar periksa, memotret, memastikan saldo nol, lalu mengubah status.</td></tr>
+<tr><td class="tc">7</td><td>Menjemput barang sewa</td><td>Kurir memeriksa ulang, memotret, dan mencatat denda atau kerusakan.</td></tr>
+<tr><td class="tc">8</td><td>Menyelesaikan tagihan</td><td>Admin memastikan tidak ada tagihan tersisa dan jaminan sudah dikembalikan atau diperhitungkan.</td></tr>
+<tr><td class="tc">9</td><td>Pesanan selesai</td><td>Status menjadi Selesai dan data masuk rekap.</td></tr>
+</tbody>
+</table>
+
+<h2>5.5 Design Antarmuka (UI/UX)</h2>
+<p>Antarmuka dirancang dengan prinsip mobile-first. Warna utama diambil dari logo dan foto asli akun @berkahkreatif_ dengan alat pengambil warna, bukan dari palet bawaan. Nilai pastinya, bersama jenis huruf yang dipasang sendiri di server, ditetapkan di dokumen token desain. Setiap pasangan warna teks dan latar diperiksa agar kontrasnya memenuhi 4,5 banding 1. Semua foto produk berasal dari dokumentasi asli usaha, bukan foto stok. Halaman untuk pelanggan dibuat ringan dan fokus pada tanggal serta foto, sedangkan halaman staf dibuat padat dan cepat dibaca.</p>
+<h3>Halaman yang Dikembangkan</h3>
+<table class="sm">
+<thead><tr><th style="width:5%">No.</th><th style="width:25%">Halaman</th><th style="width:15%">Pengguna</th><th>Fitur Utama</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td><b>Beranda</b></td><td>Semua</td><td>Pilihan produk unggulan, kolom tanggal acara, tombol WhatsApp.</td></tr>
+<tr><td class="tc">2</td><td><b>Katalog</b></td><td>Semua</td><td>Daftar produk, filter kategori, pencarian tanggal.</td></tr>
+<tr><td class="tc">3</td><td><b>Detail Produk</b></td><td>Semua</td><td>Galeri foto, varian, opsi, ketersediaan, tombol Pesan.</td></tr>
+<tr><td class="tc">4</td><td><b>Masuk dengan OTP</b></td><td>Pelanggan</td><td>Isi nomor HP, isi kode, kirim ulang dengan hitung mundur.</td></tr>
+<tr><td class="tc">5</td><td><b>Pemesanan</b></td><td>Pelanggan</td><td>Langkah pilihan, teks dengan pratinjau, cara serah, ringkasan harga.</td></tr>
+<tr><td class="tc">6</td><td><b>Pembayaran</b></td><td>Pelanggan</td><td>Jumlah persis, rekening dan QRIS, hitung mundur batas waktu.</td></tr>
+<tr><td class="tc">7</td><td><b>Pesanan Saya</b></td><td>Pelanggan</td><td>Daftar pesanan dan riwayat.</td></tr>
+<tr><td class="tc">8</td><td><b>Detail dan Lacak Pesanan</b></td><td>Pelanggan</td><td>Garis waktu status, teks status, tombol sesuai status, tautan WhatsApp.</td></tr>
+<tr><td class="tc">9</td><td><b>Profil</b></td><td>Pelanggan</td><td>Ubah nama, hapus akun.</td></tr>
+<tr><td class="tc">10</td><td><b>Syarat Sewa</b></td><td>Semua</td><td>Aturan sewa, denda, dan refund.</td></tr>
+<tr><td class="tc">11</td><td><b>Kebijakan Privasi</b></td><td>Semua</td><td>Data yang dikumpulkan dan hak pelanggan.</td></tr>
+<tr><td class="tc">12</td><td><b>Kontak dan Lokasi</b></td><td>Semua</td><td>Alamat, peta, jam buka.</td></tr>
+<tr><td class="tc">13</td><td><b>Masuk Staf</b></td><td>Staf</td><td>Email dan sandi, ganti sandi pertama.</td></tr>
+<tr><td class="tc">14</td><td><b>Hari Ini</b></td><td>Staf</td><td>Pesanan menunggu, antaran dan jemputan, produksi, peringatan.</td></tr>
+<tr><td class="tc">15</td><td><b>Daftar dan Detail Pesanan</b></td><td>Staf</td><td>Filter, pencarian, ubah status sesuai peran.</td></tr>
+<tr><td class="tc">16</td><td><b>Verifikasi Pembayaran</b></td><td>Admin, Owner</td><td>Daftar tagihan menunggu, verifikasi, tolak, terima dengan catatan.</td></tr>
+<tr><td class="tc">17</td><td><b>Catat Pembayaran dan Refund</b></td><td>Admin, Owner</td><td>Pelunasan, tunai, deposit, refund sesuai hasil hitung.</td></tr>
+<tr><td class="tc">18</td><td><b>Pesanan Manual</b></td><td>Admin, Owner</td><td>Formulir pesanan dari WhatsApp atau toko.</td></tr>
+<tr><td class="tc">19</td><td><b>Kalender Blokir dan Kapasitas</b></td><td>Admin, Owner</td><td>Tutup tanggal, blokir unit, atur kapasitas.</td></tr>
+<tr><td class="tc">20</td><td><b>Antrean Produksi</b></td><td>Staf Produksi</td><td>Antrean rangkai menurut tanggal acara.</td></tr>
+<tr><td class="tc">21</td><td><b>Agenda Antar dan Jemput</b></td><td>Staf Kurir</td><td>Urutan jam, alamat, peta, daftar periksa, unggah foto.</td></tr>
+<tr><td class="tc">22</td><td><b>Katalog Admin</b></td><td>Owner</td><td>Kelola produk, varian, opsi, foto, draf dan terbit.</td></tr>
+<tr><td class="tc">23</td><td><b>Unit Sewa</b></td><td>Owner, Admin</td><td>Daftar unit, aktif dan nonaktif.</td></tr>
+<tr><td class="tc">24</td><td><b>Pengaturan</b></td><td>Owner</td><td>Nilai bisnis, rekening, tarif zona, tarif kerusakan.</td></tr>
+<tr><td class="tc">25</td><td><b>Rekap</b></td><td>Owner</td><td>Ringkasan periode dan unduhan data anonim.</td></tr>
+<tr><td class="tc">26</td><td><b>Log Aktivitas</b></td><td>Owner</td><td>Jejak perubahan penting, hanya dibaca.</td></tr>
+</tbody>
+</table>
+
+<!-- ================= BAB 6 ================= -->
+<h1>6. Batasan Sistem</h1>
+<p>Hal-hal berikut sengaja tidak dikerjakan pada versi ini, supaya hasil akhir tetap rapi dan selesai tepat waktu.</p>
+<table class="sm">
+<thead><tr><th style="width:5%">No.</th><th style="width:28%">Batasan</th><th>Keterangan dan Alasan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td><b>Tanpa payment gateway (BYR-03)</b></td><td>Pembayaran diverifikasi manual. Proses persetujuan penyedia gateway terlalu lama untuk jadwal ini.</td></tr>
+<tr><td class="tc">2</td><td><b>Tanpa ganti nomor HP (AUTH-04)</b></td><td>Nomor HP menjadi identitas akun. Penggantian nomor butuh prosedur verifikasi tambahan.</td></tr>
+<tr><td class="tc">3</td><td><b>Tanpa ekspor PDF dan Excel (LAP-02)</b></td><td>Tersedia unduhan CSV anonim. Format lain menyusul pada versi berikutnya.</td></tr>
+<tr><td class="tc">4</td><td><b>Tanpa pengingat WhatsApp otomatis (NTF-01)</b></td><td>Integrasi resmi berbayar dan layanan tidak resmi berisiko diblokir. Sistem hanya menyediakan tautan wa.me.</td></tr>
+<tr><td class="tc">5</td><td><b>Tanpa penawaran harga custom (PSN-09)</b></td><td>Harga custom memakai harga baku per komponen, sehingga tidak ada tahap menunggu penawaran.</td></tr>
+<tr><td class="tc">6</td><td><b>Tanpa perpanjangan otomatis (PSN-12)</b></td><td>Perpanjangan dicatat manual sebagai penyesuaian tagihan.</td></tr>
+<tr><td class="tc">7</td><td><b>Tanpa paket dan diskon bundling</b></td><td>Belum ada aturan harga paket yang pasti.</td></tr>
+<tr><td class="tc">8</td><td><b>Tanpa unggah KTP atau KTM</b></td><td>Menjaga privasi pelanggan. Staf cukup mencatat identitas sudah diperiksa.</td></tr>
+<tr><td class="tc">9</td><td><b>Tanpa aplikasi seluler native</b></td><td>Sistem berupa web responsif yang dibuka dari browser.</td></tr>
+<tr><td class="tc">10</td><td><b>Tanpa multi-cabang</b></td><td>Sistem untuk satu usaha.</td></tr>
+<tr><td class="tc">11</td><td><b>Tanpa stok bahan baku</b></td><td>Hanya stok produk siap jual dan unit sewa yang dihitung. Palet bunga ditandai habis secara manual.</td></tr>
+<tr><td class="tc">12</td><td><b>Tanpa akuntansi dan pajak</b></td><td>Rekap hanya merangkum pesanan dan pembayaran, bukan pembukuan resmi.</td></tr>
+<tr><td class="tc">13</td><td><b>Tanpa voucher, loyalti, dan ulasan</b></td><td>Di luar kebutuhan inti pemesanan.</td></tr>
+<tr><td class="tc">14</td><td><b>Tanpa obrolan internal dan notifikasi dorong</b></td><td>Komunikasi memakai WhatsApp.</td></tr>
+<tr><td class="tc">15</td><td><b>Tanpa integrasi bank otomatis</b></td><td>Pencocokan mutasi dilakukan admin secara manual.</td></tr>
+<tr><td class="tc">16</td><td><b>Hanya Bahasa Indonesia</b></td><td>Pelanggan utama berbahasa Indonesia.</td></tr>
+<tr><td class="tc">17</td><td><b>Tanpa halaman kelola akun staf</b></td><td>Akun staf dibuat lewat perintah artisan oleh pengembang.</td></tr>
+<tr><td class="tc">18</td><td><b>Tanpa pengadaan perangkat keras</b></td><td>Ponsel, kamera, dan kendaraan bukan bagian dari sistem.</td></tr>
+</tbody>
+</table>
+
+<!-- ================= BAB 7 ================= -->
+<h1>7. Rencana Implementasi</h1>
+<p>Saat dokumen ini disusun belum ada kode program yang dibuat. Bab ini memuat jadwal, kriteria selesai, cara menjalankan di komputer lokal, serta rencana peralihan dan pengelolaan risiko.</p>
+
+<h2>7.1 Jadwal Pengerjaan</h2>
+<table class="sm">
+<thead><tr><th style="width:17%">Tanggal</th><th style="width:48%">Pekerjaan</th><th>Keluaran</th></tr></thead>
+<tbody>
+<tr><td>14 November</td><td>Dokumen dan repositori</td><td>SRS draf 1.1</td></tr>
+<tr><td>15 November</td><td>Pengamatan dan pengumpulan bukti</td><td>Tangkapan layar di docs/bukti</td></tr>
+<tr><td>16 November</td><td>SRS final, moodboard, inisialisasi Laravel. Gerbang keputusan pertama.</td><td>Proyek berjalan, SRS 1.1</td></tr>
+<tr><td>17 November</td><td>Wireframe versi ponsel</td><td>Wireframe halaman utama</td></tr>
+<tr><td>18 November</td><td>Token desain, kit UI, masuk staf</td><td>Desain dasar dan login staf</td></tr>
+<tr><td>19 November</td><td>OTP dan keputusan penyedia OTP</td><td>Masuk pelanggan berfungsi</td></tr>
+<tr><td>20 November</td><td>Katalog dan pencarian tanggal</td><td>Katalog dan ketersediaan</td></tr>
+<tr><td>21 November</td><td>Pembuatan pesanan dan uji konkurensi</td><td>PlaceOrder lolos uji</td></tr>
+<tr><td>22 November</td><td>Pesanan custom, keputusan hosting dan domain. Gerbang keputusan kedua.</td><td>Custom order, hosting terpilih</td></tr>
+<tr><td>23 November</td><td>Pembayaran dan kedaluwarsa</td><td>Verifikasi dan penjadwal</td></tr>
+<tr><td>24 November</td><td>Dasbor dan alur status</td><td>Hari Ini dan perubahan status</td></tr>
+<tr><td>25 November</td><td>Kelola katalog dan pelacakan</td><td>Katalog admin, Pesanan Saya</td></tr>
+<tr><td>26 November</td><td>Kebutuhan Should dan animasi</td><td>Fitur tambahan</td></tr>
+<tr><td>27 November</td><td>Pengujian menyeluruh</td><td>Laporan uji</td></tr>
+<tr><td>28 November</td><td>Penerapan di hosting dan UAT</td><td>Situs aktif</td></tr>
+<tr><td>29 November</td><td>Perbaikan dan pembekuan fitur</td><td>Versi rilis</td></tr>
+<tr><td>30 November</td><td>Serah terima</td><td>Sistem dan dokumentasi</td></tr>
+</tbody>
+</table>
+
+<h2>7.2 Kriteria Selesai dan Pengujian</h2>
+<table class="sm">
+<thead><tr><th style="width:20%">Jenis Uji</th><th style="width:44%">Cara</th><th>Batas Lulus</th></tr></thead>
+<tbody>
+<tr><td><b>Unit (U)</b></td><td>Pest untuk rumus harga, batas jam, refund, denda (kasus 3, 4, dan 5 jam), dan kode unik.</td><td>Semua lulus.</td></tr>
+<tr><td><b>Fitur (F)</b></td><td>Pest untuk alur OTP, pemesanan, pembayaran, dan perubahan status.</td><td>Semua lulus.</td></tr>
+<tr><td><b>Konkurensi (K)</b></td><td>50 permintaan bersamaan pada satu unit, 20 permintaan pada kapasitas 1, dan 50 pembuatan nomor pesanan.</td><td>Tepat satu berhasil pada unit terakhir, tidak ada nomor ganda, dan reservations:audit menemukan nol anomali.</td></tr>
+<tr><td><b>Performa (P)</b></td><td>Lighthouse, k6 atau JMeter, dan pengukuran pencarian tanggal.</td><td>Sesuai NFR-01 sampai NFR-07.</td></tr>
+<tr><td><b>Keamanan</b></td><td>Pemeriksaan akses data orang lain, CSRF, dan batas percobaan.</td><td>Tidak ada temuan terbuka.</td></tr>
+<tr><td><b>Kegunaan (M)</b></td><td>Kuesioner SUS dan uji alur lima langkah.</td><td>SUS minimal 68 dengan paling sedikit 15 responden.</td></tr>
+<tr><td><b>Perangkat (M)</b></td><td>Chrome, Edge, Firefox, Safari iOS, serta browser Instagram dan TikTok pada minimal dua perangkat.</td><td>Semua alur utama berjalan, dengan tangkapan layar.</td></tr>
+<tr><td><b>Pemulihan</b></td><td>Latihan memulihkan cadangan sebelum 28 November.</td><td>Sesuai NFR-28.</td></tr>
+</tbody>
+</table>
+<p><b>Definisi selesai.</b> Seluruh kebutuhan Must lulus uji, tidak ada galat berat yang terbuka, basis data dapat dibangun dari nol lewat migrasi, dan README menjelaskan seluruh langkah pemasangan. Bila akses ke pengguna sebenarnya belum tersedia, responden SUS berasal dari calon pelanggan sebaya dan hal ini dicatat jelas pada laporan.</p>
+
+<h2>7.3 Cara Menjalankan di Komputer Lokal</h2>
+<p><b>Prasyarat:</b></p>
+<ul>
+<li>PHP versi 8.5 beserta ekstensi yang dibutuhkan Laravel</li>
+<li>Laravel versi 11.x</li>
+<li>XAMPP (Apache dan MySQL), Composer, Node.js, dan Git</li>
+</ul>
+<p><b>Langkah pemasangan:</b></p>
+<ol>
+<li>Salin proyek dari repositori Git ke komputer.</li>
+<li>Jalankan composer install, lalu npm install.</li>
+<li>Salin .env.example menjadi .env. Isi pengaturan basis data dan biarkan OTP_DRIVER bernilai log.</li>
+<li>Jalankan php artisan key:generate.</li>
+<li>Buat basis data kosong di phpMyAdmin dengan nama yang sama seperti di .env.</li>
+<li>Jalankan php artisan migrate --seed untuk membuat tabel, pengaturan awal, dan data contoh katalog.</li>
+<li>Buat akun Owner lewat perintah artisan pembuatan akun staf. Nama perintah dan caranya ada di README.</li>
+<li>Jalankan npm run dev, php artisan serve, php artisan queue:work, dan php artisan schedule:work.</li>
+<li>Buka http://127.0.0.1:8000 di browser.</li>
+</ol>
+<div class="catatan"><b>Catatan keamanan.</b> Dokumen ini sengaja tidak memuat akun dan sandi contoh. Mode OTP log hanya untuk komputer lokal dan ditolak oleh aplikasi saat berjalan di lingkungan produksi.</div>
+
+<h2>7.4 Rencana Peralihan, Pemangkasan Lingkup, dan Risiko</h2>
+<h3>Rencana Peralihan</h3>
+<p>Rencana berikut bergantung pada tersedianya akses ke pemilik dan karyawan. Bila akses tidak ada, kegiatan diganti pengujian dengan skenario dan data contoh, dan tidak diklaim sebagai penerapan nyata.</p>
+<table class="sm">
+<thead><tr><th style="width:35%">Kegiatan</th><th style="width:20%">Waktu</th><th>Keterangan</th></tr></thead>
+<tbody>
+<tr><td>Entri 15 sampai 20 produk ke katalog</td><td>25 sampai 27 November</td><td>Memakai foto asli.</td></tr>
+<tr><td>Latihan pemulihan cadangan</td><td>Sebelum 28 November</td><td>Sesuai NFR-28.</td></tr>
+<tr><td>Pelatihan staf</td><td>28 November</td><td>Admin, staf produksi, dan kurir.</td></tr>
+<tr><td>Uji penerimaan pengguna</td><td>28 sampai 29 November</td><td>Skenario pemesanan sampai selesai.</td></tr>
+<tr><td>Penggunaan paralel dengan WhatsApp</td><td>1 sampai 7 Desember</td><td>Pesanan dicatat di dua tempat.</td></tr>
+<tr><td>Kriteria beralih penuh</td><td>Setelah masa paralel</td><td>Minimal 10 pesanan tanpa bentrok jadwal.</td></tr>
+<tr><td>Rencana mundur</td><td>Kapan saja</td><td>Kembali ke WhatsApp bila terjadi galat berat.</td></tr>
+</tbody>
+</table>
+<h3>Urutan Pemangkasan Lingkup</h3>
+<p>Gerbang keputusan dilakukan pada 16 November dan 22 November. Bila kebutuhan Must belum selesai pada 22 November, pemangkasan berikut dijalankan berurutan tanpa perundingan ulang.</p>
+<ol>
+<li>Sederhanakan KAT-07: hilangkan opsi per satuan.</li>
+<li>PSN-15: pesanan hari yang sama hanya lewat WhatsApp.</li>
+<li>STK-01: ganti dengan penanda tersedia atau habis secara manual.</li>
+<li>KTL-04: tanpa konversi WebP.</li>
+<li>AUD-01: catat hanya perubahan uang dan status.</li>
+<li>BYR-08: tunai dicatat lewat catatan manual.</li>
+<li>PSN-10: kapasitas produksi menjadi peringatan saja.</li>
+<li>KTL-03: arsip diganti penanda aktif atau nonaktif.</li>
+</ol>
+<h3>Risiko</h3>
+<table class="sm">
+<thead><tr><th style="width:7%">Kode</th><th style="width:25%">Risiko</th><th style="width:25%">Dampak</th><th>Penanganan</th></tr></thead>
+<tbody>
+<tr><td><b>R-01</b></td><td>Penyedia OTP belum jelas atau layanan diblokir</td><td>Pelanggan tidak bisa masuk</td><td>Putuskan paling lambat 19 November. Pakai antarmuka OtpSender agar penyedia mudah diganti. Hindari layanan WhatsApp tidak resmi. Sediakan AUTH-11.</td></tr>
+<tr><td><b>R-02</b></td><td>Pemilik dan admin belum bisa dihubungi</td><td>Nilai bisnis belum tervalidasi dan tidak ada uji penerimaan</td><td>Simpan nilai sebagai pengaturan, siapkan Lembar Validasi satu halaman, dan laporkan keterbatasan dengan jujur.</td></tr>
+<tr><td><b>R-03</b></td><td>Kebutuhan Must terlalu banyak untuk 17 hari</td><td>Sebagian fitur tidak selesai</td><td>Gerbang 16 dan 22 November serta urutan pemangkasan.</td></tr>
+<tr><td><b>R-04</b></td><td>Hosting tanpa cron dan antrean</td><td>Penahanan tidak kedaluwarsa otomatis</td><td>Pastikan cron setiap menit sebelum membeli. Alternatifnya VPS.</td></tr>
+<tr><td><b>R-05</b></td><td>Staf enggan memakai sistem</td><td>Sistem tidak dipakai</td><td>Formulir sederhana, pelatihan, dan masa paralel.</td></tr>
+<tr><td><b>R-06</b></td><td>Foto asli produk terlambat</td><td>Katalog kosong atau tidak meyakinkan</td><td>Pakai foto dari akun resmi dengan izin pemilik, bukan foto stok.</td></tr>
+<tr><td><b>R-07</b></td><td>Data uji terlalu sedikit</td><td>Evaluasi lemah</td><td>Gunakan uji konkurensi, skenario simulasi, dan nyatakan batas klaim.</td></tr>
+<tr><td><b>R-08</b></td><td>Animasi tidak mulus di browser Instagram dan TikTok</td><td>Kesan buruk bagi pelanggan</td><td>Uji sesuai NFR-33, pakai animasi ringan, dan hormati preferensi gerak.</td></tr>
+<tr><td><b>R-09</b></td><td>Izin memakai SRS versi 1 belum dikonfirmasi</td><td>Dokumen belum layak dikirim sebagai final</td><td>Minta izin tertulis dari Rifa Nadliaul Jannah dan cantumkan namanya.</td></tr>
+<tr><td><b>R-10</b></td><td>Pengembang tunggal sakit</td><td>Jadwal mundur</td><td>Gunakan hari penyangga 29 November dan terapkan pemangkasan.</td></tr>
+</tbody>
+</table>
+
+<!-- ================= LAMPIRAN A ================= -->
+<h1>Lampiran A. Matriks Keterlacakan</h1>
+<p>Tabel berikut menghubungkan setiap modul dengan use case, aturan bisnis, kebutuhan non-fungsional, dan jenis ujinya, sehingga tidak ada kebutuhan yang berdiri tanpa alasan atau tanpa cara pembuktian.</p>
+<table class="sm">
+<thead><tr><th style="width:8%">SCP</th><th style="width:25%">Kebutuhan</th><th style="width:17%">Use Case</th><th style="width:20%">Aturan Bisnis</th><th style="width:17%">NFR</th><th>Uji</th></tr></thead>
+<tbody>
+<tr><td><b>01</b></td><td>AUTH-01, 02, 03, 05, 06, 07, 08, 09, 10, 11, AKN-02</td><td>UC-03, 04, 10, 23, 27</td><td>BR-24</td><td>NFR-08, 09, 11, 13, 15</td><td class="tc">U, F, M</td></tr>
+<tr><td><b>02</b></td><td>KAT-01 sampai 07, LGL-01, KON-01, ANI-01</td><td>UC-01, 02</td><td>BR-03, 06, 07</td><td>NFR-01 sampai 04, 18, 21, 25</td><td class="tc">F, P, M</td></tr>
+<tr><td><b>03</b></td><td>PSN-01 sampai 08, 10, 11, 13, 14, 15, STK-01</td><td>UC-05, 06, 17, 28</td><td>BR-01 sampai 04, 06, 07, 14, 15, 18, 19, 22</td><td>NFR-05, 06, 07, 19, 29</td><td class="tc">K, U, F, M</td></tr>
+<tr><td><b>04</b></td><td>BYR-01, 02, 04 sampai 11</td><td>UC-07, 11, 18, 19, 20</td><td>BR-04, 05, 12, 13, 15, 16, 26</td><td>NFR-10, 29</td><td class="tc">U, F, M</td></tr>
+<tr><td><b>05</b></td><td>AKN-01, NTF-02</td><td>UC-08, 09, 26</td><td>BR-14, 25</td><td>NFR-11, 18</td><td class="tc">F</td></tr>
+<tr><td><b>06</b></td><td>OPS-01 sampai 10, ADJ-01</td><td>UC-12, 13, 21, 22, 25</td><td>BR-08 sampai 12, 17, 20, 21, 25, 26</td><td>NFR-17, 29, 30</td><td class="tc">U, F</td></tr>
+<tr><td><b>07</b></td><td>KTL-01 sampai 05, SET-01, AUD-01</td><td>UC-14, 15, 24</td><td>BR-11, 23</td><td>NFR-14, 16, 17</td><td class="tc">F</td></tr>
+<tr><td><b>08</b></td><td>LAP-01, LAP-03</td><td>UC-16</td><td>BR-23, 24</td><td>NFR-15, 31</td><td class="tc">F</td></tr>
+</tbody>
+</table>
+<h3>Ringkasan Prioritas per Modul</h3>
+<table class="sm">
+<thead><tr><th style="width:36%">Modul</th><th>Must</th><th>Should</th><th>Could</th><th>Won't</th><th>Jumlah</th></tr></thead>
+<tbody>
+<tr><td>SCP-01 Masuk dengan OTP dan peran</td><td class="tc">7</td><td class="tc">4</td><td class="tc">0</td><td class="tc">1</td><td class="tc">12</td></tr>
+<tr><td>SCP-02 Katalog dan cari tanggal</td><td class="tc">5</td><td class="tc">5</td><td class="tc">0</td><td class="tc">0</td><td class="tc">10</td></tr>
+<tr><td>SCP-03 Pemesanan</td><td class="tc">11</td><td class="tc">2</td><td class="tc">1</td><td class="tc">2</td><td class="tc">16</td></tr>
+<tr><td>SCP-04 Pembayaran</td><td class="tc">9</td><td class="tc">0</td><td class="tc">1</td><td class="tc">1</td><td class="tc">11</td></tr>
+<tr><td>SCP-05 Pelacakan dan WhatsApp</td><td class="tc">2</td><td class="tc">0</td><td class="tc">0</td><td class="tc">1</td><td class="tc">3</td></tr>
+<tr><td>SCP-06 Operasional harian</td><td class="tc">4</td><td class="tc">7</td><td class="tc">0</td><td class="tc">0</td><td class="tc">11</td></tr>
+<tr><td>SCP-07 Katalog dan pengaturan</td><td class="tc">5</td><td class="tc">2</td><td class="tc">0</td><td class="tc">0</td><td class="tc">7</td></tr>
+<tr><td>SCP-08 Rekap dan laporan</td><td class="tc">0</td><td class="tc">2</td><td class="tc">0</td><td class="tc">1</td><td class="tc">3</td></tr>
+<tr><td><b>Jumlah</b></td><td class="tc"><b>43</b></td><td class="tc"><b>22</b></td><td class="tc"><b>2</b></td><td class="tc"><b>6</b></td><td class="tc"><b>73</b></td></tr>
+</tbody>
+</table>
+
+<!-- ================= LAMPIRAN B ================= -->
+<h1>Lampiran B. Register Nilai Bisnis dan Status Validasi</h1>
+<p>Tabel ini mencatat setiap nilai bisnis yang dipakai dokumen, seberapa yakin nilai itu, dan di mana buktinya. Bukti berupa tangkapan layar bertanggal yang disimpan pada folder docs/bukti, dan nama berkasnya diisi pada kolom Bukti. Nilai yang bersifat kebijakan (penahanan, refund, denda, kerusakan, peran, dan retensi) diturunkan menjadi Asumsi bila belum ada buktinya. Angka harga pasar dari pihak lain tidak dipakai sebagai fakta di dokumen ini tanpa sumber dan tanggal akses.</p>
+<table class="sm">
+<thead><tr><th style="width:5%">No.</th><th style="width:40%">Nilai</th><th style="width:17%">Status</th><th>Bukti</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Produk sewa: papan akrilik berdiri (bulat 60 cm dan persegi), papan bunga besar</td><td>Pengamatan</td><td>bukti-produk-sewa.png</td></tr>
+<tr><td class="tc">2</td><td>Produk jual: akrilik meja 30 × 40, papan mini</td><td>Pengamatan</td><td>bukti-produk-jual.png</td></tr>
+<tr><td class="tc">3</td><td>Buket segar, uang, dan snack dibuat custom. Buket artifisial dan pita satin stok siap jual dan bisa custom</td><td>Pengamatan</td><td>bukti-buket-jenis.png</td></tr>
+<tr><td class="tc">4</td><td>Varian papan: dua ukuran dan tiga warna (Bening, Putih Susu, Hitam Glossy)</td><td>Pengamatan</td><td>bukti-varian-warna.png</td></tr>
+<tr><td class="tc">5</td><td>Jumlah unit papan sekitar 10 sampai 12 (data contoh 12 unit)</td><td>Pengamatan</td><td>bukti-jumlah-unit.png</td></tr>
+<tr><td class="tc">6</td><td>Ukuran papan persegi: 60 × 80 atau 60 × 90</td><td>Belum jelas</td><td>bukti-ukuran-persegi.png (perlu pengukuran fisik)</td></tr>
+<tr><td class="tc">7</td><td>Palet bunga artifisial: Pastel, Monochrome, Earth Tone. Habis ditandai manual</td><td>Pengamatan</td><td>bukti-palet-bunga.png</td></tr>
+<tr><td class="tc">8</td><td>Harga sewa mulai Rp75.000</td><td>Pengamatan</td><td>bukti-harga-sewa.png</td></tr>
+<tr><td class="tc">9</td><td>Daftar harga lengkap semua produk (K10) — <b>template di bawah</b></td><td>Pengamatan</td><td>bukti-harga-produk.png (tangkapan layar Instagram/TikTok)</td></tr>
+<tr><td class="tc">10</td><td>Jasa buket uang Rp5.000 per lembar dan pembungkus Rp35.000 (contoh)</td><td>Pengamatan</td><td>bukti-harga-buket-uang.png</td></tr>
+<tr><td class="tc">11</td><td>Teks papan tiga kolom dengan batas 25, 45, dan 40 karakter</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">12</td><td>Lead time: H-1 pukul 15.00 (stiker cutting, buket artifisial custom), H-2 buket segar</td><td>Pengamatan</td><td>bukti-lead-time.png</td></tr>
+<tr><td class="tc">13</td><td>Hari yang sama: buket siap jual 30 sampai 60 menit, papan sewa 2 sampai 3 jam bila unit kosong</td><td>Pengamatan</td><td>bukti-hari-yang-sama.png</td></tr>
+<tr><td class="tc">14</td><td>Kapasitas buket custom 15 per hari</td><td>Pengamatan</td><td>bukti-kapasitas.png</td></tr>
+<tr><td class="tc">15</td><td>Sewa satu hari, antar 07.00, jemput 17.00 sampai 18.00, batas kembali 18.00</td><td>Pengamatan</td><td>bukti-jam-sewa.png</td></tr>
+<tr><td class="tc">16</td><td>Unit boleh disewa lagi esok hari tanpa jeda</td><td>Pengamatan</td><td>bukti-jeda-sewa.png</td></tr>
+<tr><td class="tc">17</td><td>Perpanjangan per jam 50 persen tarif harian</td><td>Pengamatan</td><td>bukti-perpanjangan.png</td></tr>
+<tr><td class="tc">18</td><td>Tanpa unggah KTP dan KTM</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">19</td><td>Deposit tunai Rp100.000 sampai Rp150.000 oleh kurir</td><td>Pengamatan</td><td>bukti-deposit.png</td></tr>
+<tr><td class="tc">20</td><td>Ambang DP Rp250.000 dan DP 50 persen</td><td>Pengamatan</td><td>bukti-ambang-dp.png</td></tr>
+<tr><td class="tc">21</td><td>Pelunasan paling lambat H-1 pukul 18.00. Pesanan custom tidak boleh bayar di tempat</td><td>Pengamatan</td><td>bukti-pelunasan.png</td></tr>
+<tr><td class="tc">22</td><td>Metode bayar: BCA, BRI atau Mandiri, Bank Jambi, dan QRIS</td><td>Pengamatan</td><td>bukti-metode-bayar.png</td></tr>
+<tr><td class="tc">23</td><td>Kode unik ditambahkan, rentang 1 sampai 999</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">24</td><td>Penahanan 60 menit, 30 menit pada periode puncak</td><td>Pengamatan</td><td>bukti-penahanan.png</td></tr>
+<tr><td class="tc">25</td><td>Ongkos zona: Rp10.000 (0 sampai 5 km), Rp20.000 (5 sampai 10 km), Rp35.000 (10 sampai 15 km)</td><td>Pengamatan</td><td>bukti-ongkos-zona.png</td></tr>
+<tr><td class="tc">26</td><td>Zona 15 sampai 20 km belum dilayani pada versi pertama</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">27</td><td>Jendela antar 07.00 sampai 19.00. Kloter pagi 06.00 sampai 07.30 hanya periode puncak</td><td>Pengamatan</td><td>bukti-jendela-antar.png</td></tr>
+<tr><td class="tc">28</td><td>Alamat toko, titik peta, jam buka (08.00 sampai 20.00, puncak 05.30 sampai 20.00)</td><td>Belum jelas</td><td>bukti-alamat-toko.png (perlu konfirmasi pemilik)</td></tr>
+<tr><td class="tc">29</td><td>Persentase refund menurut waktu dan status (100, 50, 0)</td><td>Pengamatan</td><td>bukti-refund.png</td></tr>
+<tr><td class="tc">30</td><td>Aturan refund memakai yang terkecil dari dua persentase</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">31</td><td>Biaya admin refund Rp0</td><td>Asumsi</td><td>Tidak perlu (kebijakan internal)</td></tr>
+<tr><td class="tc">32</td><td>Denda Rp25.000 per jam, paling banyak tarif harian unit</td><td>Keputusan perancang, menunggu persetujuan</td><td>Tidak perlu (perlu persetujuan pemilik)</td></tr>
+<tr><td class="tc">33</td><td>Tarif kerusakan: akrilik pecah Rp200.000, bunga Rp30.000 per tangkai, easel Rp100.000</td><td>Pengamatan</td><td>bukti-tarif-kerusakan.png</td></tr>
+<tr><td class="tc">34</td><td>Owner memutuskan pengecualian refund, harga, dan kerusakan</td><td>Pengamatan</td><td>bukti-pengecualian-owner.png</td></tr>
+<tr><td class="tc">35</td><td>Tiga peran staf: Owner, Admin CS dan Keuangan, Staf Produksi dan Kurir</td><td>Pengamatan</td><td>bukti-peran-staf.png</td></tr>
+<tr><td class="tc">36</td><td>Pesanan lewat WhatsApp tetap diterima dan dimasukkan admin</td><td>Pengamatan</td><td>bukti-pesanan-wa.png</td></tr>
+<tr><td class="tc">37</td><td>Sapaan "Kak" untuk WhatsApp dan konfirmasi, "Anda" untuk halaman resmi</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">38</td><td>Palet warna sage, dusty pink, dan krem</td><td>Belum jelas, warna asli akan diambil dari logo</td><td>bukti-palet-warna.png (perlu ekstraksi dari logo)</td></tr>
+<tr><td class="tc">39</td><td>Pelanggan: mahasiswa 18 sampai 24 tahun, keluarga wisudawan, BEM dan HIMA, instansi</td><td>Pengamatan</td><td>bukti-demografi-pelanggan.png</td></tr>
+<tr><td class="tc">40</td><td>Bulan ramai: April sampai Mei, Juli sampai Agustus, Oktober sampai November, Hari Ibu, Hari Guru, Valentine</td><td>Asumsi</td><td>Tidak perlu (asumsi berbasis pengalaman)</td></tr>
+<tr><td class="tc">41</td><td>Retensi data transaksi 3 tahun</td><td>Asumsi, perlu dipastikan ke dosen</td><td>Tidak perlu (perlu validasi dosen)</td></tr>
+<tr><td class="tc">42</td><td>Perkiraan 150 pesanan per bulan</td><td>Dikutip dari SRS versi 1</td><td>Tidak perlu</td></tr>
+<tr><td class="tc">43</td><td>Anggaran hosting dan domain Rp500.000 per bulan</td><td>Dikutip dari rencana anggaran proyek</td><td>Tidak perlu</td></tr>
+</tbody>
+</table>
+
+<h2>K10. Template Daftar Harga Lengkap (Isi dari Observasi)</h2>
+<p>Salin tabel ini ke spreadsheet, isi harga observasi, lalu buat tangkapan layar sebagai <code>bukti-harga-produk.png</code>.</p>
+
+<h3>A. Produk Sewa (per hari)</h3>
+<table class="sm">
+<thead><tr><th>No</th><th>Produk</th><th>Varian</th><th>Harga/Hari</th><th>Catatan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Papan Akrilik Berdiri Bulat 60 cm</td><td>Bening</td><td class="tc">Rp</td><td></td></tr>
+<tr><td class="tc">2</td><td>Papan Akrilik Berdiri Bulat 60 cm</td><td>Putih Susu</td><td class="tc">Rp</td><td></td></tr>
+<tr><td class="tc">3</td><td>Papan Akrilik Berdiri Bulat 60 cm</td><td>Hitam Glossy</td><td class="tc">Rp</td><td></td></tr>
+<tr><td class="tc">4</td><td>Papan Akrilik Berdiri Persegi</td><td>Bening</td><td class="tc">Rp</td><td>Ukuran: 60×80 / 60×90</td></tr>
+<tr><td class="tc">5</td><td>Papan Akrilik Berdiri Persegi</td><td>Putih Susu</td><td class="tc">Rp</td><td>Ukuran: 60×80 / 60×90</td></tr>
+<tr><td class="tc">6</td><td>Papan Akrilik Berdiri Persegi</td><td>Hitam Glossy</td><td class="tc">Rp</td><td>Ukuran: 60×80 / 60×90</td></tr>
+<tr><td class="tc">7</td><td>Papan Bunga Besar</td><td>Standar</td><td class="tc">Rp</td><td></td></tr>
+</tbody>
+</table>
+
+<h3>B. Produk Jual (satuan)</h3>
+<table class="sm">
+<thead><tr><th>No</th><th>Produk</th><th>Varian/Ukuran</th><th>Harga</th><th>Catatan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Papan Akrilik Meja</td><td>30 × 40 cm</td><td class="tc">Rp</td><td></td></tr>
+<tr><td class="tc">2</td><td>Papan Mini</td><td>Kecil</td><td class="tc">Rp</td><td></td></tr>
+</tbody>
+</table>
+
+<h3>C. Produk Custom (harga dasar + opsi)</h3>
+<table class="sm">
+<thead><tr><th>No</th><th>Produk</th><th>Harga Dasar</th><th>Opsi & Harga Tambahan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Buket Segar</td><td class="tc">Rp</td><td>Jenis bunga, ukuran, wrapping</td></tr>
+<tr><td class="tc">2</td><td>Buket Uang</td><td class="tc">Rp</td><td>Jasa Rp5.000/lembar (contoh), pembungkus Rp35.000</td></tr>
+<tr><td class="tc">3</td><td>Buket Snack</td><td class="tc">Rp</td><td>Jenis snack, ukuran, wrapping</td></tr>
+<tr><td class="tc">4</td><td>Bunga Wisuda</td><td class="tc">Rp</td><td>Jenis, ukuran, aksesoris</td></tr>
+<tr><td class="tc">5</td><td>Buket Artifisial Custom</td><td class="tc">Rp</td><td>Palet: Pastel / Monochrome / Earth Tone</td></tr>
+</tbody>
+</table>
+
+<h3>D. Produk Siap Jual (stok)</h3>
+<table class="sm">
+<thead><tr><th>No</th><th>Produk</th><th>Harga</th><th>Stok</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Buket Bunga Artifisial (siap jual)</td><td class="tc">Rp</td><td class="tc"></td></tr>
+<tr><td class="tc">2</td><td>Buket Pita Satin (siap jual)</td><td class="tc">Rp</td><td class="tc"></td></tr>
+</tbody>
+</table>
+
+<h3>E. Opsi Tambahan (untuk produk sewa)</h3>
+<table class="sm">
+<thead><tr><th>No</th><th>Opsi</th><th>Harga Tambahan</th><th>Catatan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>Easel Penyangga</td><td class="tc">Rp</td><td></td></tr>
+<tr><td class="tc">2</td><td>Palet Bunga Artifisial (stiker cutting)</td><td class="tc">Rp</td><td>Stok terbatas, ditandai manual</td></tr>
+<tr><td class="tc">3</td><td>Teks Stiker Cutting (H-1/H-2)</td><td class="tc">Rp</td><td>Termasuk di harga dasar custom</td></tr>
+<tr><td class="tc">4</td><td>Teks Spidol/Marker (Hari yang sama)</td><td class="tc">Rp</td><td>Termasuk di harga dasar sewa</td></tr>
+</tbody>
+</table>
+
+<h3>F. Ongkos Antar (Zona)</h3>
+<table class="sm">
+<thead><tr><th>Zona</th><th>Jarak</th><th>Ongkir</th><th>Catatan</th></tr></thead>
+<tbody>
+<tr><td class="tc">1</td><td>0 – 5 km</td><td class="tc">Rp10.000</td><td></td></tr>
+<tr><td class="tc">2</td><td>5 – 10 km</td><td class="tc">Rp20.000</td><td></td></tr>
+<tr><td class="tc">3</td><td>10 – 15 km</td><td class="tc">Rp35.000</td><td></td></tr>
+<tr><td class="tc">4</td><td>15 – 20 km</td><td class="tc">Belum dilayani</td><td>Versi 1</td></tr>
+</tbody>
+</table>
+
+<h3>G. Biaya Lain</h3>
+<table class="sm">
+<thead><tr><th>Item</th><th>Nominal</th><th>Catatan</th></tr></thead>
+<tbody>
+<tr><td>Deposit Jaminan (kurir terima)</td><td class="tc">Rp100.000 – 150.000</td><td>Tunai, dikembalikan/disita</td></tr>
+<tr><td>Denda Telat per Jam</td><td class="tc">Rp25.000</td><td>Max = tarif harian unit</td></tr>
+<tr><td>Perpanjangan per Jam</td><td class="tc">50% × tarif harian</td><td>Dibulatkan ke atas Rp1.000</td></tr>
+<tr><td>Kerusakan: Akrilik Pecah</td><td class="tc">Rp200.000</td><td>Owner putuskan dari foto</td></tr>
+<tr><td>Kerusakan: Bunga per Tangkai</td><td class="tc">Rp30.000</td><td></td></tr>
+<tr><td>Kerusakan: Easel Patah</td><td class="tc">Rp100.000</td><td></td></tr>
+</tbody>
+</table>
+
+<p class="catatan"><b>Catatan pengisian:</b> Semua harga berupa bilangan bulat rupiah. Isi dari tangkapan layar Instagram/TikTok @berkahkreatif_ tanggal 14 Nov 2026. Jika ada varian/opsi yang belum ada di menu, tambahkan baris. Simpan bukti sebagai <code>docs/bukti/bukti-harga-produk.png</code>.</p>
+
+<!-- AKHIR DOKUMEN -->
+</body>
+</html>
+```
