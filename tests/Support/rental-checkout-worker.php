@@ -32,6 +32,18 @@ if ($job['op'] === 'verify') {
     echo app(VerifyRentalTransfer::class)->record(Pengguna::findOrFail($job['staff']), $job['order'], $job['payload'])."\n";
     exit(0);
 }
+if ($job['op'] === 'bouquet') {
+    try {
+        app(\App\Actions\CreateBouquetOrder::class)->create(Pelanggan::findOrFail($job['customer']), $job['payload']);
+        echo "RESERVED\n";
+    } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        if ($e->getStatusCode() !== 409 || $e->getMessage() !== 'Kapasitas buket custom tidak mencukupi.') {
+            throw $e;
+        }
+        echo "UNAVAILABLE\n";
+    }
+    exit(0);
+}
 $customer = Pelanggan::findOrFail($job['customer']);
 try {
     app(CreateRentalOrder::class)->create($customer, $job['payload']);

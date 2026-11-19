@@ -450,6 +450,28 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('hari_reservasi', 1);
     }
 
+    public function test_two_carts_compete_for_last_production_slot_without_partial_stock_debit(): void
+    {
+        $rental = $this->fixture();
+        $cat = DB::table('kategori')->value('id');
+        $sale = DB::table('produk')->insertGetId(['kategori_id' => $cat, 'jenis' => 'jual', 'nama' => 'Siap', 'slug' => 'siap']);
+        $variant = DB::table('varian_produk')->insertGetId(['produk_id' => $sale, 'nama' => 'Biru', 'stok' => 2, 'harga' => 10000]);
+        $custom = DB::table('produk')->insertGetId(['kategori_id' => $cat, 'jenis' => 'custom', 'nama' => 'Buket', 'slug' => 'buket', 'harga_dasar' => 20000]);
+        DB::table('kapasitas_produksi_harian')->insert(['tanggal' => $rental['tanggal'], 'kelompok_kapasitas' => 'buket_custom', 'batas' => 1]);
+        $cart = ['tanggal' => $rental['tanggal'], 'versi_privasi' => 'test-v1', 'setuju_privasi' => true, 'cara_serah' => 'ambil', 'pembayaran' => 'penuh',
+            'items' => [['produk_id' => $sale, 'varian_id' => $variant, 'jumlah' => 1], ['produk_id' => $custom, 'jumlah' => 1]]];
+        $jobs = [];
+        foreach (['628123411111', '628123411112'] as $phone) {
+            $jobs[] = ['op' => 'bouquet', 'customer' => $this->customer($phone)->id, 'payload' => $cart + ['kunci' => (string) Str::uuid()]];
+        }
+        $this->assertEqualsCanonicalizing(['RESERVED','UNAVAILABLE'], $this->race($jobs));
+        $this->assertDatabaseCount('checkout_buket', 1);
+        $this->assertDatabaseCount('pesanan', 1);
+        $this->assertDatabaseCount('pembayaran', 1);
+        $this->assertDatabaseHas('varian_produk', ['id' => $variant, 'stok' => 1]);
+        $this->assertDatabaseHas('kapasitas_produksi_harian', ['terpakai' => 1]);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];
