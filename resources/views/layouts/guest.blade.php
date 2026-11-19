@@ -12,10 +12,10 @@
 </head>
 <body class="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50">
     <!-- Skip link for accessibility -->
-    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+    <a href="#main-content" class="sr-only focus:not-sr-only">Lewati ke konten utama</a>
 
     <!-- Header -->
-    <header class="sticky top-0 z-[var(--z-sticky)] bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200" id="main-header">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200" id="main-header">
         <div class="container-siberkah">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
@@ -24,7 +24,7 @@
                         <rect width="48" height="48" rx="12" fill="currentColor"/>
                         <path d="M12 24L20 32L36 16" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span class="font-bold text-xl hidden sm:block">SIBERKAH</span>
+                    <span class="font-bold text-xl block">SIBERKAH</span>
                 </a>
 
                 <!-- Navigation -->
@@ -52,12 +52,14 @@
                             </svg>
                             Pesanan
                         </a>
+                        @if(Route::has('otp.logout'))
                         <form action="{{ route('otp.logout') }}" method="POST" class="hidden sm:inline">
                             @csrf
                             <button type="submit" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-danger-600 hover:bg-danger-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-danger-400 dark:hover:bg-danger-900/20">
                                 Keluar
                             </button>
                         </form>
+                        @endif
                     @else
                         <a href="{{ route('otp.form') }}" class="btn btn-primary btn-sm">
                             Masuk / Daftar
@@ -66,18 +68,16 @@
                 </div>
 
                 <!-- Mobile menu button -->
-                <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu" @click="open = !open" x-data="{ open: false }">
-                    <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu" id="guest-menu-toggle">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
-                    <svg x-show="open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+
                 </button>
             </div>
 
             <!-- Mobile menu -->
-            <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" class="md:hidden overflow-hidden bg-white border-t border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800" id="mobile-menu" role="navigation" aria-label="Menu mobile">
+            <div hidden class="md:hidden overflow-hidden bg-white border-t border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800" id="mobile-menu" role="navigation" aria-label="Menu mobile">
                 <div class="py-4 space-y-1 px-4">
                     <a href="{{ route('catalog.index') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20">
                         Katalog
@@ -95,12 +95,14 @@
                         <a href="{{ route('pesanan.index') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20">
                             Pesanan Saya
                         </a>
+                        @if(Route::has('otp.logout'))
                         <form action="{{ route('otp.logout') }}" method="POST" class="inline">
                             @csrf
                             <button type="submit" class="w-full text-left px-3 py-2 text-base font-medium text-neutral-600 hover:text-danger-600 hover:bg-danger-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-danger-400 dark:hover:bg-danger-900/20">
                                 Keluar
                             </button>
                         </form>
+                        @endif
                     @else
                         <a href="{{ route('otp.form') }}" class="block px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-primary-400 dark:hover:bg-primary-900/20">
                             Masuk / Daftar

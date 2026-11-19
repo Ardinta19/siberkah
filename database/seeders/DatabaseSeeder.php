@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (! app()->environment('local', 'testing')) {
+            return;
+        }
+
         Pengguna::factory()->create([
             'nama' => 'Test User',
             'surel' => 'test@example.com',

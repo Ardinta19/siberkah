@@ -3,11 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Produk extends Model
 {
+    public const CREATED_AT = 'dibuat_pada';
+    public const UPDATED_AT = 'diubah_pada';
+
     protected $table = 'produk';
 
     protected $fillable = [
@@ -27,6 +32,11 @@ class Produk extends Model
         'harga_dasar' => 'integer',
         'aktif' => 'boolean',
     ];
+
+    public function kategori(): BelongsTo
+    {
+        return $this->belongsTo(Kategori::class);
+    }
 
     /**
      * Semua varian produk dalam kategori ini.
@@ -63,12 +73,20 @@ class Produk extends Model
     /**
      * Semua unit sewa untuk produk ini.
      */
-    public function unitSewa(): HasMany
+    public function unitSewa(): HasManyThrough
     {
-        return $this->hasMany(UnitSewa::class, 'varian_produk_id')
-            ->whereHas('varian_produk', function ($q) {
-                $q->where('produk_id', $this->id);
-            });
+        return $this->hasManyThrough(UnitSewa::class, VarianProduk::class, 'produk_id', 'varian_produk_id');
+    }
+
+    /** Date-specific catalog estimate; checkout must still lock and reserve the units. */
+    public function scopeBisaDisewaPada(Builder $query, string $date): Builder
+    {
+        return $query->where('jenis', 'sewa')
+            ->whereNotExists(fn ($blocks) => $blocks->selectRaw('1')->from('blokir_kalender')
+                ->where('tanggal', $date)->where(fn ($b) => $b->whereNull('produk_id')->orWhereColumn('produk_id', 'produk.id')))
+            ->whereHas('unitSewa', fn ($unit) => $unit->where('unit_sewa.status', 'aktif')->where('varian_produk.aktif', true)
+                ->whereNotExists(fn ($days) => $days->selectRaw('1')->from('hari_reservasi')
+                    ->whereColumn('unit_sewa_id', 'unit_sewa.id')->where('tanggal', $date)));
     }
 
     /**

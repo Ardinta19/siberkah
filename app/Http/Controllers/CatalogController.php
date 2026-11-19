@@ -26,16 +26,22 @@ class CatalogController extends BaseController
     {
         $query = Produk::where('aktif', true);
 
+        $request->validate(['q' => 'nullable|string|max:150', 'kategori' => 'nullable|integer', 'jenis' => 'nullable|string', 'tanggal' => 'nullable|date_format:Y-m-d']);
+        if ($request->filled('q')) {
+            $term = '%'.$request->string('q')->trim().'%';
+            $query->where(fn ($q) => $q->where('nama', 'like', $term)
+                ->orWhereHas('kategori', fn ($category) => $category->where('nama', 'like', $term)));
+        }
+
         // Filter by kategori
         if ($request->has('kategori')) {
             $query->where('kategori_id', $request->kategori);
         }
 
         // Filter by tanggal (ketersediaan)
-        if ($request->has('tanggal')) {
-            // Check availability for the given date
-            $tanggal = $request->tanggal;
-            // TODO: Implement availability check usinghari_reservasi
+        if ($request->filled('tanggal')) {
+            $query->where(fn ($q) => $q->where('jenis', '!=', 'sewa')
+                ->orWhere(fn ($rental) => $rental->bisaDisewaPada($request->input('tanggal'))));
         }
 
         // Filter by jenis (sewa/jual/custom)
@@ -44,7 +50,7 @@ class CatalogController extends BaseController
         }
 
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
-        $produk = $query->with(['varianProduk' => fn ($q) => $q->where('aktif', true)])
+        $produk = $query->with(['kategori', 'varianProduk' => fn ($q) => $q->where('aktif', true)])
             ->orderBy('urutan')
             ->get();
 
@@ -69,20 +75,14 @@ class CatalogController extends BaseController
 
         // Load relasi
         $varian = $produk->varianProduk()->where('aktif', true)->get();
-        $opsiProduk = $produk->opsiProduk()->where('aktif', true)->get();
-        $gambarProduk = $produk->gambarProduk()->where('aktif', true)->get();
+        $opsiProduk = $produk->opsiProduk()->orderBy('urutan')->get();
+        $gambarProduk = $produk->gambarProduk()->orderBy('urutan')->get();
 
         // Check availability for specific date if provided
-        $tanggal = $request->get('tanggal');
-        $tersedia = true;
-        if ($tanggal && $produk->jenis === 'sewa') {
-            // Check if any unit is already reserved for this date
-            $occupiedUnits = HariReservasi::where('tanggal', $tanggal)
-                ->whereNotNull('unit_sewa_id')
-                ->count();
-            $totalUnits = $produk->varianProduk->sum('stok');
-            $tersedia = $occupiedUnits < $totalUnits;
-        }
+        $tanggal = $request->validate(['tanggal' => 'nullable|date_format:Y-m-d'])['tanggal'] ?? null;
+        $tersedia = $tanggal && $produk->jenis === 'sewa'
+            ? Produk::whereKey($produk->id)->bisaDisewaPada($tanggal)->exists()
+            : null;
 
         return view('katalog.show', [
             'produk' => $produk,

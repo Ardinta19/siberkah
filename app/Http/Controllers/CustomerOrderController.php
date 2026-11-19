@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pesanan;
+use App\Actions\CreateRentalOrder;
+use App\Actions\ReleaseOrderHold;
+use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\View\View;
@@ -22,9 +24,9 @@ class CustomerOrderController extends BaseController
      */
     public function index()
     {
-        $pesanan = auth('customer')->user()->pesanan()->latest()->paginate(10);
+        $pesanan = auth('customer')->user()->pesanan()->latest('dibuat_pada')->paginate(10);
 
-        return view('pages.customer.orders.index', [
+        return view('pelanggan.riwayat', [
             'pesanan' => $pesanan,
         ]);
     }
@@ -34,21 +36,15 @@ class CustomerOrderController extends BaseController
      *
      * @return RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request, CreateRentalOrder $checkout)
     {
-        $request->validate([
-            'produk_id' => 'required|exists:produk,id',
-            'varian_id' => 'sometimes|exists:varian_produk,id',
-            'jumlah' => 'required|integer|min:1',
-            'alamat_antar' => 'sometimes|string',
-            'zona_antar_id' => 'sometimes|exists:zona_antar,id',
-        ]);
-
-        // TODO: Implement order creation from customer flow
-        // Similar to admin flow but with customer notes
-
-        return back()
-            ->with('success', 'Pesanan berhasil dibuat.');
+        abort_unless(app()->environment('local', 'testing', 'staging') && config('checkout.staging'), 503, 'Checkout belum dibuka.');
+        try {
+            $order = $checkout->create($request->user('customer'), $request->all());
+        } catch (DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
+        return redirect()->route('pesanan.show', $order->nomor);
     }
 
     /**
@@ -60,11 +56,11 @@ class CustomerOrderController extends BaseController
     public function show($nomor)
     {
         $pesanan = auth('customer')->user()->pesanan()
-            ->withTrashed()
+            ->with('items')
             ->where('nomor', $nomor)
             ->firstOrFail();
 
-        return view('pages.customer.order-show', [
+        return view('pelanggan.rincian', [
             'pesanan' => $pesanan,
         ]);
     }
@@ -75,18 +71,15 @@ class CustomerOrderController extends BaseController
      * @param  int  $nomor
      * @return RedirectResponse
      */
-    public function cancel($nomor)
+    public function cancel(Request $request, string $nomor, ReleaseOrderHold $holds)
     {
-        $pesanan = auth('customer')->user()->pesanan()
-            ->where('nomor', $nomor)
-            ->firstOrFail();
+        try {
+            $holds->cancel($request->user('customer'), $nomor);
+        } catch (DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
 
-        $pesanan->status = 'dibatalkan';
-        $pesanan->dibatalkan_pana = now();
-        $pesanan->save();
-
-        return back()
-            ->with('success', 'Pesanan berhasil dibatalkan.');
+        return back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
 
     /**

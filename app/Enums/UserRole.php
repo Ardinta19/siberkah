@@ -26,7 +26,7 @@ enum UserRole: string
      */
     public function is(string|UserRole $role): bool
     {
-        return $this === (string) $role || $this === UserRole::tryFrom($role);
+        return $this === ($role instanceof self ? $role : self::tryFrom($role));
     }
 
     /**

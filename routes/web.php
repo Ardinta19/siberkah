@@ -46,9 +46,9 @@ Route::get('/kontak', [LegalController::class, 'kontak'])->name('kontak');
 /** OTP Authentication - guest:customer */
 Route::middleware(['guest:customer'])->group(function () {
     Route::get('/masuk', [OtpController::class, 'showForm'])->name('otp.form');
-    Route::post('/otp/issue', [OtpController::class, 'issue'])->name('otp.issue');
-    Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
-    Route::post('/otp/resend', [OtpController::class, 'resend'])->name('otp.resend');
+    Route::post('/otp/issue', [OtpController::class, 'issue'])->middleware('throttle:5,1')->name('otp.issue');
+    Route::post('/otp/verify', [OtpController::class, 'verify'])->middleware('throttle:10,1')->name('otp.verify');
+    Route::post('/otp/resend', [OtpController::class, 'issue'])->middleware('throttle:5,1')->name('otp.resend');
 });
 
 /**
@@ -60,28 +60,34 @@ Route::middleware(['guest:customer'])->group(function () {
 /** Staff authentication */
 Route::middleware(['guest:staff'])->group(function () {
     Route::get('/staff/login', [StaffAuthController::class, 'showLogin'])->name('staff.login');
-    Route::post('/staff/login', [StaffAuthController::class, 'login'])->name('staff.login.post');
-    Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->name('staff.logout');
-    Route::post('/staff/password-change', [StaffAuthController::class, 'passwordChangeFirstLogin'])->name('staff.password.change');
+    Route::post('/staff/login', [StaffAuthController::class, 'login'])->middleware('throttle:5,1')->name('staff.login.post');
 });
+
+Route::middleware('auth:staff')->group(function () {
+    Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->name('staff.logout');
+    Route::post('/staff/password-change', [StaffAuthController::class, 'changePassword'])->middleware(['role:owner,admin,staf_produksi,staf_kurir', 'throttle:5,1'])->name('staff.password.change');
+});
+
+Route::post('/keluar', [OtpController::class, 'logout'])->middleware('auth:customer')->name('otp.logout');
 
 /**
  * CUSTOMER AUTH ROUTES (auth:customer)
  * --------------------------------------------------------
  * Routes requiring customer authentication via OTP.
  */
-Route::middleware(['auth:customer'])->group(function () {
+Route::middleware(['auth:customer', 'active.customer'])->group(function () {
+
     /** Customer profile and orders */
     Route::get('/pelanggan/profil', [CustomerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/pelanggan/profil', [CustomerProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/pelanggan/profil', [CustomerProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/pelanggan/profil', [CustomerProfileController::class, 'destroy'])->middleware('pending.transaction')->name('profile.destroy');
 
     /** Customer orders */
     Route::get('/pelanggan/pesanan', [CustomerOrderController::class, 'index'])->name('pesanan.index');
-    Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->name('pesanan.store');
+    Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->middleware('throttle:20,1')->name('pesanan.store');
     Route::get('/pelanggan/pesanan/{nomor}', [CustomerOrderController::class, 'show'])->name('pesanan.show');
-    Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->name('pesanan.cancel');
-    Route::post('/pelanggan/pesanan/{nomor}/request-cancellation', [CustomerOrderController::class, 'requestCancellation'])->name('pesanan.request-cancellation');
+    Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->middleware('pending.transaction')->name('pesanan.cancel');
+    Route::post('/pelanggan/pesanan/{nomor}/request-cancellation', [CustomerOrderController::class, 'requestCancellation'])->middleware('pending.transaction')->name('pesanan.request-cancellation');
 });
 
 /**
@@ -89,9 +95,9 @@ Route::middleware(['auth:customer'])->group(function () {
  * --------------------------------------------------------
  * Payment-related routes for authenticated customers.
  */
-Route::middleware(['auth:customer'])->group(function () {
-    Route::get('/pesanan/{nomor}/bayar', [CustomerPaymentController::class, 'show'])->name('payment.show');
-    Route::post('/pesanan/{nomor}/bayar/konfirmasi', [CustomerPaymentController::class, 'confirm'])->name('payment.confirm');
+Route::middleware(['auth:customer', 'active.customer'])->group(function () {
+    Route::get('/pesanan/{nomor}/bayar', [CustomerPaymentController::class, 'show'])->middleware('pending.transaction')->name('payment.show');
+    Route::post('/pesanan/{nomor}/bayar/konfirmasi', [CustomerPaymentController::class, 'confirm'])->middleware('pending.transaction')->name('payment.confirm');
 });
 
 /**
@@ -107,46 +113,46 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->name('admin.pesanan.show');
-        Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->name('admin.pesanan.manual-store');
-        Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->name('admin.pesanan.transition');
+        Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->middleware('pending.transaction')->name('admin.pesanan.manual-store');
+        Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
         Route::post('pesanan/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('admin.pesanan.verify-payment');
-        Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->name('admin.pesanan.reject-payment');
-        Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->name('admin.pesanan.record-cash');
-        Route::post('pesanan/{id}/record-refund', [AdminOrderController::class, 'recordRefund'])->name('admin.pesanan.record-refund');
-        Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->name('admin.pesanan.reactivate-expired');
+        Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->middleware('pending.transaction')->name('admin.pesanan.reject-payment');
+        Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->middleware('pending.transaction')->name('admin.pesanan.record-cash');
+        Route::post('pesanan/{id}/record-refund', [AdminOrderController::class, 'recordRefund'])->middleware('pending.transaction')->name('admin.pesanan.record-refund');
+        Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->middleware('pending.transaction')->name('admin.pesanan.reactivate-expired');
     });
 
     /** Admin Catalog */
     Route::prefix('admin/katalog')->group(function () {
-        Route::get('/', [AdminCatalogController::class, 'index'])->name('admin.katalog.index');
-        Route::get('create', [AdminCatalogController::class, 'create'])->name('admin.katalog.create');
-        Route::post('/', [AdminCatalogController::class, 'store'])->name('admin.katalog.store');
-        Route::get('{id}/edit', [AdminCatalogController::class, 'edit'])->name('admin.katalog.edit');
-        Route::put('{id}', [AdminCatalogController::class, 'update'])->name('admin.katalog.update');
-        Route::post('{id}/archive', [AdminCatalogController::class, 'archive'])->name('admin.katalog.archive');
-        Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->name('admin.katalog.publish');
-        Route::post('{id}/manage-variants', [AdminCatalogController::class, 'manageVariants'])->name('admin.katalog.manage-variants');
-        Route::post('{id}/manage-options', [AdminCatalogController::class, 'manageOptions'])->name('admin.katalog.manage-options');
-        Route::post('{id}/manage-images', [AdminCatalogController::class, 'manageImages'])->name('admin.katalog.manage-images');
-        Route::post('{id}/manage-units', [AdminCatalogController::class, 'manageUnits'])->name('admin.katalog.manage-units');
+        Route::get('/', [AdminCatalogController::class, 'index'])->middleware('role:owner')->name('admin.katalog.index');
+        Route::get('create', [AdminCatalogController::class, 'create'])->middleware('role:owner')->name('admin.katalog.create');
+        Route::post('/', [AdminCatalogController::class, 'store'])->middleware('role:owner')->name('admin.katalog.store');
+        Route::get('{id}/edit', [AdminCatalogController::class, 'edit'])->middleware('role:owner')->name('admin.katalog.edit');
+        Route::put('{id}', [AdminCatalogController::class, 'update'])->middleware('role:owner')->name('admin.katalog.update');
+        Route::post('{id}/archive', [AdminCatalogController::class, 'archive'])->middleware('role:owner')->name('admin.katalog.archive');
+        Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->middleware('role:owner')->name('admin.katalog.publish');
+        Route::post('{id}/manage-variants', [AdminCatalogController::class, 'manageVariants'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-variants');
+        Route::post('{id}/manage-options', [AdminCatalogController::class, 'manageOptions'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-options');
+        Route::post('{id}/manage-images', [AdminCatalogController::class, 'manageImages'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-images');
+        Route::post('{id}/manage-units', [AdminCatalogController::class, 'manageUnits'])->middleware('pending.transaction')->name('admin.katalog.manage-units');
     });
 
     /** Admin Settings */
     Route::prefix('admin/pengaturan')->group(function () {
-        Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.pengaturan.index');
-        Route::post('update', [AdminSettingsController::class, 'update'])->name('admin.pengaturan.update');
+        Route::get('/', [AdminSettingsController::class, 'index'])->middleware('role:owner')->name('admin.pengaturan.index');
+        Route::post('update', [AdminSettingsController::class, 'update'])->middleware('role:owner')->name('admin.pengaturan.update');
         Route::post('manage-calendar-blocks', [AdminSettingsController::class, 'manageCalendarBlocks'])->name('admin.pengaturan.manage-calendar-blocks');
         Route::post('manage-production-capacity', [AdminSettingsController::class, 'manageProductionCapacity'])->name('admin.pengaturan.manage-production-capacity');
     });
 
     /** Admin Reports */
-    Route::prefix('admin/laporan')->group(function () {
+    Route::prefix('admin/laporan')->middleware('role:owner')->group(function () {
         Route::get('/', [AdminReportController::class, 'index'])->name('admin.laporan.index');
         Route::get('export-csv', [AdminReportController::class, 'exportAnonymousCsv'])->name('admin.laporan.export-csv');
     });
 
     /** Admin Activity Log */
-    Route::prefix('admin/aktivitas')->group(function () {
+    Route::prefix('admin/aktivitas')->middleware('role:owner')->group(function () {
         Route::get('/', [AdminActivityLogController::class, 'index'])->name('admin.aktivitas.index');
     });
 });
@@ -156,19 +162,19 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
  * --------------------------------------------------------
  * Routes for production staff and delivery personnel.
  */
-Route::middleware(['auth:staff', 'role:staf_produksi,staf_kurir'])->group(function () {
+Route::middleware('auth:staff')->group(function () {
     /** Staff Production */
-    Route::prefix('staf/produksi')->group(function () {
+    Route::prefix('staf/produksi')->middleware('role:owner,admin,staf_produksi')->group(function () {
         Route::get('/', [StaffProductionController::class, 'index'])->name('staf.produksi.index');
         Route::post('/start-production', [StaffProductionController::class, 'startProduction'])->name('staf.produksi.start');
         Route::post('/mark-ready', [StaffProductionController::class, 'markReady'])->name('staf.produksi.mark-ready');
     });
 
     /** Staff Delivery */
-    Route::prefix('staf/kurir')->group(function () {
+    Route::prefix('staf/kurir')->middleware('role:owner,admin,staf_kurir')->group(function () {
         Route::get('/', [StaffDeliveryController::class, 'index'])->name('staf.kurir.index');
-        Route::post('/handover', [StaffDeliveryController::class, 'handover'])->name('staf.kurir.handover');
-        Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->name('staf.kurir.receive-return');
+        Route::post('/handover', [StaffDeliveryController::class, 'handover'])->middleware('pending.transaction')->name('staf.kurir.handover');
+        Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->middleware('pending.transaction')->name('staf.kurir.receive-return');
     });
 });
 

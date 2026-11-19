@@ -16,18 +16,20 @@ class Pengguna extends Authenticatable implements CanResetPassword
     public const CREATED_AT = 'dibuat_pada';
     public const UPDATED_AT = 'diubah_pada';
 
+    protected $hidden = ['kata_sandi', 'remember_token'];
+
     protected $fillable = [
         'nama',
         'surel',
         'kata_sandi',
         'peran',
         'aktif',
-        'masuk_terakhir_pana',
+        'masuk_terakhir_pada',
     ];
 
     protected $casts = [
         'aktif' => 'boolean',
-        'masuk_terakhir_pana' => 'datetime',
+        'masuk_terakhir_pada' => 'datetime',
     ];
 
     /**
@@ -35,12 +37,7 @@ class Pengguna extends Authenticatable implements CanResetPassword
      *
      * @var array
      */
-    protected $appends = [
-        'role_label',
-        'is_staff',
-        'can_manage_catalog',
-        'can_manage_settings',
-    ];
+    protected $appends = ['role_label'];
 
     /**
      * Get the user's full name.
@@ -63,7 +60,7 @@ class Pengguna extends Authenticatable implements CanResetPassword
      */
     public function hasRole(string|UserRole $role): bool
     {
-        return $this->peran === (string) $role || UserRole::tryFrom($role)?->is($this->peran) ?? false;
+        return $this->peran === ($role instanceof UserRole ? $role->value : $role);
     }
 
     /**
@@ -189,7 +186,7 @@ class Pengguna extends Authenticatable implements CanResetPassword
      */
     public function scopeWithRole($query, string|UserRole $role)
     {
-        return $query->where('peran', (string) $role);
+        return $query->where('peran', $role instanceof UserRole ? $role->value : $role);
     }
 
     /**
@@ -233,6 +230,11 @@ class Pengguna extends Authenticatable implements CanResetPassword
     /**
      * Get the password for the user.
      */
+    public function getAuthPasswordName(): string
+    {
+        return 'kata_sandi';
+    }
+
     public function getAuthPassword()
     {
         return $this->kata_sandi;

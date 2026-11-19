@@ -102,7 +102,6 @@
   /* Container Siklar */
   .container-siberkah {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-    @apply bg-primary-50 dark:bg-primary-950/50 border border-primary-200/20 rounded-2xl;
   }
 
   /* Section within container */
@@ -132,7 +131,7 @@
 }
 
 .stat-card {
-    @apply bg-white dark:bg-neutral-900 rounded-xl p-4 text-center shadow-sm transition-all hover:shadow-md lifted;
+    @apply bg-white dark:bg-neutral-900 rounded-xl p-4 text-center shadow-sm transition-all hover:shadow-md;
     @apply flex flex-col items-center py-2;
 }
 
@@ -145,7 +144,7 @@
 }
 
 .pagination-btn {
-    @apply inline-block px-4 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors-150 bg-primary-50 dark:bg-primary-950/50;
+    @apply inline-block px-4 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-150 bg-primary-50 dark:bg-primary-950/50;
 }
 
 .pagination-btn.active {
@@ -168,7 +167,7 @@
 }
 
 .status-maintenance {
-    @apply bg-accent-100/30 border border-accent-200 text-accent-800;
+    @apply bg-rose-100/30 border border-rose-200 text-rose-800;
     animation-delay: 100ms;
 }
 
@@ -178,12 +177,12 @@
 }
 
 .status-custom {
-    @apply bg-outline-100/30 border border-outline-variant text-on-surface-variant;
+    @apply bg-outline-100/30 border border-outline-200 text-outline-600;
     animation-delay: 100ms;
 }
 
 .status-new {
-    @apply bg-accent-100/40 border border-accent-200 text-accent-800;
+    @apply bg-rose-100/40 border border-rose-200 text-rose-800;
     animation-delay: 200ms;
 }
 
@@ -193,11 +192,11 @@
 }
 
 .btn-primary {
-    @apply bg-primary text-light-primary hover:bg-primary-600 dark:hover:bg-primary-400 text-label-md font-body font-bold rounded-DEFAULT py-2.5 px-6 transition-colors shadow-sm hover:shadow-md;
+    @apply bg-primary text-white hover:bg-primary-600 dark:hover:bg-primary-400 text-sm font-body font-bold rounded py-2.5 px-6 transition-colors shadow-sm hover:shadow-md;
 }
 
 .btn-outline {
-    @apply border border-light-outline-variant text-light-on-surface hover:bg-primary-50 dark:hover:bg-primary-950/50 py-2.5 px-6 transition-colors;
+    @apply border border-outline-200 text-on-surface hover:bg-primary-50 dark:hover:bg-primary-950/50 py-2.5 px-6 transition-colors;
 }
 
 .btn-icon-sm {
@@ -210,12 +209,4 @@
 
 .lifted {
     @apply transition-colors duration-150 ease-out;
-}
-
-.hover:shadow-xl {
-    @apply shadow-xl;
-}
-
-.hover:translate-y-1 {
-    @apply translate-y-1;
 }

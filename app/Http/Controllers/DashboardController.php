@@ -20,21 +20,6 @@ class DashboardController extends BaseController
      */
     public function hariIni()
     {
-        // TODO: Implement actual dashboard data
-        // - Antrian pengantaran/jemput hari ini
-        // - Hitung jumlah order menunggu verifikasi
-        // - Cek unit yang belum kembali
-        // - Ambil data dari log_aktivitas hari ini
-
-        $stats = [
-            'order_menunggu' => 0,
-            'order_produksi' => 0,
-            'unit_kembali' => 0,
-        ];
-
-        return view('pages.owner.dashboard.hari-ini', [
-            'stats' => $stats,
-            'title' => 'Dashboard - Berkah Kreatif',
-        ]);
+        return view('owner.index');
     }
 }

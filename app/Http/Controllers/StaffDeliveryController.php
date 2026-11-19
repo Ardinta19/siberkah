@@ -22,12 +22,10 @@ class StaffDeliveryController extends BaseController
      */
     public function index()
     {
-        $pesanan = Pesanan::whereNotNull('tanggal_serah')
-            ->latest()
-            ->paginate(10);
-
-        return view('pages.staff.kurir.index', [
-            'pesanan' => $pesanan,
+        return view('staf.agenda', [
+            'judul' => 'Agenda serah terima',
+            'pesanan' => Pesanan::whereIn('status', ['siap', 'sudah_diserahkan'])
+                ->orderBy('tanggal_serah')->orderBy('id')->paginate(20),
         ]);
     }
 

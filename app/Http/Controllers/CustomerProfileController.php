@@ -2,71 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pelanggan;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\View\View;
 
-/**
- * Customer Profile Controller - Profile management for authenticated customers
- * --------------------------------------------------------
- * auth:customer middleware applied at route level.
- */
-class CustomerProfileController extends BaseController
+class CustomerProfileController extends Controller
 {
-    /**
-     * Show the edit profile form.
-     *
-     * @return View
-     */
-    public function edit()
+    public function edit(Request $request)
     {
-        // Get the authenticated pelanggan
-        // In a real app: $pelanggan = auth('customer')->user();
-        // For now, we'll assume the pelanggan is in the session
-        $pelanggan = Pelanggan::find(1); // Placeholder - replace with auth
-
-        return view('pages.profile.edit', ['pelanggan' => $pelanggan]);
+        return view('pelanggan.profil', ['pelanggan' => $request->user('customer')]);
     }
 
-    /**
-     * Update the profile.
-     *
-     * @return RedirectResponse
-     */
     public function update(Request $request)
     {
-        $request->validate([
-            'nama' => 'sometimes|string|max:100',
-        ]);
-
-        // Get the authenticated pelanggan
-        // $pelanggan = auth('customer')->user();
-        // $pelanggan->nama = $request->nama;
-        // $pelanggan->save();
-
-        return back()
-            ->with('success', 'Profil berhasil diperbarui.');
+        $request->user('customer')->update($request->validate(['nama' => 'required|string|max:100']));
+        return back()->with('status', 'Profil berhasil diperbarui.');
     }
 
-    /**
-     * Destroy the account (anonymize).
-     *
-     * @return RedirectResponse
-     */
-    public function destroy(Request $request)
+    public function destroy()
     {
-        // $pelanggan = auth('customer')->user();
-        // $pelanggan->nomor_wa = hash('sha256', $pelanggan->nomor_wa);
-        // $pelanggan->nama = 'Pelanggan Dihapus';
-        // $pelanggan->dihapus_pana = now();
-        // $pelanggan->save();
-
-        // Log aktivitas
-        // \App\Models\LogAktivitas::create([...]);
-
-        return redirect()->route('index')
-            ->with('success', 'Akun telah dihapus secara anonim.');
+        abort(503, 'Penghapusan akun belum tersedia.');
     }
 }

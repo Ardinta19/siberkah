@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\VerifyRentalTransfer;
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
@@ -129,21 +130,15 @@ class AdminOrderController extends BaseController
             ->with('success', 'Status pesanan berhasil diubah menjadi '.$request->status_baru);
     }
 
-    /**
-     * Verify payment for an order.
-     *
-     * @param  int  $id
-     * @return View
-     */
-    public function verifyPayment($id)
+    public function verifyPayment(Request $request, int $id, VerifyRentalTransfer $transfers)
     {
-        $pesanan = Pesanan::findOrFail($id);
-        $pembayaran = $pesanan->pembayaran()->first();
-
-        return view('admin.pembayaran.verify', [
-            'pesanan' => $pesanan,
-            'pembayaran' => $pembayaran,
-        ]);
+        abort_unless(app()->environment('local', 'testing', 'staging') && config('checkout.staging'), 503, 'Verifikasi belum dibuka.');
+        try {
+            $result = $transfers->record($request->user('staff'), $id, $request->all());
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
+        return response()->json(['hasil' => $result], $result === 'terverifikasi' ? 200 : 202);
     }
 
     /**

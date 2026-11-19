@@ -1,0 +1,32 @@
+name: siberkah-backend-test
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: siberkah_test
+      MARIADB_USER: runner
+      MARIADB_PASSWORD: ephemeral_test_only
+      MARIADB_RANDOM_ROOT_PASSWORD: '1'
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 3s
+      timeout: 5s
+      retries: 30
+  test:
+    build:
+      context: .
+      dockerfile: docker/backend-test/Dockerfile
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: '3306'
+      DB_DATABASE: siberkah_test
+      DB_USERNAME: runner
+      DB_PASSWORD: ephemeral_test_only
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+    depends_on:
+      db:
+        condition: service_healthy

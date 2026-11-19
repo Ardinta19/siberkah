@@ -2,74 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pengguna;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
-/**
- * Staff Auth Controller - Staff authentication
- * --------------------------------------------------------
- * guest middleware applied at route level.
- */
-class StaffAuthController extends BaseController
+class StaffAuthController extends Controller
 {
-    /**
-     * Show the staff login form.
-     *
-     * @return View
-     */
     public function showLogin()
     {
-        return view('pages.auth.staff-login');
+        return view('staf.login');
     }
 
-    /**
-     * Handle staff login.
-     *
-     * @return RedirectResponse
-     */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $data = $request->validate(['email' => 'required|email', 'password' => 'required|string']);
+        $guard = Auth::guard('staff');
+        if (! $guard->attempt(['surel' => $data['email'], 'password' => $data['password'], 'aktif' => true,
+            'peran' => array_column(UserRole::cases(), 'value')])) {
+            throw ValidationException::withMessages(['email' => 'Email atau kata sandi tidak sesuai.']);
+        }
 
-        // TODO: Implement staff authentication
-        // Using staff guard with Pengguna model
+        $request->session()->regenerate();
+        $staff = $guard->user();
+        $staff->update(['masuk_terakhir_pada' => now()]);
 
-        return back()
-            ->with('success', 'Login berhasil.');
+        return redirect()->route(match (UserRole::from($staff->peran)) {
+            UserRole::STAF_PRODUKSI => 'staf.produksi.index',
+            UserRole::STAF_KURIR => 'staf.kurir.index',
+            default => 'dashboard.hari-ini',
+        });
     }
 
-    /**
-     * Handle staff password change.
-     *
-     * @param  int  $user_id
-     * @return RedirectResponse
-     */
-    public function passwordChangeFirstLogin($user_id)
+    public function changePassword(Request $request)
     {
-        return view('pages.auth.password-change', ['user_id' => $user_id]);
+        $data = $request->validate([
+            'current_password' => 'required|current_password:staff',
+            'new_password' => 'required|string|min:12|confirmed|different:current_password',
+        ]);
+        $request->user('staff')->update(['kata_sandi' => Hash::make($data['new_password'])]);
+
+        return $this->logout($request);
     }
 
-    /**
-     * Process password change.
-     *
-     * @return RedirectResponse
-     */
-    public function doPasswordChangeFirstLogin(Request $request, $user_id)
+    public function logout(Request $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|confirmed|min:8',
-        ]);
+        Auth::guard('staff')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        // TODO: Implement password change
-        // Using Pengguna model
-
-        return back()
-            ->with('success', 'Kata sandi berhasil diubah.');
+        return redirect()->route('staff.login');
     }
 }
