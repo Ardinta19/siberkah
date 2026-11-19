@@ -425,6 +425,12 @@ class RentalCheckoutTest extends TestCase
         $this->postJson(route('toko.selesai', $id))->assertOk();
         $this->assertDatabaseCount('riwayat_status_pesanan', 5);
         $this->assertDatabaseHas('pesanan', ['id' => $id, 'saldo' => 0, 'status' => 'selesai', 'jumlah_dibayar' => 26000]);
+        $dates = ['mulai' => today()->toDateString(), 'akhir' => today()->toDateString()];
+        $this->getJson(route('laporan.penerimaan', $dates))->assertForbidden();
+        $this->actingAs($owner, 'staff')->getJson(route('laporan.penerimaan', $dates))->assertOk()->assertJsonPath('neto', 26000)->assertJsonPath('rincian.0.kanal', 'tunai');
+        $csv = $this->get(route('laporan.penerimaan.csv', $dates))->assertOk()->streamedContent();
+        $this->assertStringContainsString('tunai,26000,0,26000', $csv);
+        $this->assertStringNotContainsString($customer->nomor_wa, $csv);
     }
 
     private function race(array $jobs): array

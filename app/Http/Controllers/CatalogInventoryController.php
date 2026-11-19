@@ -21,7 +21,7 @@ final class CatalogInventoryController extends Controller
 
     public function option(Request $request, int $id)
     {
-        $data = $request->validate(['id' => 'sometimes|integer|min:1', 'nama' => 'required|string|max:80', 'tipe' => 'required|in:pilihan,teks,per_satuan',
+        $data = $request->validate(['id' => 'sometimes|integer|min:1', 'nama' => 'required|string|max:80', 'tipe' => 'required|in:pilihan,teks,satuan',
             'wajib' => 'required|boolean', 'urutan' => 'sometimes|integer|between:0,65535', 'nilai' => 'sometimes|array|list|max:50',
             'nilai.*' => 'array:id,label,harga_tambahan,aktif', 'nilai.*.id' => 'sometimes|integer|min:1|distinct', 'nilai.*.label' => 'required|string|max:80|distinct',
             'nilai.*.harga_tambahan' => 'required|integer|between:0,2147482648', 'nilai.*.aktif' => 'required|boolean']);

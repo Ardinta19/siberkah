@@ -20,6 +20,7 @@ use App\Http\Controllers\StaffDeliveryController;
 use App\Http\Controllers\RentalCloseoutController;
 use App\Http\Controllers\CatalogInventoryController;
 use App\Http\Controllers\StoreSaleController;
+use App\Http\Controllers\VerifiedRevenueController;
 use App\Http\Middleware\RentalStaging;
 use App\Http\Controllers\StaffProductionController;
 use Illuminate\Support\Facades\Route;
@@ -172,6 +173,8 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
     /** Admin Reports */
     Route::prefix('admin/laporan')->middleware('role:owner')->group(function () {
         Route::get('/', [AdminReportController::class, 'index'])->name('admin.laporan.index');
+        Route::get('penerimaan', [VerifiedRevenueController::class, 'index'])->name('laporan.penerimaan');
+        Route::get('penerimaan/csv', [VerifiedRevenueController::class, 'export'])->name('laporan.penerimaan.csv');
         Route::get('export-csv', [AdminReportController::class, 'exportAnonymousCsv'])->name('admin.laporan.export-csv');
     });
 
