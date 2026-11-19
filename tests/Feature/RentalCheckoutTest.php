@@ -303,6 +303,29 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('hari_reservasi', $accepted ? 0 : 1);
     }
 
+    public function test_replacement_moves_only_the_reserved_unit_and_preserves_the_original_price(): void
+    {
+        config(['checkout.staging' => true]);
+        $order = app(CreateRentalOrder::class)->create($this->customer('628111111111'), $this->fixture());
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $bill = DB::table('pembayaran')->sole();
+        app(\App\Actions\VerifyRentalTransfer::class)->record($admin, $order->id, ['referensi' => 'DP-UNIT', 'nominal' => $bill->nominal_diharapkan, 'pembayaran_id' => $bill->id]);
+        $item = $order->items()->sole();
+        $new = DB::table('unit_sewa')->insertGetId(['kode' => 'A-02', 'varian_produk_id' => $item->varian_produk_id, 'status' => 'perawatan']);
+        $data = ['kunci' => (string) Str::uuid(), 'item_id' => $item->id, 'unit_lama_id' => $item->unit_sewa_id, 'unit_baru_id' => $new, 'alasan' => 'Unit lama perlu diperiksa'];
+        $url = route('admin.pesanan.ganti-unit', $order->id);
+        $this->actingAs($admin, 'staff')->postJson($url, $data)->assertConflict();
+        $this->assertDatabaseHas('hari_reservasi', ['unit_sewa_id' => $item->unit_sewa_id]);
+        DB::table('unit_sewa')->where('id', $new)->update(['status' => 'aktif']);
+        $this->postJson($url, $data)->assertCreated();
+        $this->postJson($url, $data)->assertOk();
+        $this->postJson($url, array_replace($data, ['kunci' => (string) Str::uuid()]))->assertConflict();
+        $this->assertDatabaseCount('penggantian_unit', 1);
+        $this->assertDatabaseCount('hari_reservasi', 1);
+        $this->assertDatabaseHas('hari_reservasi', ['pesanan_id' => $order->id, 'unit_sewa_id' => $new]);
+        $this->assertDatabaseHas('item_pesanan', ['id' => $item->id, 'unit_sewa_id' => $new, 'harga_satuan' => $item->harga_satuan]);
+    }
+
     public static function depositCases(): array
     {
         return [[0], [40000], [100000]];

@@ -147,6 +147,7 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('pesanan/{id}/reject-cancellation', [CancellationRequestController::class, 'reject'])->whereNumber('id')->name('admin.pesanan.reject-cancellation');
         Route::post('pesanan/{id}/cancel-paid', [PaidRentalCancellationController::class, 'cancel'])->whereNumber('id')->name('admin.pesanan.cancel-paid');
         Route::post('pesanan/{id}/record-refund', [PaidRentalCancellationController::class, 'record'])->whereNumber('id')->name('admin.pesanan.record-refund');
+        Route::post('pesanan/{id}/ganti-unit', \App\Http\Controllers\RentalUnitReplacementController::class)->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.ganti-unit');
         Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reactivate-expired');
     });
 
