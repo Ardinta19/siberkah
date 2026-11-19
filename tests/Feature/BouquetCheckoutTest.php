@@ -76,6 +76,69 @@ class BouquetCheckoutTest extends TestCase
         $this->postJson(route('admin.pesanan.record-refund', $id), ['referensi_keluar' => 'OUT:WA', 'nominal' => 67500])->assertCreated();
     }
 
+    #[\PHPUnit\Framework\Attributes\DataProvider('availabilityCases')]
+    public function test_late_cart_is_rebooked_as_a_whole_or_returned(bool $available): void
+    {
+        $d = $this->cart();
+        $d['items'][] = $d['items'][0]; // same variant twice: test the aggregated requirement
+        $this->postJson(route('pesanan.buket'), $d)->assertOk();
+        $order = Pesanan::sole();
+        $order->update(['tahan_hingga_pada' => now()->subMinute()]);
+        $staff = Pengguna::factory()->create(['peran' => 'admin']);
+        $this->actingAs($staff, 'staff');
+        $bill = DB::table('pembayaran')->sole();
+        $this->postJson(route('admin.pesanan.verify-payment', $order->id), ['referensi' => 'LATE', 'pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan])->assertAccepted();
+        $this->assertDatabaseHas('kapasitas_produksi_harian', ['terpakai' => 0]);
+        if (! $available) {
+            DB::table('varian_produk')->update(['stok' => 1]);
+        }
+        $receipt = DB::table('mutasi_masuk')->sole();
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson(route('admin.pesanan.reactivate-expired', $order->id), ['mutasi_id' => $receipt->id])->assertOk()
+                ->assertJsonPath('hasil', $available ? 'dikonfirmasi' : 'perlu_pengembalian');
+        }
+        $this->assertDatabaseHas('varian_produk', ['stok' => 1]);
+        $this->assertDatabaseCount('stok_ditahan', $available ? 2 : 0);
+        $this->assertDatabaseHas('kapasitas_produksi_harian', ['terpakai' => $available ? 2 : 0]);
+        $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'jumlah_dibayar' => $available ? $bill->tagihan : 0]);
+        $this->postJson(route('admin.rekonsiliasi.pengembalian', $receipt->id), ['referensi_keluar' => 'OUT', 'nominal' => $receipt->nominal, 'alasan' => 'Mutasi keluar diperiksa'])->assertStatus($available ? 409 : 201);
+    }
+
+    public static function availabilityCases(): array
+    {
+        return [[true], [false]];
+    }
+
+    public function test_mismatch_is_decided_once_without_waiving_principal_or_double_counting_bank_money(): void
+    {
+        $d = $this->cart();
+        $customer = Pelanggan::sole();
+        $this->postJson(route('pesanan.buket'), $d)->assertOk();
+        $order = Pesanan::sole();
+        $bill = DB::table('pembayaran')->sole();
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $this->actingAs($admin, 'staff');
+        $url = route('admin.pesanan.reject-payment', $order->id);
+        foreach (['SHORT' => $bill->tagihan - 1, 'NO-CODE' => $bill->tagihan] as $ref => $nominal) {
+            $this->postJson(route('admin.pesanan.verify-payment', $order->id), ['referensi' => $ref, 'pembayaran_id' => $bill->id, 'nominal' => $nominal])->assertAccepted();
+        }
+        $short = DB::table('mutasi_masuk')->where('referensi', 'SHORT')->value('id');
+        $data = ['mutasi_id' => $short, 'action' => 'terima', 'catatan' => 'Periksa pokok tagihan'];
+        $this->postJson($url, $data)->assertConflict();
+        $this->postJson($url, array_replace($data, ['action' => 'tolak']))->assertOk();
+        $this->assertSame(0, $order->fresh()->jumlah_dibayar);
+        $data['mutasi_id'] = DB::table('mutasi_masuk')->where('referensi', 'NO-CODE')->value('id');
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_kurir']), 'staff')->postJson($url, $data)->assertForbidden();
+        $this->actingAs($admin, 'staff')->postJson($url, $data)->assertOk();
+        $this->postJson($url, $data)->assertOk();
+        $this->postJson($url, array_replace($data, ['action' => 'tolak']))->assertConflict();
+        $this->assertDatabaseCount('mutasi_masuk', 2);
+        $this->assertDatabaseCount('keputusan_selisih', 2);
+        $this->assertDatabaseCount('pembayaran', 2);
+        $this->assertSame((int) $bill->tagihan, $order->fresh()->jumlah_dibayar);
+        $this->actingAs($customer, 'customer')->getJson(route('payment.show', $order->nomor))->assertOk()->assertJsonPath('keputusan_selisih.0.keputusan', 'tolak');
+    }
+
     public function test_invalid_options_and_capacity_failure_roll_back_and_cancellation_restores_once(): void
     {
         $d = $this->cart();

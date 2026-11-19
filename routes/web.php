@@ -139,7 +139,7 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('rekonsiliasi/{mutasi}/pengembalian', [TransferReconciliationController::class, 'recordReturn'])
             ->whereNumber('mutasi')->name('admin.rekonsiliasi.pengembalian');
         Route::post('pesanan/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('admin.pesanan.verify-payment');
-        Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->middleware('pending.transaction')->name('admin.pesanan.reject-payment');
+        Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reject-payment');
         Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->middleware('pending.transaction')->name('admin.pesanan.record-cash');
         Route::get('permohonan-batal', [CancellationRequestController::class, 'index'])->name('admin.permohonan-batal.index');
         Route::post('pesanan/{id}/approve-cancellation', [PaidRentalCancellationController::class, 'approve'])->whereNumber('id')->name('admin.pesanan.approve-cancellation');

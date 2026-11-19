@@ -113,41 +113,15 @@ class AdminOrderController extends BaseController
      * @param  int  $id
      * @return RedirectResponse
      */
-    public function rejectOrAcceptPayment(Request $request, $id)
+    public function rejectOrAcceptPayment(Request $request, int $id, VerifyRentalTransfer $transfers)
     {
-        $request->validate([
-            'action' => 'required|in:terima,tolak',
-            'nominal_diterima' => 'sometimes|integer',
-            'catatan' => 'required_if:action,tolak|string',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-        $pembayaran = $pesanan->pembayaran()->first();
-
-        if ($request->action === 'terima') {
-            // Update payment status
-            $pembayaran->status = 'terverifikasi';
-            $pembayaran->diterima_pana = now();
-            $pembayaran->save();
-
-            // Update order status to diskonfirmasi
-            $pesanan->status = 'dikonfirmasi';
-            $pesanan->dikonfirmasi_pana = now();
-            $pesanan->save();
-
-            // Log aktivitas
-            // \App\Models\LogAktivitas::create([...]);
-        } elseif ($request->action === 'tolak') {
-            $pembayaran->status = 'ditolak';
-            $pembayaran->catatan_verifikasi = $request->catatan;
-            $pembayaran->diverifikasi_pana = now();
-            $pembayaran->save();
-
-            // Keep order status or set to specific rejection status
+        $data = $request->validate(['mutasi_id' => 'required|integer|min:1', 'action' => 'required|in:terima,tolak', 'catatan' => 'required|string|max:300']);
+        try {
+            $result = $transfers->decide($request->user('staff'), $id, (int) $data['mutasi_id'], $data['action'], $data['catatan']);
+        } catch (\DomainException $e) {
+            abort(409, $e->getMessage());
         }
-
-        return back()
-            ->with('success', 'Verifikasi pembayaran '.$request->action.' berhasil.');
+        return response()->json(['keputusan' => $result]);
     }
 
     /**
