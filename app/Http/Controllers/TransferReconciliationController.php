@@ -19,7 +19,7 @@ final class TransferReconciliationController extends Controller
         $this->requireStaging();
         return response()->json(DB::table('mutasi_masuk as m')
             ->join('pembayaran as p', 'p.id', '=', 'm.pembayaran_id')
-            ->join('checkout_sewa as c', 'c.pesanan_id', '=', 'p.pesanan_id')
+            ->join('checkout_bank as c', 'c.pesanan_id', '=', 'p.pesanan_id')
             ->where('m.hasil', 'perlu_rekonsiliasi')->orderBy('m.id')
             ->paginate(25, ['m.id', 'p.pesanan_id', 'm.pembayaran_id', 'm.referensi', 'm.nominal', 'm.alasan', 'm.dicatat_pada']))
             ->header('Cache-Control', 'private, no-store');
@@ -37,7 +37,7 @@ final class TransferReconciliationController extends Controller
         $created = DB::transaction(function () use ($mutasi, $request, $data, $ref, $amount) {
             $receipt = DB::table('mutasi_masuk')->where('id', $mutasi)->lockForUpdate()->first();
             abort_unless($receipt, 404);
-            abort_unless(DB::table('pembayaran as p')->join('checkout_sewa as c', 'c.pesanan_id', '=', 'p.pesanan_id')
+            abort_unless(DB::table('pembayaran as p')->join('checkout_bank as c', 'c.pesanan_id', '=', 'p.pesanan_id')
                 ->where('p.id', $receipt->pembayaran_id)->exists(), 404);
             $old = DB::table('pengembalian_mutasi')->where('mutasi_masuk_id', $mutasi)->first();
             if ($old) {

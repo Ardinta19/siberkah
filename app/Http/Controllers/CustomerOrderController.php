@@ -47,6 +47,16 @@ class CustomerOrderController extends BaseController
         return redirect()->route('pesanan.show', $order->nomor);
     }
 
+    public function bouquet(Request $request, \App\Actions\CreateBouquetOrder $checkout)
+    {
+        try {
+            $order = $checkout->create($request->user('customer'), $request->all());
+        } catch (DomainException $e) {
+            abort(409, $e->getMessage());
+        }
+        return response()->json(['nomor' => $order->nomor, 'total' => $order->total]);
+    }
+
     /**
      * Show a specific order detail.
      *
@@ -74,7 +84,7 @@ class CustomerOrderController extends BaseController
     public function cancel(Request $request, string $nomor, ReleaseOrderHold $holds)
     {
         abort_unless($request->user('customer')->pesanan()->where('nomor', $nomor)->whereExists(
-            fn ($q) => $q->selectRaw('1')->from('checkout_sewa')->whereColumn('pesanan_id', 'pesanan.id'))->exists(), 404);
+            fn ($q) => $q->selectRaw('1')->from('checkout_bank')->whereColumn('pesanan_id', 'pesanan.id'))->exists(), 404);
         try {
             $holds->cancel($request->user('customer'), $nomor);
         } catch (DomainException $exception) {

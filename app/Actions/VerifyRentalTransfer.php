@@ -26,7 +26,7 @@ final class VerifyRentalTransfer
         return DB::transaction(function () use ($staff, $orderId, $data, $ref, $amount) {
             // Same lock order as expiry/cancellation. Check the deadline AFTER acquiring it.
             $order = Pesanan::lockForUpdate()->findOrFail($orderId);
-            abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $orderId)->exists(), 404);
+            abort_unless(DB::table('checkout_bank')->where('pesanan_id', $orderId)->exists(), 404);
             $invoice = DB::table('pembayaran')->where('pesanan_id', $orderId)->where('id', $data['pembayaran_id'])
                 ->whereIn('jenis', ['dp', 'penuh', 'pelunasan'])->lockForUpdate()->first();
             abort_unless($invoice, 404);
@@ -97,6 +97,21 @@ final class VerifyRentalTransfer
     private function holdsEveryUnit(Pesanan $order): bool
     {
         $items = DB::table('item_pesanan')->where('pesanan_id', $order->id);
+        $basket = DB::table('checkout_buket')->where('pesanan_id', $order->id)->first();
+        if ($basket) {
+            $custom = 0;
+            $lines = $items->leftJoin('stok_ditahan as h', 'h.item_pesanan_id', '=', 'item_pesanan.id')
+                ->get(['item_pesanan.jumlah', 'item_pesanan.varian_produk_id', 'h.jumlah as ditahan', 'h.varian_produk_id as varian']);
+            foreach ($lines as $line) {
+                if ($line->ditahan === null) {
+                    $custom += $line->jumlah;
+                } elseif ($line->ditahan != $line->jumlah || $line->varian != $line->varian_produk_id) {
+                    return false;
+                }
+            }
+            return $lines->isNotEmpty() && $custom === (int) $basket->jumlah_custom && (! $custom || DB::table('kapasitas_produksi_harian')
+                ->where('id', $basket->kapasitas_id)->where('terpakai', '>=', $custom)->exists());
+        }
         return $items->exists() && ! $items->whereNotExists(fn ($days) => $days->selectRaw('1')->from('hari_reservasi')
             ->whereColumn('hari_reservasi.pesanan_id', 'item_pesanan.pesanan_id')
             ->whereColumn('hari_reservasi.item_pesanan_id', 'item_pesanan.id')

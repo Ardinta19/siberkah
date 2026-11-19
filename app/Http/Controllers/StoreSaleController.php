@@ -70,10 +70,12 @@ final class StoreSaleController extends Controller
     {
         return DB::transaction(function () use ($request, $id, $complete) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
-            abort_unless(DB::table('penjualan_toko')->where('pesanan_id', $id)->exists(), 404);
+            $online = DB::table('checkout_buket')->where('pesanan_id', $id)->exists();
+            abort_unless($online || DB::table('penjualan_toko')->where('pesanan_id', $id)->exists(), 404);
             $from = $complete ? 'sudah_diserahkan' : 'siap';
             $to = $complete ? 'selesai' : 'sudah_diserahkan';
             if ($order->status !== $to) {
+                abort_if($online && ! $complete && ! $order->tanggal_serah->isToday(), 409, 'Serah pada tanggal pesanan.');
                 abort_unless($order->status === $from && $order->saldo === 0 && $order->jumlah_dibayar === $order->total, 409);
                 $order->update(['status' => $to, ($complete ? 'selesai_pada' : 'diserahkan_pada') => now()]);
                 $this->history($id, $request->user('staff')->id, $from, $to, $complete ? 'T10' : 'T08');

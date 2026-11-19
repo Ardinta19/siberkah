@@ -63,6 +63,14 @@ final class ReleaseOrderHold
             DB::table('stok_ditahan')->where('item_pesanan_id', $item->id)->delete();
         }
 
+        $basket = DB::table('checkout_buket')->where('pesanan_id', $order->id)->first();
+        if ($basket && $basket->jumlah_custom > 0) {
+            $released = DB::table('kapasitas_produksi_harian')->where('id', $basket->kapasitas_id)
+                ->where('terpakai', '>=', $basket->jumlah_custom)->decrement('terpakai', $basket->jumlah_custom);
+            if (! $released) {
+                throw new DomainException('Bukti pemakaian kapasitas tidak cocok.');
+            }
+        }
         DB::table('hari_reservasi')->where('pesanan_id', $order->id)->delete();
         DB::table('pembayaran')->where('pesanan_id', $order->id)->where('status', 'menunggu')->update([
             'status' => 'kedaluwarsa', 'nominal_tertunda' => null, 'diubah_pada' => now(),

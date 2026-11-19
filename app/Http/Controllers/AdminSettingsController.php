@@ -110,12 +110,16 @@ class AdminSettingsController extends BaseController
             'batas' => 'required|integer|between:0,65535',
         ]);
 
-        KapasitasProduksiHarian::updateOrCreate(
-            ['tanggal' => $request->tanggal, 'kelompok_kapasitas' => $request->kelompok_kapasitas],
-            [
-                'batas' => $request->batas,
-            ]
-        );
+        $key = $request->only('tanggal', 'kelompok_kapasitas');
+        $limit = (int) $request->batas;
+        abort_if($key['kelompok_kapasitas'] === 'buket_custom' && $limit > 15, 422);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($key, $limit) {
+            $table = \Illuminate\Support\Facades\DB::table('kapasitas_produksi_harian');
+            $table->insertOrIgnore($key + ['batas' => $limit, 'dibuat_pada' => now()]);
+            $current = $table->where($key)->lockForUpdate()->first();
+            abort_if($current->terpakai > $limit, 409, 'Kapasitas baru di bawah jumlah yang sudah dipesan.');
+            $table->update(['batas' => $limit, 'diubah_pada' => now()]);
+        }, 3);
 
         return back()
             ->with('success', 'Kapasitas produksi harian berhasil diupdate.');

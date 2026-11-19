@@ -92,6 +92,7 @@ Route::middleware(['auth:customer', 'active.customer'])->group(function () {
 
     /** Customer orders */
     Route::get('/pelanggan/pesanan', [CustomerOrderController::class, 'index'])->name('pesanan.index');
+    Route::post('/pelanggan/pesanan/buket', [CustomerOrderController::class, 'bouquet'])->middleware([RentalStaging::class, 'throttle:20,1'])->name('pesanan.buket');
     Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->middleware('throttle:20,1')->name('pesanan.store');
     Route::get('/pelanggan/pesanan/{nomor}', [CustomerOrderController::class, 'show'])->name('pesanan.show');
     Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->middleware(RentalStaging::class)->name('pesanan.cancel');

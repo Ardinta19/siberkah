@@ -23,6 +23,7 @@ class Produk extends Model
         'kelompok_kapasitas',
         'deskripsi',
         'harga_dasar',
+        'lead_custom_hari',
         'foto_utama',
         'aktif',
     ];

@@ -35,7 +35,8 @@ class StaffProductionController extends Controller
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             $types = $order->items()->join('produk', 'produk.id', '=', 'item_pesanan.produk_id')->pluck('produk.jenis');
             abort_if($types->isEmpty(), 409, 'Pesanan belum memiliki item.');
-            $custom = $types->contains('custom');
+            $snapshot = DB::table('checkout_buket')->where('pesanan_id', $id)->value('jumlah_custom');
+            $custom = $snapshot !== null ? $snapshot > 0 : $types->contains('custom');
             $from = $order->status;
             $code = match (true) {
                 $start && $from === 'dikonfirmasi' && $custom => 'T05',
