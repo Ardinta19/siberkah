@@ -73,8 +73,9 @@ Route::middleware(['guest:staff'])->group(function () {
     Route::post('/staff/login', [StaffAuthController::class, 'login'])->middleware('throttle:5,1')->name('staff.login.post');
 });
 
-Route::middleware('auth:staff')->group(function () {
+Route::middleware(['auth:staff', 'auth.session'])->group(function () {
     Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->name('staff.logout');
+    Route::view('/staff/password-change', 'staf.ganti-sandi')->middleware('role:owner,admin,staf_produksi,staf_kurir')->name('staff.password.form');
     Route::post('/staff/password-change', [StaffAuthController::class, 'changePassword'])->middleware(['role:owner,admin,staf_produksi,staf_kurir', 'throttle:5,1'])->name('staff.password.change');
 });
 
@@ -117,7 +118,7 @@ Route::middleware(['auth:customer', 'active.customer'])->group(function () {
  * --------------------------------------------------------
  * Routes for staff with owner or admin privileges.
  */
-Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
+Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(function () {
     /** Dashboard */
     Route::get('/owner', [DashboardController::class, 'hariIni'])->name('dashboard.hari-ini');
 
@@ -203,7 +204,7 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
  * --------------------------------------------------------
  * Routes for production staff and delivery personnel.
  */
-Route::middleware('auth:staff')->group(function () {
+Route::middleware(['auth:staff', 'auth.session'])->group(function () {
     /** Staff Production */
     Route::prefix('staf/produksi')->middleware('role:owner,admin,staf_produksi')->group(function () {
         Route::get('/', [StaffProductionController::class, 'index'])->name('staf.produksi.index');

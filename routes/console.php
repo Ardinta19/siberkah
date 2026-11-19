@@ -52,3 +52,37 @@ Artisan::command('reservations:audit', function () {
     $this->line("Reservasi tidak cocok: {$n->tidak_cocok}; item sewa aktif tanpa reservasi: {$n->hilang}.");
     return ($n->tidak_cocok || $n->hilang) ? 1 : 0;
 })->purpose('Audit reservasi sewa tanpa mengubah data atau menampilkan identitas');
+
+Artisan::command('staf:buat {surel} {peran} {nama}', function () {
+    $data = ['surel' => strtolower(trim($this->argument('surel'))), 'peran' => $this->argument('peran'), 'nama' => trim($this->argument('nama'))];
+    $rules = ['surel' => 'required|email|max:150|unique:pengguna,surel', 'nama' => 'required|string|max:100',
+        'peran' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\UserRole::class)]];
+    if (validator($data, $rules)->fails() || ! $this->input->isInteractive()) {
+        $this->error('Periksa surel, nama dan peran; gunakan terminal interaktif.');
+        return 1;
+    }
+    $password = $this->secret('Kata sandi sementara (12–72 byte)', false);
+    if (! is_string($password) || mb_strlen($password) < 12 || strlen($password) > 72 || $this->secret('Ulangi kata sandi sementara', false) !== $password) {
+        $this->error('Kata sandi tidak memenuhi syarat atau tidak cocok.');
+        return 1;
+    }
+    \App\Models\Pengguna::create($data + ['kata_sandi' => \Illuminate\Support\Facades\Hash::make($password), 'aktif' => true]);
+    $this->info('Akun dibuat. Ganti kata sandi saat masuk pertama.');
+    return 0;
+})->purpose('Buat akun staf atas permintaan Owner; sandi tidak diberikan lewat argumen');
+
+Artisan::command('staf:nonaktif {surel}', function () {
+    $email = strtolower(trim($this->argument('surel')));
+    // Serialize decisions about the last active Owner, including competing CLI requests.
+    $ok = \Illuminate\Support\Facades\DB::transaction(function () use ($email) {
+        $owners = \App\Models\Pengguna::where('peran', 'owner')->where('aktif', true)->orderBy('id')->lockForUpdate()->get();
+        $staff = \App\Models\Pengguna::where('surel', $email)->lockForUpdate()->first();
+        if (! $staff || ($staff->aktif && $staff->isOwner() && $owners->count() <= 1)) {
+            return false;
+        }
+        $staff->forceFill(['aktif' => false, 'remember_token' => null])->save();
+        return true;
+    }, 3);
+    $this->line($ok ? 'Akun nonaktif.' : 'Akun tidak ditemukan atau merupakan Owner aktif terakhir.');
+    return $ok ? 0 : 1;
+})->purpose('Nonaktifkan akses staf tanpa menghapus riwayat transaksi');

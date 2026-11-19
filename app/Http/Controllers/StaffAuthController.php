@@ -28,6 +28,11 @@ class StaffAuthController extends Controller
         $staff = $guard->user();
         $staff->update(['masuk_terakhir_pada' => now()]);
 
+        $request->session()->put('password_hash_staff', $guard->hashPasswordForCookie($staff->getAuthPassword()));
+        if ($staff->wajib_ganti_sandi) {
+            return redirect()->route('staff.password.form');
+        }
+
         return redirect()->route(match (UserRole::from($staff->peran)) {
             UserRole::STAF_PRODUKSI => 'staf.produksi.index',
             UserRole::STAF_KURIR => 'staf.kurir.index',
@@ -41,7 +46,7 @@ class StaffAuthController extends Controller
             'current_password' => 'required|current_password:staff',
             'new_password' => 'required|string|min:12|confirmed|different:current_password',
         ]);
-        $request->user('staff')->update(['kata_sandi' => Hash::make($data['new_password'])]);
+        $request->user('staff')->forceFill(['kata_sandi' => Hash::make($data['new_password']), 'wajib_ganti_sandi' => false])->save();
 
         return $this->logout($request);
     }
