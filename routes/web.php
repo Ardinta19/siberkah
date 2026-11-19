@@ -132,6 +132,7 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
             Route::get('inspeksi', [RentalCloseoutController::class, 'evidence']);
             Route::get('foto/{foto}', [RentalCloseoutController::class, 'photo'])->whereNumber('foto');
             Route::post('nilai', [RentalCloseoutController::class, 'assess'])->name('retur.nilai');
+            Route::post('potong-deposit', [RentalCloseoutController::class, 'applyDeposit'])->middleware('role:owner')->name('retur.potong');
             Route::post('setoran', [RentalCloseoutController::class, 'confirmDeposit'])->name('retur.setoran');
             Route::post('selesai', [RentalCloseoutController::class, 'complete'])->name('retur.selesai');
         });

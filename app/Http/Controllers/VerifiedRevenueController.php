@@ -21,10 +21,11 @@ final class VerifiedRevenueController extends Controller
             ->selectRaw("i.pesanan_id, CASE WHEN COUNT(DISTINCT k.id) = 1 THEN MIN(k.nama) ELSE 'Lintas kategori' END AS kategori");
         return DB::table('pembayaran as b')->leftJoinSub($category, 'c', 'c.pesanan_id', '=', 'b.pesanan_id')
             ->leftJoin('penjualan_toko as t', 't.pesanan_id', '=', 'b.pesanan_id')
+            ->leftJoin('pemakaian_deposit as d', 'd.pembayaran_id', '=', 'b.id')
             ->where('b.status', 'terverifikasi')->whereIn('b.jenis', ['dp','penuh','pelunasan','refund'])
             ->where('b.diverifikasi_pada', '>=', $start)->where('b.diverifikasi_pada', '<', $end)
             ->selectRaw("b.id, b.pesanan_id, DATE(b.diverifikasi_pada) AS tanggal, COALESCE(c.kategori, 'Tanpa kategori') AS kategori,
-                CASE WHEN t.pesanan_id IS NULL THEN 'bank' ELSE 'tunai' END AS kanal,
+                CASE WHEN d.pembayaran_id IS NOT NULL THEN 'deposit' WHEN t.pesanan_id IS NULL THEN 'bank' ELSE 'tunai' END AS kanal,
                 CASE WHEN b.jenis = 'refund' THEN 0 ELSE b.tagihan END AS pokok,
                 CASE WHEN b.jenis = 'refund' THEN b.nominal_diterima ELSE 0 END AS refund");
     }

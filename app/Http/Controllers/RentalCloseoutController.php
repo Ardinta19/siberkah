@@ -30,7 +30,7 @@ class RentalCloseoutController extends Controller
 
     public function assess(Request $request, int $id, IssueRentalInvoice $invoices)
     {
-        $data = $request->validate(['biaya_kerusakan' => 'required|integer|between:0,2147483647', 'alasan' => 'required|string|max:300']);
+        $data = $request->validate(['biaya_kerusakan' => 'required|integer|between:0,2147483647', 'alasan' => 'required|string|max:200']);
         $staff = $request->user('staff');
         $amount = (int) $data['biaya_kerusakan'];
         return DB::transaction(function () use ($id, $amount, $data, $staff, $invoices) {
@@ -72,20 +72,34 @@ class RentalCloseoutController extends Controller
         return response()->json(['setoran' => 'tercatat']);
     }
 
+    public function applyDeposit(Request $request, int $id, \App\Actions\ApplyDamageDeposit $action)
+    {
+        $data = $request->validate(['nominal' => 'required|integer|between:1,150000', 'alasan' => 'required|string|max:300']);
+        try {
+            $payment = $action->handle($request->user('staff'), $id, (int) $data['nominal'], $data['alasan']);
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
+        return response()->json(['pembayaran_id' => $payment]);
+    }
+
     public function complete(Request $request, int $id)
     {
-        $data = $request->validate(['jaminan_dikembalikan' => 'accepted', 'catatan' => 'required|string|max:300', 'nominal_kembali' => 'required|integer|min:0']);
+        $data = $request->validate(['jaminan_dikembalikan' => 'required|boolean', 'catatan' => 'required|string|max:300', 'nominal_kembali' => 'required|integer|min:0']);
         return DB::transaction(function () use ($request, $id, $data) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             $review = DB::table('penutupan_sewa')->where('pesanan_id', $id)->first();
-            abort_unless($review && (int) $data['nominal_kembali'] === (int) $order->nominal_jaminan, 409, 'Cocokkan nominal jaminan yang dikembalikan.');
+            $used = (int) DB::table('pemakaian_deposit')->where('pesanan_id', $id)->value('nominal');
+            $refund = (int) $order->nominal_jaminan - $used;
+            $returned = ! $used || $refund > 0;
+            abort_unless($review && (bool) $data['jaminan_dikembalikan'] === $returned && (int) $data['nominal_kembali'] === $refund, 409, 'Cocokkan nominal jaminan yang dikembalikan.');
             if ($order->status === 'selesai') {
                 abort_unless($review->catatan_penutupan === $data['catatan'], 409);
                 return response()->json(['status' => 'selesai']);
             }
             abort_unless($order->status === 'sudah_dikembalikan' && $order->saldo === 0 && ($order->jenis_jaminan !== 'deposit' || $review->setoran_pada), 409, 'Saldo, inspeksi, atau setoran jaminan belum selesai.');
             $now = now();
-            $order->update(['status' => 'selesai', 'jaminan_kembali_pada' => $now, 'selesai_pada' => $now]);
+            $order->update(['status' => 'selesai', 'jaminan_kembali_pada' => $returned ? $now : null, 'selesai_pada' => $now]);
             DB::table('penutupan_sewa')->where('pesanan_id', $id)->update(['catatan_penutupan' => $data['catatan']]);
             DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $id, 'status_lama' => 'sudah_dikembalikan', 'status_baru' => 'selesai',
                 'kode_transisi' => 'T11', 'pelaku' => 'staf', 'pengguna_id' => $request->user('staff')->id, 'catatan' => $data['catatan'], 'dibuat_pada' => $now]);
