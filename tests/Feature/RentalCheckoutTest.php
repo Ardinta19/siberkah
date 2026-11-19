@@ -259,6 +259,50 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseHas('pembayaran', ['pesanan_id' => $order->id, 'jenis' => 'refund', 'status' => 'terverifikasi', 'nominal_diterima' => $expected]);
     }
 
+    public static function reviewOutcomes(): array
+    {
+        return [['disetujui'], ['ditolak']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('reviewOutcomes')]
+    public function test_customer_request_is_scoped_non_financial_and_reviewed_once(string $outcome): void
+    {
+        $data = $this->fixture();
+        $customer = $this->customer('628111111125');
+        $order = app(CreateRentalOrder::class)->create($customer, $data);
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $url = route('pesanan.request-cancellation', $order->nomor);
+        $reason = ['alasan' => 'Acara tidak jadi.'];
+        config(['checkout.staging' => false]);
+        $this->actingAs($customer, 'customer')->postJson($url, $reason)->assertServiceUnavailable();
+        config(['checkout.staging' => true]);
+        $this->postJson($url, $reason)->assertConflict();
+        $dp = DB::table('pembayaran')->where('pesanan_id', $order->id)->first();
+        app(\App\Actions\VerifyRentalTransfer::class)->record($admin, $order->id, ['pembayaran_id' => $dp->id, 'referensi' => 'BANK:DP', 'nominal' => $dp->nominal_diharapkan]);
+        $this->actingAs($this->customer('628111111126'), 'customer')->postJson($url, $reason)->assertNotFound();
+        $this->actingAs($customer, 'customer')->postJson($url, $reason)->assertCreated();
+        $this->postJson($url, $reason)->assertOk();
+        $this->postJson($url, ['alasan' => 'Berubah'])->assertConflict();
+        $this->assertDatabaseCount('permohonan_batal', 1);
+        $this->assertSame('dikonfirmasi', $order->fresh()->status);
+        $this->assertDatabaseCount('hari_reservasi', 1);
+        $queue = route('admin.permohonan-batal.index');
+        $approve = route('admin.pesanan.approve-cancellation', $order->id);
+        $reject = route('admin.pesanan.reject-cancellation', $order->id);
+        $note = ['alasan' => 'Sudah ditinjau.'];
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_kurir']), 'staff')->getJson($queue)->assertForbidden();
+        $this->actingAs($admin, 'staff')->getJson($queue)->assertJsonPath('total', 1);
+        $accepted = $outcome === 'disetujui';
+        $this->postJson($accepted ? $approve : $reject, $note)->assertOk();
+        $this->postJson($accepted ? $approve : $reject, $note)->assertOk();
+        $this->postJson($accepted ? $reject : $approve, $note)->assertConflict();
+        $this->getJson($queue)->assertJsonPath('total', 0);
+        $this->actingAs($customer, 'customer')->getJson($url)->assertJsonPath('status', $outcome);
+        $this->assertDatabaseHas('permohonan_batal', ['pesanan_id' => $order->id, 'peninjau_id' => $admin->id, 'catatan_keputusan' => 'Sudah ditinjau.']);
+        $this->assertDatabaseCount('keputusan_refund', $accepted ? 1 : 0);
+        $this->assertDatabaseCount('hari_reservasi', $accepted ? 0 : 1);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];

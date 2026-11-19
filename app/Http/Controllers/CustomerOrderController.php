@@ -81,20 +81,4 @@ class CustomerOrderController extends BaseController
 
         return back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
-
-    /**
-     * Request cancellation.
-     *
-     * @param  int  $nomor
-     * @return RedirectResponse
-     */
-    public function requestCancellation($nomor)
-    {
-        $pesanan = auth('customer')->user()->pesanan()
-            ->where('nomor', $nomor)
-            ->firstOrFail();
-
-        return back()
-            ->with('success', 'Permintaan pembatalan pesanan telah dikirim ke admin.');
-    }
 }

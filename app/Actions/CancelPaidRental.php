@@ -9,14 +9,19 @@ use Illuminate\Support\Facades\DB;
 /** T12 approves a liability, not an outgoing bank transfer. Rental staging only. */
 final class CancelPaidRental
 {
-    public function decide(Pengguna $actor, int $id, string $reason, ?int $override, ?string $overrideReason): int
+    public function decide(Pengguna $actor, int $id, string $reason, ?int $override, ?string $overrideReason, bool $fromRequest = false): int
     {
         abort_unless($actor->aktif && $actor->canVerifyPayment(), 403);
         abort_if($override !== null && ! $actor->isOwner(), 403);
         $hash = hash('sha256', json_encode([$reason, $override, $overrideReason], JSON_THROW_ON_ERROR));
-        return DB::transaction(function () use ($id, $actor, $reason, $override, $overrideReason, $hash) {
+        return DB::transaction(function () use ($id, $actor, $reason, $override, $overrideReason, $hash, $fromRequest) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $id)->exists(), 404);
+            if ($fromRequest) {
+                $status = DB::table('permohonan_batal')->where('pesanan_id', $id)->value('status');
+                abort_if($status === null, 404);
+                abort_if($status === 'ditolak', 409, 'Permohonan telah ditolak.');
+            }
             $decision = DB::table('keputusan_refund')->where('pesanan_id', $id)->first();
             if ($decision) {
                 abort_unless($decision->sidik === $hash, 409, 'Keputusan pembatalan sudah tercatat.');
@@ -48,6 +53,9 @@ final class CancelPaidRental
                 'sidik' => $hash, 'diputuskan_pada' => $now]);
             DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $id, 'status_lama' => $from, 'status_baru' => 'dibatalkan',
                 'kode_transisi' => 'T12', 'pelaku' => 'staf', 'pengguna_id' => $actor->id, 'catatan' => $reason, 'dibuat_pada' => $now]);
+            DB::table('permohonan_batal')->where('pesanan_id', $id)->where('status', 'menunggu')->update([
+                'status' => 'disetujui', 'peninjau_id' => $actor->id, 'catatan_keputusan' => $reason, 'diputuskan_pada' => $now,
+            ]);
             return $final;
         }, 3);
     }

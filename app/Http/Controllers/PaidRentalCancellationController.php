@@ -17,10 +17,20 @@ class PaidRentalCancellationController extends Controller
 
     public function cancel(Request $request, int $id, CancelPaidRental $action)
     {
+        return $this->decision($request, $id, $action, false);
+    }
+
+    public function approve(Request $request, int $id, CancelPaidRental $action)
+    {
+        return $this->decision($request, $id, $action, true);
+    }
+
+    private function decision(Request $request, int $id, CancelPaidRental $action, bool $fromRequest)
+    {
         $this->requireStaging();
         $data = $request->validate(['alasan' => 'required|string|max:300', 'nominal_override' => 'sometimes|required|integer|min:0',
             'alasan_override' => 'required_with:nominal_override|string|max:300']);
-        $amount = $action->decide($request->user('staff'), $id, $data['alasan'], isset($data['nominal_override']) ? (int) $data['nominal_override'] : null, $data['alasan_override'] ?? null);
+        $amount = $action->decide($request->user('staff'), $id, $data['alasan'], isset($data['nominal_override']) ? (int) $data['nominal_override'] : null, $data['alasan_override'] ?? null, $fromRequest);
         return response()->json(['status' => 'dibatalkan', 'nominal_refund' => $amount]);
     }
 
