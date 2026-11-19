@@ -56,7 +56,7 @@ class AdminCatalogController extends BaseController
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'kategori_id' => 'required|exists:kategori,id',
             'nama' => 'required|string|max:150',
             'slug' => 'required|string|max:170|unique:produk,slug',
@@ -65,17 +65,12 @@ class AdminCatalogController extends BaseController
             'deskripsi' => 'nullable|string',
             'lead_custom_hari' => 'sometimes|integer|in:1,2',
             'harga_dasar' => 'required|integer|min:0',
-            'foto_utama' => 'nullable|image|max:5120',
+            'foto_utama' => 'prohibited',
             'aktif' => 'boolean',
         ]);
 
-        $data = $request->except('foto_utama');
+        unset($data['foto_utama']);
         $data['aktif'] = $request->boolean('aktif');
-
-        if ($request->hasFile('foto_utama')) {
-            $path = $request->file('foto_utama')->store('produk', 'public');
-            $data['foto_utama'] = $path;
-        }
 
         $produk = Produk::create($data);
 
@@ -111,7 +106,7 @@ class AdminCatalogController extends BaseController
     {
         $produk = Produk::findOrFail($id);
 
-        $request->validate([
+        $data = $request->validate([
             'kategori_id' => 'required|exists:kategori,id',
             'nama' => 'required|string|max:150',
             'slug' => 'required|string|max:170|unique:produk,slug,'.$id,
@@ -120,21 +115,12 @@ class AdminCatalogController extends BaseController
             'deskripsi' => 'nullable|string',
             'lead_custom_hari' => 'sometimes|integer|in:1,2',
             'harga_dasar' => 'required|integer|min:0',
-            'foto_utama' => 'nullable|image|max:5120',
+            'foto_utama' => 'prohibited',
             'aktif' => 'boolean',
         ]);
 
-        $data = $request->except('foto_utama');
+        unset($data['foto_utama']);
         $data['aktif'] = $request->boolean('aktif');
-
-        if ($request->hasFile('foto_utama')) {
-            // Delete old image if exists
-            if ($produk->foto_utama) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($produk->foto_utama);
-            }
-            $path = $request->file('foto_utama')->store('produk', 'public');
-            $data['foto_utama'] = $path;
-        }
 
         $produk->update($data);
 
@@ -175,26 +161,6 @@ class AdminCatalogController extends BaseController
         return redirect()
             ->route('admin.katalog.index')
             ->with('success', 'Produk dipublikasikan.');
-    }
-
-    /**
-     * Manage images for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageImages(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle image upload and management
-        // - WebP conversion
-        // - EXIF strip
-        // - Alt text wajib
-        // - Max 5MB, min 800px width
-
-        return back()
-            ->with('success', 'Gambar produk berhasil dikelola.');
     }
 
 }

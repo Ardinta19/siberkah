@@ -7,8 +7,9 @@ COPY vite.config.js tailwind.config.js ./
 RUN npm run build
 
 FROM php:8.4-cli-bookworm
-RUN apt-get update && apt-get install -y --no-install-recommends unzip git libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo_mysql mbstring dom xmlwriter \
+RUN apt-get update && apt-get install -y --no-install-recommends unzip git libonig-dev libxml2-dev libwebp-dev libpng-dev libjpeg62-turbo-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp \
+    && docker-php-ext-install gd pdo_mysql mbstring dom xmlwriter \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1 APP_ENV=testing

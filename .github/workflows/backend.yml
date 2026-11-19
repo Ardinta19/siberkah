@@ -26,10 +26,15 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: pdo_mysql, mbstring, dom
+          extensions: pdo_mysql, mbstring, dom, gd
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: cp .env.example .env && composer install --no-interaction --prefer-dist && php artisan key:generate
       - run: npm ci && npm run build
-      - run: php artisan migrate --force && php artisan test
+      - run: php artisan migrate --force
+      - name: Latihan pemulihan MariaDB terisolasi
+        env:
+          CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
+        run: bash scripts/ci/restore-drill.sh
+      - run: php artisan test

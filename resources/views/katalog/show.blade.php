@@ -3,7 +3,7 @@
 @section('content')
 <article class="container-siberkah grid gap-6 py-8 md:grid-cols-2">
     <div class="overflow-hidden rounded-lg bg-primary-50">
-        @if($produk->foto_utama)
+        @if($produk->foto_utama && !$gambarProduk->contains('jalur_berkas', $produk->foto_utama))
             <img src="{{ asset('storage/'.$produk->foto_utama) }}" class="w-full object-cover" alt="{{ $produk->nama }}">
         @endif
         @foreach($gambarProduk as $gambar)

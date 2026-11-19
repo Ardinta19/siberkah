@@ -19,6 +19,7 @@ use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffDeliveryController;
 use App\Http\Controllers\RentalCloseoutController;
 use App\Http\Controllers\CatalogInventoryController;
+use App\Http\Controllers\CatalogMediaController;
 use App\Http\Controllers\StoreSaleController;
 use App\Http\Controllers\VerifiedRevenueController;
 use App\Http\Middleware\RentalStaging;
@@ -162,7 +163,12 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->middleware('role:owner')->name('admin.katalog.publish');
         Route::post('{id}/manage-variants', [CatalogInventoryController::class, 'variant'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-variants');
         Route::post('{id}/manage-options', [CatalogInventoryController::class, 'option'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-options');
-        Route::post('{id}/manage-images', [AdminCatalogController::class, 'manageImages'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-images');
+        Route::prefix('{id}/manage-images')->where(['id' => '[0-9]+'])->middleware('role:owner')->group(function () {
+            Route::get('/', [CatalogMediaController::class, 'index'])->name('admin.katalog.images');
+            Route::post('/', [CatalogMediaController::class, 'store'])->middleware('throttle:30,1')->name('admin.katalog.manage-images');
+            Route::put('urutan', [CatalogMediaController::class, 'reorder'])->name('admin.katalog.images.order');
+            Route::delete('{foto}', [CatalogMediaController::class, 'remove'])->whereNumber('foto')->name('admin.katalog.images.delete');
+        });
         Route::post('{id}/manage-units', [CatalogInventoryController::class, 'unit'])->whereNumber('id')->name('admin.katalog.manage-units');
     });
 
