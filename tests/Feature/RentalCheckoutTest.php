@@ -303,6 +303,66 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('hari_reservasi', $accepted ? 0 : 1);
     }
 
+    public function test_rental_lifecycle_from_invoice_to_private_inspections_late_fees_and_closeout(): void
+    {
+        config(['checkout.staging' => true]);
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $data = $this->fixture();
+        $customer = $this->customer('628111111128');
+        $order = app(CreateRentalOrder::class)->create($customer, $data);
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $owner = Pengguna::factory()->create(['peran' => 'owner']);
+        $courier = Pengguna::factory()->create(['peran' => 'staf_kurir']);
+        $bill = DB::table('pembayaran')->where('pesanan_id', $order->id)->first();
+        $this->actingAs($customer, 'customer')->getJson(route('payment.show', $order->nomor))->assertOk();
+        $this->postJson(route('payment.confirm', $order->nomor), ['pembayaran_id' => $bill->id])->assertAccepted();
+        $this->assertSame(0, $order->fresh()->jumlah_dibayar);
+        $verify = app(\App\Actions\VerifyRentalTransfer::class);
+        $verify->record($admin, $order->id, ['pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan, 'referensi' => 'BANK:DP']);
+        $this->actingAs($admin, 'staff')->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $order->id])->assertRedirect();
+        $item = $order->items()->firstOrFail();
+        $picture = fn () => \Illuminate\Http\UploadedFile::fake()->createWithContent('unit.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlWjQAAAABJRU5ErkJggg=='));
+        $row = ['item_id' => $item->id, 'kondisi' => 'baik', 'cek' => ['permukaan' => 'baik', 'bunga' => 'tidak_ada', 'easel' => 'baik', 'led' => 'tidak_ada']];
+        $handover = fn () => ['pesanan_id' => $order->id, 'jenis_jaminan' => 'deposit', 'nominal_jaminan' => 100000, 'inspeksi' => [$row + ['foto' => [$picture()]]]];
+        $this->travelTo($order->tanggal_serah->copy()->setTime(9, 0));
+        $this->actingAs($courier, 'staff')->post(route('staf.kurir.handover'), $handover())->assertConflict();
+        $this->travelBack();
+        $bill = DB::table('pembayaran')->where('jenis','pelunasan')->sole();
+        $verify->record($admin, $order->id, ['pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan, 'referensi' => 'BANK:BAL']);
+        $this->travelTo($order->tanggal_serah->copy()->setTime(9, 0));
+        $this->post(route('staf.kurir.handover'), $handover())->assertOk();
+        $this->post(route('staf.kurir.handover'), $handover())->assertConflict();
+        $this->assertDatabaseCount('penguasaan_unit', 1);
+        $this->travelTo($order->tanggal_serah->copy()->setTime(19, 1));
+        $row['kondisi'] = 'rusak';
+        $row['cek']['permukaan'] = 'cacat';
+        $row['catatan'] = 'Akrilik retak saat kembali';
+        $return = fn () => ['pesanan_id' => $order->id, 'inspeksi' => [$row + ['foto' => [$picture()]]]];
+        $this->post(route('staf.kurir.receive-return'), $return())->assertOk()->assertJsonPath('saldo', 50000);
+        $this->post(route('staf.kurir.receive-return'), $return())->assertConflict();
+        $this->assertDatabaseHas('unit_sewa', ['id' => $item->unit_sewa_id, 'status' => 'rusak']);
+        $this->assertDatabaseCount('penguasaan_unit', 0);
+        $this->assertDatabaseCount('foto_inspeksi', 2);
+        $photo = DB::table('foto_inspeksi')->first();
+        \Illuminate\Support\Facades\Storage::disk('local')->assertExists($photo->jalur_berkas);
+        $assessment = ['biaya_kerusakan' => 200000, 'alasan' => 'Foto menunjukkan akrilik pecah'];
+        $this->actingAs($admin, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertForbidden();
+        $this->actingAs($owner, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertCreated();
+        $invoice = $this->postJson(route('retur.nilai', $order->id), $assessment)->assertOk()->json('tagihan_id');
+        $this->assertSame(250000, $order->fresh()->saldo);
+        $complete = ['jaminan_dikembalikan' => true, 'nominal_kembali' => 100000, 'catatan' => 'Deposit dikembalikan penuh.'];
+        $this->actingAs($admin, 'staff')->postJson(route('retur.selesai', $order->id), $complete)->assertConflict();
+        $bill = DB::table('pembayaran')->where('id', $invoice)->first();
+        $this->assertSame('terverifikasi', $verify->record($admin, $order->id, ['pembayaran_id' => $invoice, 'nominal' => $bill->nominal_diharapkan, 'referensi' => 'BANK:RETUR']));
+        $this->postJson(route('retur.selesai', $order->id), $complete)->assertConflict();
+        $this->postJson(route('retur.setoran', $order->id), ['nominal' => 100000])->assertOk();
+        $this->postJson(route('retur.selesai', $order->id), $complete)->assertOk();
+        $this->postJson(route('retur.selesai', $order->id), $complete)->assertOk();
+        $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'status' => 'selesai', 'saldo' => 0, 'jumlah_dibayar' => 511000]);
+        $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi','T11')->count());
+        $this->actingAs($owner, 'staff')->getJson(route('admin.laporan.index', ['period'=>'harian']))->assertOk()->assertJsonPath('neto', (int) $bill->nominal_diharapkan);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];

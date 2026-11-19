@@ -17,6 +17,8 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffDeliveryController;
+use App\Http\Controllers\RentalCloseoutController;
+use App\Http\Middleware\RentalStaging;
 use App\Http\Controllers\StaffProductionController;
 use Illuminate\Support\Facades\Route;
 
@@ -89,7 +91,7 @@ Route::middleware(['auth:customer', 'active.customer'])->group(function () {
     Route::get('/pelanggan/pesanan', [CustomerOrderController::class, 'index'])->name('pesanan.index');
     Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->middleware('throttle:20,1')->name('pesanan.store');
     Route::get('/pelanggan/pesanan/{nomor}', [CustomerOrderController::class, 'show'])->name('pesanan.show');
-    Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->middleware('pending.transaction')->name('pesanan.cancel');
+    Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->middleware(RentalStaging::class)->name('pesanan.cancel');
     Route::get('/pelanggan/pesanan/{nomor}/request-cancellation', [CancellationRequestController::class, 'show'])->name('pesanan.cancellation-status');
     Route::post('/pelanggan/pesanan/{nomor}/request-cancellation', [CancellationRequestController::class, 'submit'])->middleware('throttle:10,1')->name('pesanan.request-cancellation');
 });
@@ -100,8 +102,8 @@ Route::middleware(['auth:customer', 'active.customer'])->group(function () {
  * Payment-related routes for authenticated customers.
  */
 Route::middleware(['auth:customer', 'active.customer'])->group(function () {
-    Route::get('/pesanan/{nomor}/bayar', [CustomerPaymentController::class, 'show'])->middleware('pending.transaction')->name('payment.show');
-    Route::post('/pesanan/{nomor}/bayar/konfirmasi', [CustomerPaymentController::class, 'confirm'])->middleware('pending.transaction')->name('payment.confirm');
+    Route::get('/pesanan/{nomor}/bayar', [CustomerPaymentController::class, 'show'])->middleware(RentalStaging::class)->name('payment.show');
+    Route::post('/pesanan/{nomor}/bayar/konfirmasi', [CustomerPaymentController::class, 'confirm'])->middleware(RentalStaging::class)->name('payment.confirm');
 });
 
 /**
@@ -119,6 +121,13 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->name('admin.pesanan.show');
         Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->middleware('pending.transaction')->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
+        Route::prefix('pesanan/{id}/retur')->where(['id' => '[0-9]+'])->middleware(RentalStaging::class)->group(function () {
+            Route::get('inspeksi', [RentalCloseoutController::class, 'evidence']);
+            Route::get('foto/{foto}', [RentalCloseoutController::class, 'photo'])->whereNumber('foto');
+            Route::post('nilai', [RentalCloseoutController::class, 'assess'])->name('retur.nilai');
+            Route::post('setoran', [RentalCloseoutController::class, 'confirmDeposit'])->name('retur.setoran');
+            Route::post('selesai', [RentalCloseoutController::class, 'complete'])->name('retur.selesai');
+        });
         Route::get('rekonsiliasi', [TransferReconciliationController::class, 'index'])->name('admin.rekonsiliasi.index');
         Route::post('rekonsiliasi/{mutasi}/pengembalian', [TransferReconciliationController::class, 'recordReturn'])
             ->whereNumber('mutasi')->name('admin.rekonsiliasi.pengembalian');
@@ -184,8 +193,8 @@ Route::middleware('auth:staff')->group(function () {
     /** Staff Delivery */
     Route::prefix('staf/kurir')->middleware('role:owner,admin,staf_kurir')->group(function () {
         Route::get('/', [StaffDeliveryController::class, 'index'])->name('staf.kurir.index');
-        Route::post('/handover', [StaffDeliveryController::class, 'handover'])->middleware('pending.transaction')->name('staf.kurir.handover');
-        Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->middleware('pending.transaction')->name('staf.kurir.receive-return');
+        Route::post('/handover', [StaffDeliveryController::class, 'handover'])->middleware(RentalStaging::class)->name('staf.kurir.handover');
+        Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->middleware(RentalStaging::class)->name('staf.kurir.receive-return');
     });
 });
 

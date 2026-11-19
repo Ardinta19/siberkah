@@ -29,39 +29,13 @@ class StaffDeliveryController extends BaseController
         ]);
     }
 
-    /**
-     * Execute handover.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function handover($id)
+    public function handover(Request $request, \App\Actions\InspectRental $inspection)
     {
-        $pesanan = Pesanan::findOrFail($id);
-
-        $pesanan->status = 'diterima';
-        $pesanan->tanggal_handover = now();
-        $pesanan->save();
-
-        return back()
-            ->with('success', 'Handover berhasil dicatat.');
+        return response()->json($inspection->handle($request, false));
     }
 
-    /**
-     * Receive return.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function receiveReturn($id)
+    public function receiveReturn(Request $request, \App\Actions\InspectRental $inspection)
     {
-        $pesanan = Pesanan::findOrFail($id);
-
-        $pesanan->status = 'dikembalikan';
-        $pesanan->tanggal_kembali = now();
-        $pesanan->save();
-
-        return back()
-            ->with('success', 'Pengembalian berhasil dicatat.');
+        return response()->json($inspection->handle($request, true));
     }
 }

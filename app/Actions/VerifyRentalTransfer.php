@@ -44,15 +44,16 @@ final class VerifyRentalTransfer
                 $order->refresh();
             }
             $balanceInvoice = $invoice->jenis === 'pelunasan';
+            $closingBill = $balanceInvoice && DB::table('penutupan_sewa')->where('pesanan_id', $orderId)->where('tagihan_id', $invoice->id)->exists();
             $permittedStatus = $balanceInvoice
-                ? in_array($order->status, ['dikonfirmasi', 'sedang_diproduksi', 'siap'], true)
+                ? ($closingBill ? $order->status === 'sudah_dikembalikan' : in_array($order->status, ['dikonfirmasi', 'sedang_diproduksi', 'siap'], true))
                 : $order->status === 'menunggu_pembayaran';
             $deadline = $balanceInvoice ? $order->batas_pelunasan_pada : $order->tahan_hingga_pada;
             $reason = match (true) {
                 $order->status === 'kedaluwarsa' => 'lewat_batas',
                 ! $permittedStatus, $invoice->status !== 'menunggu' => 'status_berubah',
-                ! $deadline => 'batas_tidak_ada',
-                $balanceInvoice && $deadline->lt($now) => 'pelunasan_terlambat',
+                ! $closingBill && ! $deadline => 'batas_tidak_ada',
+                $balanceInvoice && ! $closingBill && $deadline->lt($now) => 'pelunasan_terlambat',
                 $amount !== (int) $invoice->nominal_diharapkan => 'nominal_berbeda',
                 $order->jumlah_dibayar + $order->saldo !== $order->total,
                 ! $balanceInvoice && $order->jumlah_dibayar !== 0,

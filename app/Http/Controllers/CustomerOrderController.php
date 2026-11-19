@@ -73,6 +73,8 @@ class CustomerOrderController extends BaseController
      */
     public function cancel(Request $request, string $nomor, ReleaseOrderHold $holds)
     {
+        abort_unless($request->user('customer')->pesanan()->where('nomor', $nomor)->whereExists(
+            fn ($q) => $q->selectRaw('1')->from('checkout_sewa')->whereColumn('pesanan_id', 'pesanan.id'))->exists(), 404);
         try {
             $holds->cancel($request->user('customer'), $nomor);
         } catch (DomainException $exception) {

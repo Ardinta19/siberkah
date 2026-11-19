@@ -2,93 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pembayaran;
-use App\Models\Pesanan;
-use App\Models\RekeningPembayaran;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
-/**
- * Customer Payment Controller - Payment handling for authenticated customers
- * --------------------------------------------------------
- * auth:customer middleware applied at route level.
- * K-05: Pembayaran - hitung mundur 60/30 menit, nominal + kode unik
- */
-class CustomerPaymentController extends BaseController
+final class CustomerPaymentController extends Controller
 {
-    /**
-     * Show the payment page.
-     * K-05: Pembayaran - hitung mundur 60/30 menit, nominal + kode unik,
-     *         rekening+QRIS, "Salin nominal", "Kirim konfirmasi WA"
-     *
-     * @return View
-     */
-    public function show(string $nomor)
+    private function ownedRental(Request $request, string $nomor)
     {
-        // $pesanan = Pesanan::where('nomor', $nomor)->firstOrFail();
-
-        // Placeholder data
-        $pesanan = null; // Pesanan::where('nomor', $nomor)->firstOrFail();
-
-        // Get available payment methods
-        $rekening = RekeningPembayaran::where('aktif', true)->orderBy('urutan')->get();
-
-        // Calculate total and generate unique code
-        $total = 0; // $pesanan->total ?? 0;
-        $kodeUnik = rand(1, 999);
-
-        // Check if there's already a pending payment with this nominal_tertunda
-        // This ensures unique kode unik per order/status
-
-        return view('pages.customer.payment.show', [
-            'nomor' => $nomor,
-            'pesanan' => $pesanan,
-            'rekening' => $rekening,
-            'total' => $total,
-            'kodeUnik' => $kodeUnik,
-            'waktu_sisa' => '02:30', // Countdown timer placeholder
-        ]);
+        return $request->user('customer')->pesanan()->where('nomor', $nomor)
+            ->whereExists(fn ($q) => $q->selectRaw('1')->from('checkout_sewa')->whereColumn('pesanan_id', 'pesanan.id'));
     }
 
-    /**
-     * Process payment confirmation (WA link).
-     *
-     * @param  string  $id
-     * @return RedirectResponse
-     */
-    public function confirm(Request $request, $id)
+    public function show(Request $request, string $nomor)
     {
-        $request->validate([
-            'nominal_diterima' => 'required|integer|min:1',
-            'bukti_transfer' => 'sometimes|image|max:5120', // 5MB max
-        ]);
+        $order = $this->ownedRental($request, $nomor)->firstOrFail();
+        $invoices = DB::table('pembayaran')->where('pesanan_id', $order->id)->orderBy('id')->get(['id','jenis','status','tagihan','kode_unik','nominal_diharapkan','dikonfirmasi_pelanggan_pada','diverifikasi_pada']);
+        return response()->json(['nomor' => $nomor, 'status' => $order->status, 'saldo' => $order->saldo, 'tahan_hingga_pada' => $order->tahan_hingga_pada,
+            'batas_pelunasan_pada' => $order->batas_pelunasan_pada, 'pembayaran' => $invoices])->header('Cache-Control', 'private, no-store');
+    }
 
-        // $pembayaran = Pembayaran::findOrFail($id);
-        // $pesanan = $pembayaran->pesanan;
-
-        // Verify nominal matches exactly
-        // if ($request->nominal_diterima != $pesanan->total) {
-        //     return back()->with('error', 'Nominal pembayaran tidak sesuai dengan total.');
-        // }
-
-        // Update payment status
-        // $pembayaran->status = 'terverifikasi';
-        // $pembayaran->nominal_diterima = $request->nominal_diterima;
-        // $pembayaran->diterima_pana = now();
-        // $pembayaran->verifikasi_pana = auth('customer')->id();
-        // $pembayaran->save();
-
-        // Update order status
-        // $pesanan->status = 'dikonfirmasi';
-        // $pesanan->dikonfirmasi_pana = now();
-        // $pesanan->save();
-
-        // Log aktivitas
-        // \App\Models\LogAktivitas::create([...]);
-
-        return redirect()->route('pesanan.show', ['nomor' => $pesanan->nomor])
-            ->with('success', 'Pembayaran berhasil diverifikasi. Terima kasih, Kak!');
+    public function confirm(Request $request, string $nomor)
+    {
+        $id = $request->validate(['pembayaran_id' => 'required|integer|min:1'])['pembayaran_id'];
+        DB::transaction(function () use ($request, $nomor, $id) {
+            $order = $this->ownedRental($request, $nomor)->lockForUpdate()->firstOrFail();
+            $query = DB::table('pembayaran')->where('pesanan_id', $order->id)->where('id', $id)->whereIn('jenis', ['dp','penuh','pelunasan']);
+            $bill = $query->lockForUpdate()->first();
+            abort_unless($bill, 404);
+            abort_unless($bill->status === 'menunggu', 409, 'Tagihan sudah ditutup.');
+            if (! $bill->dikonfirmasi_pelanggan_pada) {
+                $query->update(['dikonfirmasi_pelanggan_pada' => now(), 'diubah_pada' => now()]);
+            }
+        }, 3);
+        return response()->json(['hasil' => 'menunggu_pemeriksaan'], 202);
     }
 }

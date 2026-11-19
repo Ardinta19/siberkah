@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 /** Caller owns the order transaction and lock. */
 final class IssueRentalInvoice
 {
-    public function issue(int $order, string $type, int $amount, DateTimeInterface $now): void
+    public function issue(int $order, string $type, int $amount, DateTimeInterface $now): int
     {
         $taken = DB::table('pembayaran')->whereBetween('nominal_tertunda', [$amount + 1, $amount + 999])->pluck('nominal_tertunda')->flip();
         // Do not recycle this order's previous transfer total for its next invoice.
@@ -21,13 +21,12 @@ final class IssueRentalInvoice
             $expected = $amount + $code;
             if (! $taken->has($expected) && ! $previous->has($expected)) {
                 try {
-                    DB::table('pembayaran')->insert(['pesanan_id' => $order, 'jenis' => $type, 'status' => 'menunggu', 'tagihan' => $amount,
+                    return DB::table('pembayaran')->insertGetId(['pesanan_id' => $order, 'jenis' => $type, 'status' => 'menunggu', 'tagihan' => $amount,
                     'kode_unik' => $code, 'nominal_diharapkan' => $expected, 'nominal_tertunda' => $expected, 'dibuat_pada' => $now, 'diubah_pada' => $now]);
                 } catch (UniqueConstraintViolationException) {
                     // A different invoice writer claimed the same pending amount.
                     continue;
                 }
-                return;
             }
         }
         throw new DomainException('Semua kode pembayaran untuk nominal ini sedang digunakan.');
