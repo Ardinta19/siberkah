@@ -44,7 +44,7 @@ try:
     errors = [f.exception() for f in futures if f.exception()]
     results = (f'Katalog sintetis, 200 produk/5.000 reservasi: 10 GET hangat, median {statistics.median(times):.1f} ms, '
                f'maks {max(times):.1f} ms. Gelombang 50 klien: {len(errors)} galat dari 50 GET.')
-    print(results, flush=True)
+    print(f"::notice::{results}", flush=True)
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as report:
         print(results, file=report)
     if errors or max(times) > 500:
