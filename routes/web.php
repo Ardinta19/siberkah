@@ -89,7 +89,7 @@ Route::middleware(['auth:customer', 'active.customer'])->group(function () {
     /** Customer profile and orders */
     Route::get('/pelanggan/profil', [CustomerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/pelanggan/profil', [CustomerProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/pelanggan/profil', [CustomerProfileController::class, 'destroy'])->middleware('pending.transaction')->name('profile.destroy');
+    Route::delete('/pelanggan/profil', [CustomerProfileController::class, 'destroy'])->middleware([RentalStaging::class, 'throttle:5,1'])->name('profile.destroy');
 
     /** Customer orders */
     Route::get('/pelanggan/pesanan', [CustomerOrderController::class, 'index'])->name('pesanan.index');

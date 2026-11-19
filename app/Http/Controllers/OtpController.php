@@ -81,6 +81,7 @@ class OtpController extends Controller
         $request->session()->forget('otp.challenge');
         Auth::guard('customer')->login($customer);
         $request->session()->regenerate();
+        $request->session()->put('otp.verified', ['id' => $customer->id, 'at' => now()->timestamp]);
         return redirect()->route('catalog.index');
     }
 

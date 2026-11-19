@@ -31,7 +31,8 @@ final class ResolveLateRental
                     || ($invoice->jenis === 'dp' && $invoice->tagihan == intdiv($order->total, 2))), 409, 'Mutasi tidak cocok untuk reaktivasi.');
             $now = now('Asia/Jakarta');
             $basket = DB::table('checkout_buket')->where('pesanan_id', $id)->first();
-            $available = ($invoice->jenis !== 'dp' || $order->batas_pelunasan_pada?->gt($now)) && ($basket
+            $activeCustomer = DB::table('pelanggan')->where('id', $order->pelanggan_id)->where('aktif', true)->whereNull('dihapus_pada')->exists();
+            $available = $activeCustomer && ($invoice->jenis !== 'dp' || $order->batas_pelunasan_pada?->gt($now)) && ($basket
                 ? app(RebookBouquet::class)->reserve($order, $basket, $now)
                 : $this->reserveRental($order, $now));
             $receiptQuery = DB::table('mutasi_masuk')->where('id', $receiptId);

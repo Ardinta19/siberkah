@@ -13,12 +13,22 @@ class CustomerProfileController extends Controller
 
     public function update(Request $request)
     {
-        $request->user('customer')->update($request->validate(['nama' => 'required|string|max:100']));
+        $data = $request->validate(['nama' => 'required|string|max:100']);
+        \App\Models\Pelanggan::whereKey($request->user('customer')->id)->where('aktif', true)->whereNull('dihapus_pada')->update($data);
         return back()->with('status', 'Profil berhasil diperbarui.');
     }
 
-    public function destroy()
+    public function destroy(Request $request, \App\Actions\AnonymizeCustomer $action)
     {
-        abort(503, 'Penghapusan akun belum tersedia.');
+        $request->validate(['konfirmasi' => 'required|in:HAPUS AKUN SAYA']);
+        $id = $request->user('customer')->id;
+        $proof = $request->session()->get('otp.verified');
+        abort_unless(is_array($proof) && ($proof['id'] ?? null) === $id && ($proof['at'] ?? 0) >= now()->subMinutes(5)->timestamp,
+            403, 'Masuk kembali dengan OTP sebelum menghapus akun.');
+        $action->handle($id);
+        \Illuminate\Support\Facades\Auth::guard('customer')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return response()->noContent();
     }
 }
