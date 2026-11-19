@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class KapasitasProduksiHarian extends Model
 {
+    public const CREATED_AT = 'dibuat_pada';
+    public const UPDATED_AT = 'diubah_pada';
+
     protected $table = 'kapasitas_produksi_harian';
 
     protected $fillable = [

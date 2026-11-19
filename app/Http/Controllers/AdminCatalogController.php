@@ -69,7 +69,7 @@ class AdminCatalogController extends BaseController
         ]);
 
         $data = $request->except('foto_utama');
-        $data['aktif'] = $request->has('aktif');
+        $data['aktif'] = $request->boolean('aktif');
 
         if ($request->hasFile('foto_utama')) {
             $path = $request->file('foto_utama')->store('produk', 'public');
@@ -123,12 +123,12 @@ class AdminCatalogController extends BaseController
         ]);
 
         $data = $request->except('foto_utama');
-        $data['aktif'] = $request->has('aktif');
+        $data['aktif'] = $request->boolean('aktif');
 
         if ($request->hasFile('foto_utama')) {
             // Delete old image if exists
             if ($produk->foto_utama) {
-                \Storage::disk('public')->delete($produk->foto_utama);
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($produk->foto_utama);
             }
             $path = $request->file('foto_utama')->store('produk', 'public');
             $data['foto_utama'] = $path;
@@ -176,44 +176,6 @@ class AdminCatalogController extends BaseController
     }
 
     /**
-     * Manage variants for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageVariants(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle variant management
-        // - Create/update variants
-        // - Set stok per variant
-        // - Associate with unit_sewa
-
-        return back()
-            ->with('success', 'Varian produk berhasil dikelola.');
-    }
-
-    /**
-     * Manage options for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageOptions(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle option management
-        // - Create/update opsi_produk
-        // - Create/update nilai_opsi
-        // - Set wajib/opsional
-
-        return back()
-            ->with('success', 'Opsi produk berhasil dikelola.');
-    }
-
-    /**
      * Manage images for a product.
      *
      * @param  int  $id
@@ -233,22 +195,4 @@ class AdminCatalogController extends BaseController
             ->with('success', 'Gambar produk berhasil dikelola.');
     }
 
-    /**
-     * Manage units for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageUnits(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle unit management
-        // - CRUD unit_sewa
-        // - Set status aktif/nonaktif
-        // - Associate with varian_produk
-
-        return back()
-            ->with('success', 'Unit sewa berhasil dikelola.');
-    }
 }

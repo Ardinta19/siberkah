@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BlokirKalender extends Model
 {
+    public const CREATED_AT = 'dibuat_pada';
+    public const UPDATED_AT = 'diubah_pada';
+
     protected $table = 'blokir_kalender';
 
     protected $fillable = [

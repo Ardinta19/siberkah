@@ -45,7 +45,7 @@ final class CreateRentalOrder
             // Standard rental only. Same-day and custom lettering are not in this flow.
             $earliest = $now->startOfDay()->addDays($now->gt($now->setTime(15, 0)) ? 2 : 1);
             $this->check($date->gte($earliest), 'Tanggal sewa terlalu dekat.');
-            $number = $this->nextNumber($now->format('ym'));
+            $number = app(OrderNumber::class)->next($now->format('ym'));
             $product = DB::table('produk')->where('id', $d['produk_id'])->where('aktif', true)->where('jenis', 'sewa')->lockForUpdate()->first();
             $this->check((bool) $product, 'Produk sewa tidak tersedia.');
             $this->check(! DB::table('opsi_produk')->where('produk_id', $product->id)->exists(), 'Produk dengan opsi memerlukan checkout khusus.');
@@ -84,17 +84,6 @@ final class CreateRentalOrder
                 'sidik' => $fingerprint, 'versi_privasi' => $d['versi_privasi'], 'disetujui_pada' => $now]);
             return $order;
         }, 3);
-    }
-
-    private function nextNumber(string $period): string
-    {
-        $counter = DB::table('urutan_nomor_pesanan');
-        $counter->insertOrIgnore(['periode' => $period, 'terakhir' => 0]);
-        $row = $counter->where('periode', $period)->lockForUpdate()->first();
-        $n = $row->terakhir + 1;
-        $this->check($n <= 9999, 'Nomor pesanan bulan ini habis.');
-        $counter->update(['terakhir' => $n]);
-        return sprintf('BK-%s-%04d', $period, $n);
     }
 
     private function check(bool $ok, string $message): void

@@ -216,20 +216,13 @@ class AdminOrderController extends BaseController
      * @param  int  $id
      * @return RedirectResponse
      */
-    public function reactivateExpired($id)
+    public function reactivateExpired(Request $request, int $id, \App\Actions\ResolveLateRental $action)
     {
-        $pesanan = Pesanan::findOrFail($id);
-
-        // TODO: Implement ExpireStaleOrders scheduler logic
-        // - Cek status awaiting_payment + tahan_hingga_pada < now → expired
-        // - Release unit
-        // - Set status menjadi kedaluwarsa
-
-        $pesanan->status = 'kedaluwarsa';
-        $pesanan->dibatalkan_pana = now();
-        $pesanan->save();
-
-        return back()
-            ->with('success', 'Pesanan expired telah diaktifkan kembali.');
+        $data = $request->validate(['mutasi_id' => 'required|integer|min:1']);
+        try {
+            return response()->json(['hasil' => $action->handle($request->user('staff'), $id, (int) $data['mutasi_id'])]);
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
     }
 }

@@ -18,6 +18,8 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffDeliveryController;
 use App\Http\Controllers\RentalCloseoutController;
+use App\Http\Controllers\CatalogInventoryController;
+use App\Http\Controllers\StoreSaleController;
 use App\Http\Middleware\RentalStaging;
 use App\Http\Controllers\StaffProductionController;
 use Illuminate\Support\Facades\Route;
@@ -117,6 +119,8 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
 
     /** Admin Orders */
     Route::prefix('admin')->group(function () {
+        Route::post('penjualan-toko', [StoreSaleController::class, 'store'])->middleware(RentalStaging::class)->name('toko.store');
+        Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->name('admin.pesanan.show');
         Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->middleware('pending.transaction')->name('admin.pesanan.manual-store');
@@ -139,7 +143,7 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::post('pesanan/{id}/reject-cancellation', [CancellationRequestController::class, 'reject'])->whereNumber('id')->name('admin.pesanan.reject-cancellation');
         Route::post('pesanan/{id}/cancel-paid', [PaidRentalCancellationController::class, 'cancel'])->whereNumber('id')->name('admin.pesanan.cancel-paid');
         Route::post('pesanan/{id}/record-refund', [PaidRentalCancellationController::class, 'record'])->whereNumber('id')->name('admin.pesanan.record-refund');
-        Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->middleware('pending.transaction')->name('admin.pesanan.reactivate-expired');
+        Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reactivate-expired');
     });
 
     /** Admin Catalog */
@@ -151,10 +155,10 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
         Route::put('{id}', [AdminCatalogController::class, 'update'])->middleware('role:owner')->name('admin.katalog.update');
         Route::post('{id}/archive', [AdminCatalogController::class, 'archive'])->middleware('role:owner')->name('admin.katalog.archive');
         Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->middleware('role:owner')->name('admin.katalog.publish');
-        Route::post('{id}/manage-variants', [AdminCatalogController::class, 'manageVariants'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-variants');
-        Route::post('{id}/manage-options', [AdminCatalogController::class, 'manageOptions'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-options');
+        Route::post('{id}/manage-variants', [CatalogInventoryController::class, 'variant'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-variants');
+        Route::post('{id}/manage-options', [CatalogInventoryController::class, 'option'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-options');
         Route::post('{id}/manage-images', [AdminCatalogController::class, 'manageImages'])->middleware('role:owner')->middleware('pending.transaction')->name('admin.katalog.manage-images');
-        Route::post('{id}/manage-units', [AdminCatalogController::class, 'manageUnits'])->middleware('pending.transaction')->name('admin.katalog.manage-units');
+        Route::post('{id}/manage-units', [CatalogInventoryController::class, 'unit'])->whereNumber('id')->name('admin.katalog.manage-units');
     });
 
     /** Admin Settings */
@@ -193,6 +197,7 @@ Route::middleware('auth:staff')->group(function () {
     /** Staff Delivery */
     Route::prefix('staf/kurir')->middleware('role:owner,admin,staf_kurir')->group(function () {
         Route::get('/', [StaffDeliveryController::class, 'index'])->name('staf.kurir.index');
+        Route::post('/penjualan-toko/{id}/serah', [StoreSaleController::class, 'handover'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.serah');
         Route::post('/handover', [StaffDeliveryController::class, 'handover'])->middleware(RentalStaging::class)->name('staf.kurir.handover');
         Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->middleware(RentalStaging::class)->name('staf.kurir.receive-return');
     });

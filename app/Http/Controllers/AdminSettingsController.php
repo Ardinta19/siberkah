@@ -47,8 +47,8 @@ class AdminSettingsController extends BaseController
     {
         $request->validate([
             'kunci' => 'required|string|max:60',
-            'nilai' => 'required|string',
-            'tipe' => 'sometimes|string|max:15|default:teks',
+            'nilai' => 'required|string|max:500',
+            'tipe' => 'sometimes|string|max:15',
         ]);
 
         $setting = Pengaturan::updateOrCreate(
@@ -105,12 +105,13 @@ class AdminSettingsController extends BaseController
     public function manageProductionCapacity(Request $request)
     {
         $request->validate([
+            'tanggal' => 'required|date_format:Y-m-d',
             'kelompok_kapasitas' => 'required|string|max:30',
-            'batas' => 'required|integer|min:1',
+            'batas' => 'required|integer|between:0,65535',
         ]);
 
         KapasitasProduksiHarian::updateOrCreate(
-            ['kelompok_kapasitas' => $request->kelompok_kapasitas],
+            ['tanggal' => $request->tanggal, 'kelompok_kapasitas' => $request->kelompok_kapasitas],
             [
                 'batas' => $request->batas,
             ]

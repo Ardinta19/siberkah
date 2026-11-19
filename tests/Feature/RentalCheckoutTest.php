@@ -363,6 +363,70 @@ class RentalCheckoutTest extends TestCase
         $this->actingAs($owner, 'staff')->getJson(route('admin.laporan.index', ['period'=>'harian']))->assertOk()->assertJsonPath('neto', (int) $bill->nominal_diharapkan);
     }
 
+    #[\PHPUnit\Framework\Attributes\DataProvider('lateCases')]
+    public function test_late_transfer_resolution_is_atomic_and_does_not_double_credit(bool $taken): void
+    {
+        config(['checkout.staging' => true]);
+        $data = $this->fixture();
+        $customer = $this->customer('628111111111');
+        $checkout = app(CreateRentalOrder::class);
+        $order = $checkout->create($customer, $data);
+        $order->update(['tahan_hingga_pada' => now()->subMinute()]);
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $invoice = DB::table('pembayaran')->sole();
+        app(\App\Actions\VerifyRentalTransfer::class)->record($admin, $order->id, ['pembayaran_id' => $invoice->id, 'nominal' => $invoice->nominal_diharapkan, 'referensi' => 'LATE']);
+        if ($taken) {
+            $other = $checkout->create($customer, array_replace($data, ['kunci' => (string) Str::uuid()]));
+        }
+        $receipt = DB::table('mutasi_masuk')->sole();
+        $this->actingAs($admin, 'staff');
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson(route('admin.pesanan.reactivate-expired', $order->id), ['mutasi_id' => $receipt->id])->assertOk()
+                ->assertJsonPath('hasil', $taken ? 'perlu_pengembalian' : 'dikonfirmasi');
+        }
+        $this->assertDatabaseCount('hari_reservasi', 1);
+        $this->assertDatabaseHas('hari_reservasi', ['pesanan_id' => $taken ? $other->id : $order->id]);
+        $this->assertSame($taken ? 0 : 130500, $order->fresh()->jumlah_dibayar);
+        $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi', $taken ? 'T14' : 'T13')->count());
+        $this->assertSame($taken ? 0 : 1, DB::table('pembayaran')->where('jenis', 'pelunasan')->count());
+        $this->postJson(route('admin.rekonsiliasi.pengembalian', $receipt->id), ['referensi_keluar' => 'OUT', 'nominal' => $receipt->nominal, 'alasan' => 'Dana keluar dicek'])->assertStatus($taken ? 201 : 409);
+    }
+
+    public static function lateCases(): array
+    {
+        return [[false], [true]];
+    }
+
+    public function test_catalog_to_in_store_sale_and_pickup(): void
+    {
+        config(['checkout.staging' => true]);
+        $fixture = $this->fixture();
+        $customer = $this->customer('628111111111');
+        $admin = Pengguna::factory()->create(['peran' => 'admin']);
+        $owner = Pengguna::factory()->create(['peran' => 'owner']);
+        $product = DB::table('produk')->insertGetId(['kategori_id' => DB::table('kategori')->value('id'), 'nama' => 'Buket', 'slug' => 'jual', 'jenis' => 'jual']);
+        $variant = ['nama' => 'Merah', 'harga' => 25500, 'stok' => 1, 'aktif' => true];
+        $url = route('admin.katalog.manage-variants', $product);
+        $this->actingAs($admin, 'staff')->postJson($url, $variant)->assertForbidden();
+        $vid = $this->actingAs($owner, 'staff')->postJson($url, $variant)->assertOk()->json('id');
+        $this->postJson(route('admin.katalog.manage-variants', $fixture['produk_id']), ['id' => $vid, 'nama' => 'Salah', 'harga' => 100, 'aktif' => true])->assertNotFound();
+        $data = ['pelanggan_id' => $customer->id, 'produk_id' => $product, 'varian_id' => $vid, 'kunci' => (string) Str::uuid(), 'nominal' => 26000,
+            'jumlah' => 1, 'versi_privasi' => 'test-v1', 'setuju_privasi' => true];
+        $this->actingAs($admin, 'staff')->postJson(route('toko.store'), array_replace($data, ['nominal' => 1]))->assertConflict();
+        $id = $this->postJson(route('toko.store'), $data)->assertCreated()->json('pesanan_id');
+        $this->postJson(route('toko.store'), $data)->assertOk()->assertJsonPath('pesanan_id', $id);
+        $this->postJson(route('toko.store'), array_replace($data, ['kunci' => (string) Str::uuid()]))->assertConflict();
+        $this->assertDatabaseCount('pembayaran', 1);
+        $this->assertDatabaseHas('varian_produk', ['id' => $vid, 'stok' => 0]);
+        $this->postJson(route('toko.selesai', $id))->assertConflict();
+        $this->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $id])->assertRedirect();
+        $this->postJson(route('toko.serah', $id), ['barang_diperiksa' => true, 'diterima_pembeli' => true])->assertOk();
+        $this->postJson(route('toko.selesai', $id))->assertOk();
+        $this->postJson(route('toko.selesai', $id))->assertOk();
+        $this->assertDatabaseCount('riwayat_status_pesanan', 5);
+        $this->assertDatabaseHas('pesanan', ['id' => $id, 'saldo' => 0, 'status' => 'selesai', 'jumlah_dibayar' => 26000]);
+    }
+
     private function race(array $jobs): array
     {
         $workers = [];
