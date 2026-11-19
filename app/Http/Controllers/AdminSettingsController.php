@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BlokirKalender;
 use App\Models\KapasitasProduksiHarian;
-use App\Models\Pengaturan;
+use App\Support\BusinessSettings;
+use Illuminate\Support\Facades\DB;
 use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,38 +27,29 @@ class AdminSettingsController extends BaseController
      */
     public function index()
     {
-        $pengaturan = Pengaturan::orderBy('kunci')->get();
-
-        $pengaturanMap = [];
-        foreach ($pengaturan as $setting) {
-            $pengaturanMap[$setting->kunci] = $setting->nilai;
+        $settings = [];
+        foreach (BusinessSettings::RULES as $key => [$default, $min, $max]) {
+            $settings[$key] = ['nilai' => BusinessSettings::value($key), 'bawaan' => $default, 'min' => $min, 'maks' => $max];
         }
-
-        return view('admin.settings.index', [
-            'pengaturan' => $pengaturanMap,
-        ]);
+        return response()->json(['pengaturan' => $settings])->header('Cache-Control', 'private, no-store');
     }
 
-    /**
-     * Update a setting value.
-     *
-     * @return RedirectResponse
-     */
     public function update(Request $request)
     {
-        $request->validate([
-            'kunci' => 'required|string|max:60',
-            'nilai' => 'required|string|max:500',
-            'tipe' => 'sometimes|string|max:15',
-        ]);
-
-        $setting = Pengaturan::updateOrCreate(
-            ['kunci' => $request->kunci],
-            [
-                'nilai' => $request->nilai,
-                'tipe' => $request->tipe ?? 'teks',
-            ]
-        );
+        $key = $request->validate(['kunci' => ['required', \Illuminate\Validation\Rule::in(array_keys(BusinessSettings::RULES))]])['kunci'];
+        [$default, $min, $max] = BusinessSettings::RULES[$key];
+        $number = (int) $request->validate(['nilai' => "required|integer|between:$min,$max"])['nilai'];
+        DB::transaction(function () use ($key, $number, $default, $request) {
+            DB::table('pengaturan')->insertOrIgnore(['kunci' => $key, 'tipe' => 'integer', 'nilai' => (string) $default, 'dibuat_pada' => now()]);
+            $row = DB::table('pengaturan')->where('kunci', $key)->lockForUpdate()->first();
+            if ((string) $row->nilai === (string) $number) {
+                return;
+            }
+            DB::table('pengaturan')->where('id', $row->id)->update(['tipe' => 'integer', 'nilai' => (string) $number, 'diubah_pada' => now()]);
+            DB::table('log_aktivitas')->insert(['aksi' => 'ubah_pengaturan', 'pengguna_id' => $request->user('staff')->id,
+                'subjek_tabel' => 'pengaturan', 'subjek_id' => $row->id, 'dibuat_pada' => now(),
+                'sebelum' => json_encode([$key => $row->nilai], JSON_THROW_ON_ERROR), 'sesudah' => json_encode([$key => $number], JSON_THROW_ON_ERROR)]);
+        }, 3);
 
         return back()
             ->with('success', 'Pengaturan "'.$request->kunci.'" berhasil diupdate.');

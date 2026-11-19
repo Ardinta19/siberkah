@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Pelanggan;
+use App\Support\BusinessSettings;
 use App\Models\Pesanan;
 use App\Models\Pengguna;
 use Illuminate\Support\Carbon;
@@ -97,10 +98,10 @@ final class CreateBouquetOrder
             $total = intdiv($subtotal + $fee + 999, 1000) * 1000;
             $dp = $d['pembayaran'] === 'dp';
             $due = $date->copy()->subDay()->setTime(18, 0);
-            abort_if($total > 2147482648 || ($dp && ($total < 250000 || ! $due->gt($now))), 422, 'Total atau pilihan pembayaran tidak valid.');
+            abort_if($total > 2147482648 || ($dp && ($total < BusinessSettings::value('ambang_dp_rupiah') || ! $due->gt($now))), 422, 'Total atau pilihan pembayaran tidak valid.');
             $peak = DB::table('tanggal_puncak')->whereBetween('tanggal', [$now->toDateString(), $now->copy()->addDays(2)->toDateString()])->exists();
             $order->update(['subtotal' => $subtotal, 'ongkir' => $fee, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
-                'tahan_hingga_pada' => $now->copy()->addMinutes($peak ? 30 : 60), 'batas_pelunasan_pada' => $dp ? $due : null]);
+                'tahan_hingga_pada' => $now->copy()->addMinutes(BusinessSettings::value($peak ? 'tahan_puncak_menit' : 'tahan_normal_menit')), 'batas_pelunasan_pada' => $dp ? $due : null]);
             app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
             DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => $staff ? 'staf' : 'pelanggan', 'pengguna_id' => $staff?->id, 'dibuat_pada' => $now]);
             DB::table('checkout_buket')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'], 'sidik' => $hash,

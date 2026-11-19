@@ -22,10 +22,8 @@ class AdminActivityLogController extends BaseController
      */
     public function index()
     {
-        $logs = LogAktivitas::latest()->paginate(20);
-
-        return view('admin.aktivitas.index', [
-            'logs' => $logs,
-        ]);
+        return response()->json(LogAktivitas::orderByDesc('id')->paginate(25,
+            ['id','pengguna_id','pelanggan_id','aksi','subjek_tabel','subjek_id','sebelum','sesudah','dibuat_pada']))
+            ->header('Cache-Control', 'private, no-store');
     }
 }

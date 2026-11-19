@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Pelanggan;
+use App\Support\BusinessSettings;
 use App\Models\Pesanan;
 use App\Models\Pengguna;
 use Carbon\CarbonImmutable;
@@ -70,13 +71,13 @@ final class CreateRentalOrder
             $this->check($total <= 2147482648, 'Total melampaui batas transaksi.');
             $dp = $d['pembayaran'] === 'dp';
             $due = $date->subDay()->setTime(18, 0);
-            $this->check(! $dp || ($total >= 250000 && $due->gt($now)), 'Pilihan DP tidak tersedia.');
+            $this->check(! $dp || ($total >= BusinessSettings::value('ambang_dp_rupiah') && $due->gt($now)), 'Pilihan DP tidak tersedia.');
             $peak = DB::table('tanggal_puncak')->whereBetween('tanggal', [$now->toDateString(), $now->addDays(2)->toDateString()])->exists();
             $order = Pesanan::create(['nomor' => $number, 'status' => 'menunggu_pembayaran', 'pelanggan_id' => $customer->id,
                 'asal' => $operator ? 'admin' : 'situs', 'pengguna_id' => $operator?->id, 'nama_pemesan' => $customer->nama, 'nomor_wa_pemesan' => $customer->nomor_wa,
                 'cara_serah' => 'antar', 'alamat_antar' => $d['alamat_antar'], 'zona_antar_id' => $zone->id, 'tanggal_serah' => $d['tanggal'],
                 'subtotal' => $subtotal, 'ongkir' => $zone->ongkir, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
-                'tahan_hingga_pada' => $now->addMinutes($peak ? 30 : 60), 'batas_pelunasan_pada' => $dp ? $due : null]);
+                'tahan_hingga_pada' => $now->addMinutes(BusinessSettings::value($peak ? 'tahan_puncak_menit' : 'tahan_normal_menit')), 'batas_pelunasan_pada' => $dp ? $due : null]);
             foreach ($units as $unit) {
                 $item = DB::table('item_pesanan')->insertGetId(['pesanan_id' => $order->id, 'produk_id' => $product->id, 'varian_produk_id' => $variant->id,
                     'unit_sewa_id' => $unit, 'nama_produk' => $product->nama, 'nama_varian' => $variant->nama, 'harga_satuan' => $variant->harga,
