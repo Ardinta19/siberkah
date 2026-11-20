@@ -50,7 +50,13 @@ with sync_playwright() as playwright:
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
     fav = page.locator('.kc-card [data-favorite]').first
-    fav.click()
+    fav.scroll_into_view_if_needed()
+    box = fav.bounding_box()
+    page.mouse.move(box['x'] + box['width']/2, box['y'] + box['height']/2)
+    page.mouse.down()
+    assert page.locator('.bk-flower-glow i').count() == 6
+    assert page.locator('.bk-flower-glow i').first.evaluate("el => el.getAnimations().some(a => a.playState === 'running')")
+    page.mouse.up()
     expect(fav).to_have_attribute('aria-pressed','true')
     page.reload()
     expect(fav).to_have_attribute('aria-pressed','true')
@@ -61,7 +67,11 @@ with sync_playwright() as playwright:
         rgb = page.locator(selector).evaluate("el => getComputedStyle(el).backgroundColor")
         assert rgb in ('rgb(255, 253, 249)','rgb(250, 245, 240)'), rgb
     page.goto(base+'/katalog/buket-browser')
+    page.emulate_media(reduced_motion='reduce')
+    page.reload()
+    expect(page.locator('.bk-flower-glow')).to_have_count(0)
     page.get_by_role('button',name='Simpan ke keranjang').click()
+    page.emulate_media(reduced_motion='no-preference')
     expect(page.get_by_role('heading',name='Keranjang Anda')).to_be_visible()
     page.locator('[name=jumlah]').fill('2')
     page.get_by_role('button',name='Perbarui').click()

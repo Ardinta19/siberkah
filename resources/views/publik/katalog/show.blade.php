@@ -2,7 +2,7 @@
 @section('title', $produk->nama.' · SIBERKAH')
 @section('content')
 @php($koleksi = collect((array)request('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])->filter(fn ($value) => is_scalar($value))->all())
-<article class="container-siberkah grid gap-6 py-8 md:grid-cols-2">
+<article data-product-detail class="container-siberkah grid gap-6 py-8 md:grid-cols-2">
     <div class="overflow-hidden rounded-lg bg-primary-50">
         @if($produk->foto_utama && !$gambarProduk->contains('jalur_berkas', $produk->foto_utama))
             <img src="{{ asset('storage/'.$produk->foto_utama) }}" class="w-full object-cover" alt="{{ $produk->nama }}">
