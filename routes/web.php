@@ -242,7 +242,7 @@ Route::middleware(['auth:staff', 'auth.session'])->group(function () {
 });
 
 // Route root home
-Route::view('/', 'publik.beranda')->name('home');
+Route::get('/', [CatalogController::class, 'home'])->name('home');
 Route::get('/keranjang', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
 Route::put('/keranjang/{id}', [\App\Http\Controllers\CartController::class, 'save'])->whereNumber('id')->middleware('throttle:60,1')->name('cart.save');
 Route::delete('/keranjang/{id}', [\App\Http\Controllers\CartController::class, 'remove'])->whereNumber('id')->name('cart.remove');

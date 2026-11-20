@@ -16,6 +16,15 @@ use Illuminate\View\View;
  */
 class CatalogController extends BaseController
 {
+    public function home(): View
+    {
+        $categories = Kategori::aktif()->terurut()->orderBy('id')->whereHas('produkAktif')
+            ->with(['produkAktif' => fn ($q) => $q->orderBy('urutan')->orderBy('id')->limit(1)])
+            ->get();
+
+        return view('publik.beranda', compact('categories'));
+    }
+
     /**
      * Display the product catalog listing.
      * K-01: Beranda/Katalog - grid 2 kolom mobile, 4 kolom desktop

@@ -4,16 +4,16 @@
 <section class="koleksi" aria-labelledby="koleksi-title">
   <div class="kc-wrap">
     <p class="kc-crumb">Berkah Kreatif <span aria-hidden="true"> / </span> Katalog produk</p>
-    <header class="kc-hero">
+    <header class="kc-hero kc-hero-reveal">
       <div class="kc-intro">
         <p class="kc-kicker">✧ &nbsp; Berkah Kreatif Atelier</p>
         <h1 id="koleksi-title">Koleksi <em>Estetik.</em></h1>
         <p>Papan ucapan dan rangkaian bunga untuk momen yang ingin Anda kenang.</p>
         <a class="kc-discover" href="#produk-katalog">Jelajahi produk <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="kc-still" aria-hidden="true"><img src="{{ asset('images/katalog-editorial.webp') }}" alt="" fetchpriority="high"><span>STUDI FLORAL &nbsp; / &nbsp; 01</span></div>
+      <div class="kc-still" aria-hidden="true"><img src="{{ asset('images/katalog-editorial.webp') }}" alt="" fetchpriority="high"></div>
     </header>
-    <div id="produk-katalog" class="kc-bar"><p class="kc-kicker">01 &nbsp;/&nbsp; Direktori produk</p><h2>Temukan pilihan Anda</h2></div>
+    <div id="produk-katalog" class="kc-bar"><h2>Temukan pilihan Anda</h2></div>
     <div class="kc-directory">
     <aside class="kc-tools" aria-label="Penyaring katalog"><p class="kc-rail-title">Saring koleksi</p>
     <form class="kc-search" action="{{ route('catalog.index') }}" role="search">
