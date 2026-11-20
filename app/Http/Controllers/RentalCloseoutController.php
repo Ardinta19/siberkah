@@ -23,8 +23,10 @@ class RentalCloseoutController extends Controller
     {
         $path = DB::table('foto_inspeksi as f')->join('inspeksi_sewa as i', 'i.id', '=', 'f.inspeksi_sewa_id')
             ->join('item_pesanan as item', 'item.id', '=', 'i.item_pesanan_id')->join('checkout_sewa as c', 'c.pesanan_id', '=', 'item.pesanan_id')
-            ->where('item.pesanan_id', $id)->where('f.id', $foto)->value('f.jalur_berkas');
-        abort_unless($path && Storage::disk('local')->exists($path), 404);
+            ->where('item.pesanan_id', $id)->where('f.id', $foto)->first(['f.jalur_berkas','i.id as inspection']);
+        abort_unless($path && \App\Support\InspectionPath::valid($path->inspection, $path->jalur_berkas), 404);
+        $path = $path->jalur_berkas;
+        abort_unless(Storage::disk('local')->exists($path), 404);
         return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 

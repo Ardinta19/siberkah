@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
+use App\Support\StaffAudit;
+use Illuminate\Support\Facades\DB;
 use App\Models\Produk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +26,7 @@ class AdminCatalogController extends BaseController
      */
     public function index()
     {
-        $produk = Produk::with('kategori')->latest()->paginate(20);
+        $produk = Produk::with('kategori')->orderByDesc('id')->paginate(20);
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
 
         return view('admin.katalog.index', [
@@ -71,9 +73,11 @@ class AdminCatalogController extends BaseController
         ]);
 
         unset($data['foto_utama']);
-        $data['aktif'] = $request->boolean('aktif');
-
-        $produk = Produk::create($data);
+        $data['aktif'] = false; // Publishing is a separate Owner action.
+        DB::transaction(function () use ($data) {
+            $product = Produk::create($data);
+            StaffAudit::record('buat_draf', 'produk', $product->id, null, $product->fresh()->only(array_keys($data)));
+        });
 
         return redirect()
             ->route('admin.katalog.index')
@@ -121,10 +125,14 @@ class AdminCatalogController extends BaseController
             'aktif' => 'boolean',
         ]);
 
-        unset($data['foto_utama']);
-        $data['aktif'] = $request->boolean('aktif');
-
-        $produk->update($data);
+        unset($data['foto_utama'], $data['aktif']);
+        DB::transaction(function () use ($data, $id) {
+            $product = Produk::lockForUpdate()->findOrFail($id);
+            abort_if($product->jenis !== $data['jenis'] && DB::table('item_pesanan')->where('produk_id', $id)->exists(), 409, 'Jenis produk dalam riwayat pesanan tidak dapat diubah.');
+            $before = $product->only(array_keys($data));
+            $product->update($data);
+            StaffAudit::record('ubah_produk', 'produk', $product->id, $before, $product->fresh()->only(array_keys($data)));
+        });
 
         return redirect()
             ->route('admin.katalog.index')
@@ -139,9 +147,7 @@ class AdminCatalogController extends BaseController
      */
     public function archive($id)
     {
-        $produk = Produk::findOrFail($id);
-        $produk->aktif = false;
-        $produk->save();
+        $this->visibility($id, false);
 
         return redirect()
             ->route('admin.katalog.index')
@@ -156,13 +162,22 @@ class AdminCatalogController extends BaseController
      */
     public function publish($id)
     {
-        $produk = Produk::findOrFail($id);
-        $produk->aktif = true;
-        $produk->save();
+        $this->visibility($id, true);
 
         return redirect()
             ->route('admin.katalog.index')
             ->with('success', 'Produk dipublikasikan.');
     }
 
+    private function visibility(int $id, bool $active): void
+    {
+        DB::transaction(function () use ($id, $active) {
+            $product = Produk::lockForUpdate()->findOrFail($id);
+            $old = $product->aktif;
+            if ($old === $active) { return; }
+            abort_if($active && ! $product->kategori()->where('aktif', true)->exists(), 409, 'Kategori belum aktif.');
+            $product->update(['aktif' => $active]);
+            StaffAudit::record($active ? 'terbit_produk' : 'arsip_produk', 'produk', $id, ['aktif' => $old], ['aktif' => $active]);
+        });
+    }
 }

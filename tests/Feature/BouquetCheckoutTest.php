@@ -61,6 +61,35 @@ class BouquetCheckoutTest extends TestCase
         $this->assertSame(0, $order->fresh()->jumlah_dibayar);
     }
 
+    public function test_optional_transfer_proof_is_private_and_purged_only_after_closed_retention(): void
+    {
+        $this->postJson(route('pesanan.buket'), $this->cart())->assertOk();
+        $order = Pesanan::sole(); $bill = DB::table('pembayaran')->sole();
+        $account = DB::table('rekening_pembayaran')->insertGetId(['nama_bank'=>'BRI','nomor_rekening'=>'00123456','atas_nama'=>'Uji']);
+        $confirm = route('payment.confirm',$order->nomor);
+        $data = ['tujuan_id'=>$account,'pembayaran_id'=>$bill->id];
+        $this->postJson($confirm,$data + ['bukti'=>\Illuminate\Http\UploadedFile::fake()->create('x.txt',2,'text/plain')])->assertUnprocessable();
+        $this->postJson($confirm,$data + ['bukti'=>\Illuminate\Http\UploadedFile::fake()->image('foto.png',100,100)])->assertAccepted();
+        $this->postJson($confirm,$data)->assertAccepted();
+        $this->assertDatabaseCount('bukti_transfer',1);
+        $this->assertSame(0,$order->fresh()->jumlah_dibayar);
+        $url = route('admin.bukti-transfer',[$order->id,$bill->id]);
+        $this->getJson($url)->assertUnauthorized();
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'staf_kurir']),'staff')->getJson($url)->assertForbidden();
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']),'staff')->get($url)->assertOk()->assertHeader('Content-Type','image/webp');
+        $this->get(route('admin.bukti-transfer',[$order->id+1,$bill->id]))->assertNotFound();
+        $args = ['nomor'=>$order->nomor,'--hapus'=>true];
+        $this->artisan('privasi:bukti',$args)->assertFailed();
+        $order->update(['status'=>'dibatalkan','dibatalkan_pada'=>now()->subYears(4)]);
+        $this->artisan('privasi:bukti',$args)->assertFailed(); // unresolved payment
+        DB::table('pembayaran')->where('id',$bill->id)->update(['status'=>'kedaluwarsa']);
+        $this->artisan('privasi:bukti',['nomor'=>$order->nomor])->assertSuccessful();
+        $this->assertDatabaseCount('bukti_transfer',1);
+        $this->artisan('privasi:bukti',$args)->assertSuccessful();
+        $this->get($url)->assertNotFound();
+        $this->assertDatabaseCount('pembayaran',1);
+    }
+
     public function test_cash_pickup_only_credits_at_successful_handover_once(): void
     {
         $d = $this->cart();

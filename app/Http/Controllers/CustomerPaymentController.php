@@ -59,8 +59,10 @@ final class CustomerPaymentController extends Controller
 
     public function confirm(Request $request, string $nomor)
     {
-        $data = $request->validate(['pembayaran_id' => 'required|integer|min:1', 'tujuan_id' => 'required|integer|min:1']);
-        DB::transaction(function () use ($request, $nomor, $data) {
+        $data = $request->validate(['pembayaran_id' => 'required|integer|min:1', 'tujuan_id' => 'required|integer|min:1',
+            'bukti' => 'nullable|file|image|mimes:jpeg,png,webp|max:2048|dimensions:max_width=2048,max_height=2048']);
+        $proof = $request->hasFile('bukti') ? \App\Support\TransferProof::prepare($request->file('bukti')) : null;
+        DB::transaction(function () use ($request, $nomor, $data, $proof) {
             $order = $this->ownedOrder($request, $nomor)->lockForUpdate()->firstOrFail();
             $query = DB::table('pembayaran')->where('pesanan_id', $order->id)->where('id', $data['pembayaran_id'])->where('tunai_saat_serah', false)->whereIn('jenis', ['dp','penuh','pelunasan']);
             $bill = $query->lockForUpdate()->first();
@@ -68,11 +70,13 @@ final class CustomerPaymentController extends Controller
             abort_unless($bill->status === 'menunggu', 409, 'Tagihan sudah ditutup.');
             if ($bill->dikonfirmasi_pelanggan_pada) {
                 abort_unless((int) $bill->rekening_pembayaran_id === (int) $data['tujuan_id'], 409);
+                abort_if($proof && DB::table('bukti_transfer')->where('pembayaran_id',$bill->id)->value('sidik') !== $proof['sidik'], 409, 'Bukti yang sudah dikonfirmasi tidak dapat diganti.');
                 return;
             }
             $destination = DB::table('rekening_pembayaran')->where('id', $data['tujuan_id'])->sharedLock()->first();
             abort_unless($destination && $destination->aktif, 409, 'Tujuan tidak aktif. Jika sudah membayar, hubungi Admin; jangan bayar lagi.');
             abort_unless($this->window($order, $bill, now())[0], 409, 'Tagihan tidak dapat dikonfirmasi. Jika sudah membayar, hubungi Admin; jangan bayar lagi.');
+            if ($proof) { DB::table('bukti_transfer')->insert($proof + ['pembayaran_id' => $bill->id, 'dibuat_pada' => now()]); }
             $query->update(['rekening_pembayaran_id' => $destination->id, 'dikonfirmasi_pelanggan_pada' => now(), 'diubah_pada' => now()]);
         }, 3);
         if (! $request->expectsJson()) {

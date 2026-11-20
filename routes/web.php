@@ -151,6 +151,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::get('rekonsiliasi', [TransferReconciliationController::class, 'index'])->name('admin.rekonsiliasi.index');
         Route::post('rekonsiliasi/{mutasi}/pengembalian', [TransferReconciliationController::class, 'recordReturn'])
             ->whereNumber('mutasi')->name('admin.rekonsiliasi.pengembalian');
+        Route::get('pesanan/{id}/bukti-transfer/{bill}', [\App\Http\Controllers\DeliveryCashController::class, 'proof'])->whereNumber('id')->whereNumber('bill')->middleware(RentalStaging::class)->name('admin.bukti-transfer');
         Route::post('pesanan/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('admin.pesanan.verify-payment');
         Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reject-payment');
         Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->middleware('pending.transaction')->name('admin.pesanan.record-cash');

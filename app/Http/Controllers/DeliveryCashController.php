@@ -31,11 +31,22 @@ final class DeliveryCashController extends Controller
             return response()->json($data)->header('Cache-Control', 'private, no-store');
         }
         $queue = DB::table('pembayaran as b')->join('pesanan as p', 'p.id', '=', 'b.pesanan_id')
+            ->leftJoin('bukti_transfer as bt','bt.pembayaran_id','=','b.id')
             ->join('rekening_pembayaran as r', 'r.id', '=', 'b.rekening_pembayaran_id')
             ->where('b.status', 'menunggu')->whereNotNull('b.dikonfirmasi_pelanggan_pada')->where('b.tunai_saat_serah', false)
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('mutasi_masuk as m')->whereColumn('m.pembayaran_id', 'b.id')->where('m.hasil', 'perlu_rekonsiliasi'))
-            ->orderBy('b.dikonfirmasi_pelanggan_pada')->orderBy('b.id')->paginate(25, ['p.nomor','b.id','b.pesanan_id','b.jenis','b.nominal_diharapkan','r.nama_bank','r.nomor_rekening','r.atas_nama'], 'antrean')->withQueryString();
+            ->orderBy('b.dikonfirmasi_pelanggan_pada')->orderBy('b.id')->paginate(25, ['bt.pembayaran_id as bukti_id','p.nomor','b.id','b.pesanan_id','b.jenis','b.nominal_diharapkan','r.nama_bank','r.nomor_rekening','r.atas_nama'], 'antrean')->withQueryString();
         return response()->view('admin.kas-antar', $data + ['tanggal' => $filters['tanggal'], 'queue' => $queue])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function proof(int $id, int $bill)
+    {
+        $encrypted = DB::table('bukti_transfer as bt')->join('pembayaran as b','b.id','=','bt.pembayaran_id')
+            ->where(['b.id' => $bill, 'b.pesanan_id' => $id])->value('bt.gambar_terenkripsi');
+        abort_unless($encrypted, 404);
+        $bytes = base64_decode(\Illuminate\Support\Facades\Crypt::decryptString($encrypted), true);
+        abort_if($bytes === false, 500);
+        return response($bytes)->withHeaders(['Content-Type'=>'image/webp','Cache-Control'=>'private, no-store','X-Content-Type-Options'=>'nosniff']);
     }
 
     public function history(int $id)

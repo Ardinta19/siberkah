@@ -66,7 +66,10 @@ Artisan::command('staf:buat {surel} {peran} {nama}', function () {
         $this->error('Kata sandi tidak memenuhi syarat atau tidak cocok.');
         return 1;
     }
-    \App\Models\Pengguna::create($data + ['kata_sandi' => \Illuminate\Support\Facades\Hash::make($password), 'aktif' => true]);
+    \Illuminate\Support\Facades\DB::transaction(function () use ($data, $password) {
+        $staff = \App\Models\Pengguna::create($data + ['kata_sandi' => \Illuminate\Support\Facades\Hash::make($password), 'aktif' => true]);
+        \App\Support\StaffAudit::record('buat_staf_cli','pengguna',$staff->id,null,['peran'=>$staff->peran,'aktif'=>true]);
+    });
     $this->info('Akun dibuat. Ganti kata sandi saat masuk pertama.');
     return 0;
 })->purpose('Buat akun staf atas permintaan Owner; sandi tidak diberikan lewat argumen');
@@ -80,6 +83,7 @@ Artisan::command('staf:nonaktif {surel}', function () {
         if (! $staff || ($staff->aktif && $staff->isOwner() && $owners->count() <= 1)) {
             return false;
         }
+        if ($staff->aktif) { \App\Support\StaffAudit::record('nonaktif_staf_cli','pengguna',$staff->id,['aktif'=>true,'peran'=>$staff->peran],['aktif'=>false,'peran'=>$staff->peran]); }
         $staff->forceFill(['aktif' => false, 'remember_token' => null])->save();
         return true;
     }, 3);

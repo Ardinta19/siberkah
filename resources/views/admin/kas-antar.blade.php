@@ -5,6 +5,7 @@
 @forelse($queue as $b)
 <form method="post" action="{{ route('admin.pesanan.verify-payment',$b->pesanan_id) }}" class="grid gap-2 border p-3" data-ledger>@csrf
     <p>{{ $b->nomor }} · {{ $b->jenis }} · Tagihan persis Rp{{ number_format($b->nominal_diharapkan,0,',','.') }} · {{ $b->nama_bank }} {{ $b->nomor_rekening }} · {{ $b->atas_nama }}</p>
+    @if($b->bukti_id)<a href="{{ route('admin.bukti-transfer',[$b->pesanan_id,$b->id]) }}" target="_blank" rel="noopener noreferrer">Lihat bukti privat (bukan verifikasi)</a>@endif
     <input type="hidden" name="pembayaran_id" value="{{ $b->id }}">
     <label>Referensi mutasi aktual <input required name="referensi" maxlength="100"></label>
     <label>Nominal masuk aktual <input required name="nominal" type="number" min="1"></label>

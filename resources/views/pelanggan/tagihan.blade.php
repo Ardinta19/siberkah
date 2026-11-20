@@ -12,7 +12,7 @@
                 <div data-payment-window data-end="{{ $bill->batas_wib }}" data-server="{{ $waktu_server }}">
                     <p>Bayar persis <strong>Rp{{ number_format($bill->nominal_diharapkan, 0, ',', '.') }}</strong>, termasuk kode unik. Pilih satu tujuan saja.</p>
                     @if($bill->batas_wib)<p>Batas: {{ \Illuminate\Support\Carbon::parse($bill->batas_wib)->format('d/m/Y H:i:s') }} WIB. <span data-clock></span></p>@endif
-                    <form method="post" action="{{ route('payment.confirm', $nomor) }}">@csrf
+                    <form method="post" enctype="multipart/form-data" action="{{ route('payment.confirm', $nomor) }}">@csrf
                         <input type="hidden" name="pembayaran_id" value="{{ $bill->id }}">
                         @foreach($tujuan as $account)
                             <label class="block my-3"><input type="radio" name="tujuan_id" value="{{ $account->id }}" required>
@@ -20,6 +20,8 @@
                                 @if($account->jenis === 'qris')<img width="256" alt="QRIS statis {{ $account->atas_nama }}" src="data:image/png;base64,{{ $account->qris_png }}">@endif
                             </label>
                         @endforeach
+                        <label>Bukti transfer (opsional, JPG/PNG/WebP, maksimal 2 MB) <input type="file" name="bukti" accept="image/jpeg,image/png,image/webp"></label>
+                        <p>Potong bagian yang tidak terkait pembayaran. Jangan unggah identitas, PIN atau kode OTP.</p>
                         <p>Periksa nama penerima di aplikasi pembayaran. Jika berbeda, jangan bayar.</p>
                         <button class="btn-primary">Saya sudah membayar ke tujuan yang dipilih</button>
                     </form>

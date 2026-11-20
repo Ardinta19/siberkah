@@ -57,7 +57,6 @@ final class PaymentDestinationController extends Controller
 
     private function audit(Request $request, int $id, string $action, bool $active): void
     {
-        DB::table('log_aktivitas')->insert(['pengguna_id' => $request->user('staff')->id, 'aksi' => $action,
-            'subjek_tabel' => 'rekening_pembayaran', 'subjek_id' => $id, 'sesudah' => json_encode(['aktif' => $active]), 'dibuat_pada' => now()]);
+        \App\Support\StaffAudit::record($action,'rekening_pembayaran',$id,$action === 'buat_tujuan_bayar' ? null : ['aktif'=>! $active],['aktif'=>$active]);
     }
 }

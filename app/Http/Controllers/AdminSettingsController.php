@@ -90,12 +90,15 @@ class AdminSettingsController extends BaseController
             ->when($request->filled('produk_id'), fn ($q) => $q->whereHas('items', fn ($i) => $i->where('produk_id', $request->produk_id)))
             ->pluck('nomor');
 
-        BlokirKalender::create([
+        DB::transaction(function () use ($request) {
+            $block = BlokirKalender::create([
             'tanggal' => $request->tanggal,
             'produk_id' => $request->produk_id,
             'alasan' => $request->alasan,
             'pengguna_id' => auth('staff')->id(),
-        ]);
+            ]);
+            \App\Support\StaffAudit::record('blokir_kalender', 'blokir_kalender', $block->id, null, $request->only('tanggal','produk_id','alasan'));
+        });
 
         if ($request->expectsJson()) {
             return response()->json(['peringatan_pesanan_aktif' => $bentrok], 201);
@@ -121,10 +124,11 @@ class AdminSettingsController extends BaseController
         abort_if($key['kelompok_kapasitas'] === 'buket_custom' && $limit > 15, 422);
         \Illuminate\Support\Facades\DB::transaction(function () use ($key, $limit) {
             $table = \Illuminate\Support\Facades\DB::table('kapasitas_produksi_harian');
-            $table->insertOrIgnore($key + ['batas' => $limit, 'dibuat_pada' => now()]);
+            $created = $table->insertOrIgnore($key + ['batas' => $limit, 'dibuat_pada' => now()]);
             $current = $table->where($key)->lockForUpdate()->first();
             abort_if($current->terpakai > $limit, 409, 'Kapasitas baru di bawah jumlah yang sudah dipesan.');
             $table->update(['batas' => $limit, 'diubah_pada' => now()]);
+            \App\Support\StaffAudit::record('ubah_kapasitas','kapasitas_produksi_harian',$current->id,$created ? null : $key + ['batas' => (int) $current->batas], $key + ['batas' => $limit]);
         }, 3);
 
         return back()
