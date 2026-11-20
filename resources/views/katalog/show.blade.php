@@ -26,7 +26,15 @@
                 <p>Tanggal kosong terdekat:</p><ul>@foreach($saran as $hari)<li><a href="{{ route('catalog.show', ['slug' => $produk->slug, 'tanggal' => $hari]) }}">{{ $hari }}</a></li>@endforeach</ul>
             @endif
         @endif
-        <p class="text-sm">Pemesanan online belum dibuka.</p>
+        @if(config('checkout.staging') && app()->environment('local','testing','staging'))
+            @auth('customer')
+                <a class="btn-primary" href="{{ route('checkout.product', ['slug' => $produk->slug, 'tanggal' => $tanggalRequest]) }}">Pesan produk ini</a>
+            @else
+                <a class="btn-primary" href="{{ route('otp.form') }}">Masuk untuk memesan</a>
+            @endauth
+        @else
+            <p class="text-sm">Pemesanan online belum dibuka.</p>
+        @endif
     </section>
 </article>
 @endsection

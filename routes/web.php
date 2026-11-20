@@ -88,6 +88,10 @@ Route::post('/keluar', [OtpController::class, 'logout'])->middleware('auth:custo
  */
 Route::middleware(['auth:customer', 'active.customer'])->group(function () {
 
+    Route::prefix('pelanggan/checkout/{slug}')->middleware(RentalStaging::class)->controller(\App\Http\Controllers\ProductCheckoutController::class)->group(function () {
+        Route::get('/', 'show')->name('checkout.product');
+        Route::post('/', 'store')->middleware('throttle:20,1')->name('checkout.submit');
+    });
     /** Customer profile and orders */
     Route::get('/pelanggan/profil', [CustomerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/pelanggan/profil', [CustomerProfileController::class, 'update'])->name('profile.update');

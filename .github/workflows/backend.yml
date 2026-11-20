@@ -41,6 +41,12 @@ jobs:
         env:
           CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
         run: bash scripts/ci/catalog-benchmark.sh
+      - name: Checkout pelanggan melalui Chrome (ambil tunai, antar DP + tunai)
+        env:
+          CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
+        run: |
+          python -m pip install playwright==1.55.0
+          bash scripts/ci/checkout-browser.sh
       - run: php artisan test --log-junit "$RUNNER_TEMP/backend-results.xml"
       - name: Ringkasan kegagalan pengujian
         if: failure()
