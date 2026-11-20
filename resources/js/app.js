@@ -50,3 +50,24 @@ for (const button of document.querySelectorAll('[data-favorite]')) {
     try { saved ? localStorage.setItem(key, '1') : localStorage.removeItem(key); } catch { /* Session only. */ }
   });
 }
+
+// Progressive disclosure: without JS the catalog keeps all filters visible.
+const filters = document.querySelector('#kc-extra');
+if (filters) {
+  const toggle = document.querySelector('.kc-filter-toggle');
+  const mobile = matchMedia('(max-width:47.99rem)');
+  let open = false;
+  const sync = () => {
+    toggle.hidden = !mobile.matches;
+    filters.hidden = mobile.matches && !open;
+    toggle.setAttribute('aria-expanded', String(!filters.hidden));
+  };
+  toggle.addEventListener('click', () => { open = !open; sync(); });
+  mobile.addEventListener('change', sync);
+  sync();
+  const kind = filters.querySelector('[name=jenis]');
+  const day = filters.querySelector('[name=tanggal]');
+  const syncDate = () => { day.disabled = ['jual','custom'].includes(kind.value); };
+  kind.addEventListener('change', syncDate);
+  syncDate();
+}

@@ -42,9 +42,13 @@ with sync_playwright() as playwright:
         assert panel.locator('.kc-rail-title').is_visible() == (768 <= width < 1200)
         columns = panel.locator('.kc-grid').evaluate("el => getComputedStyle(el).gridTemplateColumns.split(' ').length")
         assert columns == (1 if width < 768 else 2 if width < 1200 else 3)
+        if width < 768:
+            page.get_by_role('button',name='Filter & urutan').click()
         for field in ('q','jenis','tanggal','urut'):
             box = panel.locator(f'[name={field}]').bounding_box()
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
+        if width < 768:
+            page.get_by_role('button',name='Filter & urutan').click()
     fav = page.locator('.kc-card [data-favorite]').first
     fav.click()
     expect(fav).to_have_attribute('aria-pressed','true')

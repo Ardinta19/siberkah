@@ -38,7 +38,10 @@ class CatalogController extends BaseController
             $query->where('kategori_id', $request->kategori);
         }
 
-        $date = $request->input('tanggal');
+        $date = in_array($request->input('jenis'), ['jual','custom'], true) ? null : $request->input('tanggal');
+        if (! $date && $request->filled('tanggal')) {
+            return redirect()->route('catalog.index', $request->only(['q','jenis','kategori','urut']));
+        }
         if ($date) {
             $query->bisaDisewaPada($date);
         }
@@ -49,8 +52,12 @@ class CatalogController extends BaseController
         }
 
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
+        $variantPrice = \App\Models\VarianProduk::selectRaw('min(harga)')->whereColumn('produk_id','produk.id')->where('aktif',true)
+            ->where('harga','>',0)->where(fn ($q) => $q->where('produk.jenis','!=','jual')->orWhere('stok','>',0))
+            ->when($date, fn ($q) => $q->tersediaPada($date));
+        $query->select('produk.*')->selectRaw("coalesce(({$variantPrice->toSql()}), case when produk.jenis = 'custom' and not exists (select 1 from varian_produk v where v.produk_id = produk.id) then nullif(produk.harga_dasar,0) end) as harga_tampil", $variantPrice->getBindings());
         if ($request->filled('urut')) {
-            $query->orderBy('harga_dasar', $request->input('urut') === 'harga_turun' ? 'desc' : 'asc');
+            $query->orderByRaw('harga_tampil is null')->orderBy('harga_tampil', $request->input('urut') === 'harga_turun' ? 'desc' : 'asc');
         }
         $produk = $query->with(['kategori', 'varianProduk' => fn ($q) => $date ? $q->tersediaPada($date) : $q->where('aktif', true)])
             ->orderBy('urutan')->orderBy('id')->paginate(24)->withQueryString();
