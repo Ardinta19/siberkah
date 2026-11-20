@@ -33,6 +33,19 @@ with sync_playwright() as playwright:
     delivery_day = booking_day + timedelta(days=7)
     clock = Path(os.environ['CHECKOUT_CI_CLOCK'])
     clock.write_text(f'{booking_day} 10:00:00')
+    page.goto(base+'/katalog')
+    for width in (320,375,430,768,1024,1440):
+        page.set_viewport_size({'width':width,'height':900})
+        panel = page.locator('.koleksi')
+        assert panel.evaluate('(el) => el.scrollWidth <= innerWidth'), f'Catalog overflow at {width}px'
+        for field in ('q','jenis','tanggal','urut'):
+            box = panel.locator(f'[name={field}]').bounding_box()
+            assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
+    fav = page.locator('.kc-card [data-favorite]').first
+    fav.click()
+    expect(fav).to_have_attribute('aria-pressed','true')
+    page.reload()
+    expect(fav).to_have_attribute('aria-pressed','true')
     def checkout():
         page.goto(base+'/katalog/buket-browser')
         page.get_by_role('link', name='Pesan produk ini').click()
