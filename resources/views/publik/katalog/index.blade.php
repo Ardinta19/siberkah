@@ -12,7 +12,6 @@
         <a class="kc-discover" href="#produk-katalog">Jelajahi produk <span aria-hidden="true">↓</span></a>
       </div>
       <div class="kc-still" aria-hidden="true"><img src="{{ asset('images/katalog-editorial.webp') }}" alt="" fetchpriority="high"></div>
-      <button type="button" class="kc-replay" data-replay hidden><span aria-hidden="true">✿</span> Putar animasi</button><small class="kc-motion-note">Gerakan dikurangi sesuai pengaturan perangkat.</small>
     </header>
     <div id="produk-katalog" class="kc-bar"><h2>Temukan pilihan Anda</h2></div>
     <div class="kc-directory">

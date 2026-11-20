@@ -1,7 +1,7 @@
 @extends('layouts.guest')
 @section('title','Beranda · Berkah Kreatif')
 @section('content')
-<section class="koleksi"><div class="kc-wrap"><div class="kc-hero kc-hero-reveal"><div class="kc-intro"><p class="kc-kicker">Berkah Kreatif Atelier</p><h1>Bunga untuk <em>ceritamu.</em></h1><p>Temukan buket untuk dibawa pulang dan papan ucapan untuk disewa.</p><a class="kc-discover" href="{{ route('catalog.index') }}">Jelajahi katalog →</a></div><div class="kc-still"><img src="{{ asset('images/katalog-editorial.webp') }}" alt=""></div><button type="button" class="kc-replay" data-replay hidden><span aria-hidden="true">✿</span> Putar animasi</button><small class="kc-motion-note">Gerakan dikurangi sesuai pengaturan perangkat.</small></div>
+<section class="koleksi"><div class="kc-wrap"><div class="kc-hero kc-hero-reveal"><div class="kc-intro"><p class="kc-kicker">Berkah Kreatif Atelier</p><h1>Bunga untuk <em>ceritamu.</em></h1><p>Temukan buket untuk dibawa pulang dan papan ucapan untuk disewa.</p><a class="kc-discover" href="{{ route('catalog.index') }}">Jelajahi katalog →</a></div><div class="kc-still"><img src="{{ asset('images/katalog-editorial.webp') }}" alt=""></div></div>
 @if($categories->isNotEmpty())
 <section aria-labelledby="home-collections">
     <div class="kc-bar"><p class="kc-kicker">Pilihan Berkah Kreatif</p><h2 id="home-collections">Dari setiap kategori</h2></div>

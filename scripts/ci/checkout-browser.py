@@ -49,10 +49,10 @@ with sync_playwright() as playwright:
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
-    # Desktop: replay on demand after the initial timeline has finished.
-    replay = page.get_by_role('button', name='Putar animasi')
-    replay.click()
-    expect(page.locator('.kc-hero-reveal .kc-still img')).not_to_have_css('transform', 'none')
+    expect(page.locator('[data-replay]')).to_have_count(0)
+    page.emulate_media(reduced_motion='reduce')
+    assert page.locator('.kc-hero-reveal').evaluate("el => getComputedStyle(el,'::after').animationName") == 'bk-soft-light'
+    page.emulate_media(reduced_motion='no-preference')
     photo = page.locator('.kc-photo-link').first
     photo.hover()
     expect(page.locator('.kc-card').first).not_to_have_css('transform','none')
