@@ -10,6 +10,18 @@ class CatalogAvailabilityTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_search_matches_only_literal_product_names(): void
+    {
+        $category = DB::table('kategori')->insertGetId(['nama'=>'Wisuda','slug'=>'wisuda']);
+        foreach (['Mawar 100%', 'Melati'] as $i => $name) {
+            DB::table('produk')->insert(['nama'=>$name,'slug'=>'produk-'.$i,'kategori_id'=>$category,'jenis'=>'jual']);
+        }
+        foreach (['Wisuda'=>[], '%'=>['Mawar 100%'], 'Keranjang'=>[], 'awa'=>['Mawar 100%']] as $term=>$names) {
+            $this->get(route('catalog.index',['q'=>$term]))->assertOk()
+                ->assertViewHas('produk', fn ($page) => $page->pluck('nama')->all() === $names);
+        }
+    }
+
     public function test_date_filter_only_exposes_available_rental_variants_and_suggests_unblocked_days(): void
     {
         $cat = DB::table('kategori')->insertGetId(['nama' => 'Papan', 'slug' => 'papan']);

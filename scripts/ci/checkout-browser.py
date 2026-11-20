@@ -35,10 +35,14 @@ with sync_playwright() as playwright:
     clock.write_text(f'{booking_day} 10:00:00')
     page.goto(base+'/katalog')
     page.keyboard.press('Control+k')
-    palette = page.get_by_role('dialog', name='Mau ke mana?')
+    palette = page.get_by_role('dialog', name='Cari produk')
     expect(palette).to_be_visible()
     page.locator('#palette-query').fill('keranjang')
-    expect(palette.locator('nav a:visible')).to_have_count(1)
+    expect(palette.locator('a')).to_have_count(0)
+    palette.get_by_role('button',name='Cari produk').click()
+    expect(page.locator('.kc-card')).to_have_count(0)
+    page.get_by_role('link',name='Hapus pencarian').click()
+    page.keyboard.press('Control+k')
     page.keyboard.press('Escape')
     expect(palette).to_be_hidden()
     page.evaluate('window.scrollTo(0,400)')
@@ -57,7 +61,7 @@ with sync_playwright() as playwright:
         assert columns == (1 if width < 768 else 2 if width < 1200 else 3)
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
-        for field in ('q','jenis','tanggal','urut'):
+        for field in ('jenis','tanggal','urut'):
             box = panel.locator('.bk-date-trigger' if field == 'tanggal' else f'[name={field}]').bounding_box()
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
         if width < 768:

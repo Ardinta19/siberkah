@@ -21,27 +21,23 @@ if (pill && header) {
   if (palette.showModal) {
     launcher.hidden=false;
     launcher.querySelector('kbd').textContent=/Mac|iPhone|iPad/.test(navigator.platform)?'⌘ K':'Ctrl K';
-    const input=palette.querySelector('input'), links=[...palette.querySelectorAll('nav a')];
+    const input=palette.querySelector('#palette-query');
     let invoker, exit;
-    const filter=()=>{const q=input.value.trim().toLocaleLowerCase('id');links.forEach(a=>a.hidden=!a.textContent.toLocaleLowerCase('id').includes(q));palette.querySelector('[data-no-dest]').hidden=links.some(a=>!a.hidden);};
-    const open=()=>{if(palette.open || document.querySelector('dialog[open]'))return;invoker=document.activeElement;input.value='';filter();palette.showModal();input.focus();};
+    const open=()=>{if(palette.open || document.querySelector('dialog[open]'))return;invoker=document.activeElement;input.value=input.defaultValue;palette.showModal();input.focus();};
     const close=()=>{
       if(exit)return;
       if(!palette.animate || matchMedia('(prefers-reduced-motion:reduce)').matches){palette.close();return;}
       exit=palette.animate([{opacity:1,transform:'none'},{opacity:0,transform:`translateY(${desktop.matches?'-12px':'48px'})`}],{duration:210,easing:'ease-in'});
       exit.onfinish=()=>palette.close();
     };
-    launcher.onclick=open;input.oninput=filter;palette.querySelector('[data-dismiss]').onclick=close;
+    launcher.onclick=open;palette.querySelector('[data-dismiss]').onclick=close;
     palette.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } });
     palette.addEventListener('cancel',e=>{e.preventDefault();close();});
     palette.addEventListener('close',()=>{exit?.cancel();exit=null;if(invoker?.isConnected)invoker.focus({preventScroll:true});});
     palette.addEventListener('click',e=>{if(e.target!==palette)return;const r=palette.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();});
     document.addEventListener('keydown',e=>{
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(palette.open)close();else open();}
-      if(palette.open && ['ArrowDown','ArrowUp'].includes(e.key)){
-        const list=[input,...links.filter(a=>!a.hidden)]; const i=list.indexOf(document.activeElement);
-        if(i>=0){e.preventDefault();list[(i+(e.key==='ArrowDown'?1:-1)+list.length)%list.length].focus();}
-      }
+
     });
   }
 }

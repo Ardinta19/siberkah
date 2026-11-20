@@ -67,7 +67,7 @@
                     @endauth
                 </div>
 
-                <button hidden type="button" data-open-palette class="bk-palette-key" aria-haspopup="dialog" aria-controls="bk-palette" aria-label="Cari produk atau buka perintah"><span aria-hidden="true">⌕</span><kbd>Ctrl K</kbd></button>
+                <button hidden type="button" data-open-palette class="bk-palette-key" aria-haspopup="dialog" aria-controls="bk-palette" aria-label="Cari nama produk"><span aria-hidden="true">⌕</span><kbd>Ctrl K</kbd></button>
                 <!-- Mobile menu button -->
                 <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors-150" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu" id="guest-menu-toggle">
                     <span class="bk-burger" aria-hidden="true"><i></i><i></i><i></i></span>

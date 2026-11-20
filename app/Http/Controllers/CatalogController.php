@@ -37,9 +37,8 @@ class CatalogController extends BaseController
 
         $request->validate(['q' => 'nullable|string|max:150', 'kategori' => 'nullable|integer', 'jenis' => 'nullable|in:sewa,jual,custom', 'urut' => 'nullable|in:harga_naik,harga_turun', 'tanggal' => 'nullable|date_format:Y-m-d']);
         if ($request->filled('q')) {
-            $term = '%'.$request->string('q')->trim().'%';
-            $query->where(fn ($q) => $q->where('nama', 'like', $term)
-                ->orWhereHas('kategori', fn ($category) => $category->where('nama', 'like', $term)));
+            $term = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($request->input('q')));
+            $query->whereRaw("produk.nama LIKE ? ESCAPE '!'", ['%'.$term.'%']);
         }
 
         // Filter by kategori

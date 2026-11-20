@@ -28,3 +28,16 @@
 #main-header.bk-compact::before{transform:scaleX(.04);opacity:0}
 @media(prefers-reduced-motion:no-preference){#main-header::before{transition:transform .46s cubic-bezier(.2,.7,.3,1),opacity .42s ease}}
 @media(prefers-reduced-motion:reduce){.bk-mobile-sheet,.bk-mobile-links,.bk-mobile-sheet .bk-mobile-links>a{transform:none}.bk-mobile-sheet{transition:opacity .25s ease,visibility 0s .25s}.bk-mobile-sheet.is-open{transition-delay:0s}.bk-palette[open]{animation:bk-palette-fade .24s ease-out}@keyframes bk-palette-fade{from{opacity:.3}to{opacity:1}}}
+.kc-search-note{margin:.5rem 0 1rem;color:#694651;overflow-wrap:anywhere}.kc-search-note a{text-decoration:underline;text-underline-offset:.2em}
+@media(min-width:75rem){.kc-search{grid-template-columns:repeat(3,minmax(0,1fr)) auto}}
+@media(max-width:47.99rem){.kc-search{grid-template-areas:'filters filters' 'toggle submit'}}
+/* Short cross-document continuity for real navigations in supporting browsers. */
+@media(prefers-reduced-motion:no-preference){
+ @view-transition{navigation:auto}
+ ::view-transition-old(root){animation:bk-page-away .16s ease-in both}
+ ::view-transition-new(root){animation:bk-page-arrive .32s cubic-bezier(.2,.7,.3,1) both}
+ @keyframes bk-page-away{to{opacity:0;transform:translateY(-3px)}}
+ @keyframes bk-page-arrive{from{opacity:0;transform:translateY(7px)}}
+ .kc-search-note,.kc-results .kc-meta{animation:bk-page-arrive .3s ease-out both}
+ .bk-palette[open] form{animation:bk-page-arrive .36s ease-out both}
+}
