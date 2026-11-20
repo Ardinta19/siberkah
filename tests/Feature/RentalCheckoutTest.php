@@ -431,7 +431,7 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseCount('foto_inspeksi', 2);
         $photo = DB::table('foto_inspeksi')->first();
         \Illuminate\Support\Facades\Storage::disk('local')->assertExists($photo->jalur_berkas);
-        $assessment = ['biaya_kerusakan' => 200000, 'alasan' => 'Foto menunjukkan akrilik pecah'];
+        $assessment = ['rincian'=>[['kode'=>'akrilik_pecah','jumlah'=>1]], 'biaya_kerusakan' => 200000, 'alasan' => 'Foto menunjukkan akrilik pecah'];
         $this->actingAs($admin, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertForbidden();
         $this->actingAs($owner, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertCreated();
         $invoice = $this->postJson(route('retur.nilai', $order->id), $assessment)->assertOk()->json('tagihan_id');

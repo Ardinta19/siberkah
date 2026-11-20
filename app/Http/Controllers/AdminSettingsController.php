@@ -31,7 +31,7 @@ class AdminSettingsController extends BaseController
         foreach (BusinessSettings::RULES as $key => [$default, $min, $max]) {
             $settings[$key] = ['nilai' => BusinessSettings::value($key), 'bawaan' => $default, 'min' => $min, 'maks' => $max];
         }
-        return response()->json(['pengaturan' => $settings, 'zona' => DB::table('zona_antar')->orderBy('jarak_maks_km')->get(['id','nama','jarak_maks_km','aktif','ongkir'])])->header('Cache-Control', 'private, no-store');
+        return response()->json(['pengaturan' => $settings, 'tarif_kerusakan' => DB::table('tarif_kerusakan')->orderBy('kode')->get(['id','kode','nama','satuan','tarif']), 'zona' => DB::table('zona_antar')->orderBy('jarak_maks_km')->get(['id','nama','jarak_maks_km','aktif','ongkir'])])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $request)
@@ -57,17 +57,25 @@ class AdminSettingsController extends BaseController
 
     public function zoneRate(Request $request, int $id)
     {
-        $data = $request->validate(['sebelum' => 'required|integer|min:0', 'ongkir' => 'required|integer|between:0,10000000']);
-        DB::transaction(function () use ($request, $data, $id) {
-            $zone = DB::table('zona_antar')->where('id', $id)->lockForUpdate()->first();
-            abort_unless($zone, 404);
-            $fee = (int) $data['ongkir'];
-            if ((int) $zone->ongkir === $fee) { return; }
-            abort_unless((int) $data['sebelum'] === (int) $zone->ongkir, 409, 'Tarif sudah berubah, muat ulang.');
-            DB::table('zona_antar')->where('id', $id)->update(['ongkir' => $fee, 'diubah_pada' => now()]);
-            DB::table('log_aktivitas')->insert(['aksi' => 'ubah_tarif_zona', 'pengguna_id' => $request->user('staff')->id,
-                'subjek_tabel' => 'zona_antar', 'subjek_id' => $id, 'dibuat_pada' => now(),
-                'sebelum' => json_encode(['ongkir' => (int) $zone->ongkir]), 'sesudah' => json_encode(['ongkir' => $fee])]);
+        return $this->updateRate($request, $id, 'zona_antar', 'ongkir', 'ubah_tarif_zona');
+    }
+
+    public function damageRate(Request $request, int $id)
+    {
+        return $this->updateRate($request, $id, 'tarif_kerusakan', 'tarif', 'ubah_tarif_kerusakan');
+    }
+
+    private function updateRate(Request $request, int $id, string $table, string $field, string $action)
+    {
+        $data = $request->validate(['sebelum' => 'required|integer|min:0', $field => 'required|integer|between:0,10000000']);
+        DB::transaction(function () use ($data, $id, $table, $field, $action) {
+            $row = DB::table($table)->where('id', $id)->lockForUpdate()->first();
+            abort_unless($row, 404);
+            $fee = (int) $data[$field];
+            if ((int) $row->$field === $fee) { return; }
+            abort_unless((int) $data['sebelum'] === (int) $row->$field, 409, 'Tarif sudah berubah, muat ulang.');
+            DB::table($table)->where('id', $id)->update([$field => $fee, 'diubah_pada' => now()]);
+            \App\Support\StaffAudit::record($action,$table,$id,[$field=>(int)$row->$field],[$field=>$fee]);
         }, 3);
         return response()->noContent();
     }

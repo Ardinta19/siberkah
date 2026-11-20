@@ -32,21 +32,31 @@ class RentalCloseoutController extends Controller
 
     public function assess(Request $request, int $id, IssueRentalInvoice $invoices)
     {
-        $data = $request->validate(['biaya_kerusakan' => 'required|integer|between:0,2147483647', 'alasan' => 'required|string|max:200']);
+        $data = $request->validate(['biaya_kerusakan' => 'sometimes|integer|between:0,2147483647', 'rincian' => 'sometimes|array|list|max:30',
+            'rincian.*'=>'array:kode,jumlah','rincian.*.kode'=>'required|string|max:30|distinct','rincian.*.jumlah'=>'required|integer|between:1,100', 'alasan' => 'required|string|max:200']);
         $staff = $request->user('staff');
-        $amount = (int) $data['biaya_kerusakan'];
-        return DB::transaction(function () use ($id, $amount, $data, $staff, $invoices) {
+        $quantities = collect($data['rincian'] ?? [])->mapWithKeys(fn ($line) => [$line['kode'] => (int) $line['jumlah']])->sortKeys()->all();
+        return DB::transaction(function () use ($id, $quantities, $data, $staff, $invoices) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $id)->exists(), 404);
             $existing = DB::table('penutupan_sewa')->where('pesanan_id', $id)->first();
             if ($existing) {
-                abort_unless($amount === (int) $existing->biaya_kerusakan && $data['alasan'] === $existing->alasan, 409, 'Penilaian sudah final.');
+                $saved = collect(json_decode($existing->rincian_tarif ?? '[]', true))->pluck('jumlah','kode')->sortKeys()->all();
+                abort_unless($saved === $quantities && (! isset($data['biaya_kerusakan']) || (int) $data['biaya_kerusakan'] === (int) $existing->biaya_kerusakan) && $data['alasan'] === $existing->alasan, 409, 'Penilaian sudah final.');
                 return response()->json(['tagihan_id' => $existing->tagihan_id]);
             }
             abort_unless($order->status === 'sudah_dikembalikan' && $order->total === $order->saldo + $order->jumlah_dibayar, 409);
             $damaged = DB::table('inspeksi_sewa as i')->join('item_pesanan as item', 'item.id', '=', 'i.item_pesanan_id')
                 ->where('item.pesanan_id', $id)->where('i.tahap', 'kembali')->where('i.kondisi', '!=', 'baik')->exists();
+            $lines = []; $amount = 0;
+            foreach ($quantities as $code => $quantity) {
+                $rate = DB::table('tarif_kerusakan')->where('kode',$code)->sharedLock()->first();
+                abort_unless($rate,422,'Tarif kerusakan tidak dikenal.');
+                $lines[] = ['kode'=>$code,'jumlah'=>$quantity,'tarif'=>(int)$rate->tarif,'satuan'=>$rate->satuan];
+                $amount += $rate->tarif * $quantity;
+            }
             abort_if(($damaged || $amount > 0) && ! $staff->isOwner(), 403, 'Penilaian kondisi cacat/rusak hanya oleh owner.');
+            abort_if(isset($data['biaya_kerusakan']) && (int) $data['biaya_kerusakan'] !== $amount,422,'Nominal harus sama dengan jumlah × tarif acuan.');
             abort_if($amount > 0 && ! $damaged, 422, 'Tidak ada kerusakan tercatat.');
             abort_if($order->total + $amount > 2147482648, 422, 'Nominal melebihi batas.');
             $now = now();
@@ -57,7 +67,7 @@ class RentalCloseoutController extends Controller
             }
             $invoice = $order->saldo > 0 ? $invoices->issue($id, 'pelunasan', $order->saldo, $now) : null;
             DB::table('penutupan_sewa')->insert(['pesanan_id' => $id, 'penilai_id' => $staff->id, 'biaya_kerusakan' => $amount,
-                'alasan' => $data['alasan'], 'tagihan_id' => $invoice, 'dinilai_pada' => $now]);
+                'alasan' => $data['alasan'], 'tagihan_id' => $invoice, 'dinilai_pada' => $now, 'rincian_tarif'=>json_encode($lines, JSON_THROW_ON_ERROR)]);
             return response()->json(['tagihan_id' => $invoice], 201);
         }, 3);
     }

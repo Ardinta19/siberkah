@@ -25,12 +25,16 @@ class AdminOrderController extends BaseController
      */
     public function index(Request $request)
     {
-        $filters = $request->validate(['status' => 'sometimes|string|max:30', 'tanggal' => 'sometimes|date_format:Y-m-d', 'pelanggan' => 'sometimes|integer|min:1']);
+        $filters = $request->validate(['q' => 'nullable|string|max:150', 'status' => 'sometimes|string|max:30', 'tanggal' => 'sometimes|date_format:Y-m-d', 'pelanggan' => 'sometimes|integer|min:1']);
         $query = Pesanan::query();
         foreach (['status' => 'status', 'tanggal' => 'tanggal_serah', 'pelanggan' => 'pelanggan_id'] as $field => $column) {
             if (isset($filters[$field])) {
                 $query->where($column, $filters[$field]);
             }
+        }
+        if (filled($filters['q'] ?? null)) {
+            $q = '%'.str_replace(['!', '%', '_'], ['!!','!%','!_'], $filters['q']).'%';
+            $query->where(fn ($row) => $row->whereRaw("nama_pemesan LIKE ? ESCAPE '!'", [$q])->orWhereRaw("nomor LIKE ? ESCAPE '!'", [$q]));
         }
         return response()->json($query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo']))
             ->header('Cache-Control', 'private, no-store');
@@ -74,27 +78,7 @@ class AdminOrderController extends BaseController
      */
     public function transitionStatus(Request $request, $id)
     {
-        $request->validate([
-            'status_baru' => 'required|in:menunggu_pembayaran,kedaluwarsa,dikonfirmasi,sedang_diproduksi,siap,sudah_diserahkan,sudah_dikembalikan,selesai,dibatalkan',
-            'kode_transisi' => 'required|string|size:3',
-            'catatan' => 'sometimes|string',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-
-        // TODO: Use TransitionOrderStatus action
-        // $action = new TransitionOrderStatus();
-        // $result = $action->handle($pesanan, $request->status_baru, $request->kode_transisi, auth('staff')->user(), $request->catatan);
-
-        // For now, just update status
-        $pesanan->status = $request->status_baru;
-        $pesanan->save();
-
-        // Log the transition
-        // \App\Models\LogAktivitas::create([...]);
-
-        return back()
-            ->with('success', 'Status pesanan berhasil diubah menjadi '.$request->status_baru);
+        abort(410, 'Gunakan aksi khusus sesuai tahap pesanan.');
     }
 
     public function verifyPayment(Request $request, int $id, VerifyRentalTransfer $transfers)
@@ -133,22 +117,7 @@ class AdminOrderController extends BaseController
      */
     public function recordCash(Request $request, $id)
     {
-        $request->validate([
-            'cara_serah' => 'required|in:antar,ambil',
-            'alamat_antar' => 'sometimes|string',
-            'zona_antar_id' => 'sometimes|exists:zona_antar,id',
-            'nominal_jaminan' => 'sometimes|integer',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-
-        // TODO: Implement cash payment recording
-        // - Set wajib_dp based on nominal
-        // - Generate tagihan
-        // - Create Pembayaran record
-
-        return back()
-            ->with('success', 'Pembayaran tunai tercatat.');
+        abort(410, 'Gunakan aksi khusus sesuai tahap pesanan.');
     }
 
     /**

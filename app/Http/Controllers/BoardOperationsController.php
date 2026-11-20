@@ -30,6 +30,21 @@ final class BoardOperationsController extends Controller
         return response()->noContent();
     }
 
+    public function customerEdit(Request $request, string $nomor)
+    {
+        $data = $request->validate(['judul'=>'required|string|max:25','penerima'=>'required|string|max:45','pengirim'=>'required|string|max:40']);
+        $customer = $request->user('customer');
+        DB::transaction(function () use ($customer,$nomor,$data) {
+            $order = $customer->pesanan()->where('nomor',$nomor)->lockForUpdate()->firstOrFail();
+            $design = DB::table('desain_papan')->where('pesanan_id',$order->id);
+            abort_unless($design->exists(),404);
+            abort_unless(in_array($order->status,['menunggu_pembayaran','dikonfirmasi'],true),409,'Teks sudah terkunci.');
+            $design->update($data + ['editor_id'=>null,'diubah_pada'=>now()]);
+            DB::table('log_aktivitas')->insert(['aksi'=>'ubah_teks_papan','pelanggan_id'=>$customer->id,'subjek_tabel'=>'pesanan','subjek_id'=>$order->id,'dibuat_pada'=>now()]);
+        },3);
+        return $request->expectsJson() ? response()->noContent() : redirect()->route('pesanan.show',$nomor);
+    }
+
     public function extend(Request $request, int $id)
     {
         $d = $request->validate(['kunci' => 'required|uuid', 'jam' => 'required|integer|between:1,5', 'alasan' => 'required|string|max:200']);

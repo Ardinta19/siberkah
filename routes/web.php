@@ -102,6 +102,7 @@ Route::middleware(['auth:customer', 'active.customer'])->group(function () {
     Route::post('/pelanggan/pesanan/buket', [CustomerOrderController::class, 'bouquet'])->middleware([RentalStaging::class, 'throttle:20,1'])->name('pesanan.buket');
     Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->middleware('throttle:20,1')->name('pesanan.store');
     Route::get('/pelanggan/pesanan/{nomor}', [CustomerOrderController::class, 'show'])->name('pesanan.show');
+    Route::put('/pelanggan/pesanan/{nomor}/teks-papan', [BoardOperationsController::class, 'customerEdit'])->middleware([RentalStaging::class,'throttle:20,1'])->name('pesanan.teks-papan');
     Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->middleware(RentalStaging::class)->name('pesanan.cancel');
     Route::get('/pelanggan/pesanan/{nomor}/request-cancellation', [CancellationRequestController::class, 'show'])->name('pesanan.cancellation-status');
     Route::post('/pelanggan/pesanan/{nomor}/request-cancellation', [CancellationRequestController::class, 'submit'])->middleware('throttle:10,1')->name('pesanan.request-cancellation');
@@ -196,6 +197,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
             Route::post('/', 'store')->middleware('throttle:10,1')->name('tujuan.store');
             Route::patch('{id}', 'status')->whereNumber('id')->name('tujuan.status');
         });
+        Route::patch('kerusakan/{id}/tarif', [AdminSettingsController::class, 'damageRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.tarif-kerusakan');
         Route::patch('zona/{id}/ongkir', [AdminSettingsController::class, 'zoneRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.ongkir');
         Route::post('manage-calendar-blocks', [AdminSettingsController::class, 'manageCalendarBlocks'])->name('admin.pengaturan.manage-calendar-blocks');
         Route::post('manage-production-capacity', [AdminSettingsController::class, 'manageProductionCapacity'])->name('admin.pengaturan.manage-production-capacity');
