@@ -181,6 +181,11 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
     Route::prefix('admin/pengaturan')->group(function () {
         Route::get('/', [AdminSettingsController::class, 'index'])->middleware('role:owner')->name('admin.pengaturan.index');
         Route::post('update', [AdminSettingsController::class, 'update'])->middleware('role:owner')->name('admin.pengaturan.update');
+        Route::prefix('tujuan-bayar')->middleware(['role:owner', RentalStaging::class])->controller(\App\Http\Controllers\PaymentDestinationController::class)->group(function () {
+            Route::get('/', 'index')->name('tujuan.index');
+            Route::post('/', 'store')->middleware('throttle:10,1')->name('tujuan.store');
+            Route::patch('{id}', 'status')->whereNumber('id')->name('tujuan.status');
+        });
         Route::post('manage-calendar-blocks', [AdminSettingsController::class, 'manageCalendarBlocks'])->name('admin.pengaturan.manage-calendar-blocks');
         Route::post('manage-production-capacity', [AdminSettingsController::class, 'manageProductionCapacity'])->name('admin.pengaturan.manage-production-capacity');
     });

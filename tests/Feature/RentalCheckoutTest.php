@@ -387,7 +387,8 @@ class RentalCheckoutTest extends TestCase
         $courier = Pengguna::factory()->create(['peran' => 'staf_kurir']);
         $bill = DB::table('pembayaran')->where('pesanan_id', $order->id)->first();
         $this->actingAs($customer, 'customer')->getJson(route('payment.show', $order->nomor))->assertOk();
-        $this->postJson(route('payment.confirm', $order->nomor), ['pembayaran_id' => $bill->id])->assertAccepted();
+        $account = DB::table('rekening_pembayaran')->insertGetId(['nama_bank' => 'BRI', 'nomor_rekening' => '00123456', 'atas_nama' => 'Uji']);
+        $this->postJson(route('payment.confirm', $order->nomor), ['pembayaran_id' => $bill->id, 'tujuan_id' => $account])->assertAccepted();
         $this->assertSame(0, $order->fresh()->jumlah_dibayar);
         $verify = app(\App\Actions\VerifyRentalTransfer::class);
         $verify->record($admin, $order->id, ['pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan, 'referensi' => 'BANK:DP']);

@@ -12,6 +12,9 @@
     <h2>Riwayat status</h2>
     <ol>@foreach($riwayat as $perubahan)<li>{{ $perubahan->dibuat_pada }} WIB · {{ str_replace('_', ' ', $perubahan->status_baru) }}</li>@endforeach</ol>
     <strong>Total Rp{{ number_format($pesanan->total, 0, ',', '.') }}</strong>
+    @if(config('checkout.staging') && in_array($pesanan->asal, ['situs','admin']))
+        <a href="{{ route('payment.show', $pesanan->nomor) }}">Lihat tagihan dan petunjuk pembayaran</a>
+    @endif
     @if($link = \App\Services\WhatsAppLinks::order($pesanan, false))
         <a href="{{ $link }}" rel="noopener noreferrer" target="_blank">Tanyakan pesanan ini ke Admin</a>
     @endif

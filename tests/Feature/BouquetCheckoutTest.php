@@ -28,6 +28,39 @@ class BouquetCheckoutTest extends TestCase
             'items' => [['produk_id' => $sale, 'varian_id' => $variant, 'jumlah' => 1], ['produk_id' => $custom, 'jumlah' => 2, 'opsi' => [['id' => $option, 'nilai_id' => $value, 'satuan' => 3]]]]];
     }
 
+    public function test_customer_payment_window_and_destination_rotation_do_not_depend_on_scheduler(): void
+    {
+        $d = $this->cart();
+        $this->postJson(route('pesanan.buket'), $d)->assertOk();
+        $order = Pesanan::sole();
+        $bill = DB::table('pembayaran')->sole();
+        $url = route('payment.show', $order->nomor);
+        $post = route('payment.confirm', $order->nomor);
+        $this->getJson($url)->assertJsonPath('pembayaran.0.boleh_bayar', false);
+        $account = DB::table('rekening_pembayaran')->insertGetId(['nama_bank' => 'BRI', 'nomor_rekening' => '00123456', 'atas_nama' => 'Penguji']);
+        $data = ['pembayaran_id' => $bill->id, 'tujuan_id' => $account];
+        $end = $order->tahan_hingga_pada;
+        $this->travelTo($end->copy()->subSecond());
+        $this->get($url)->assertOk()->assertSee('00123456')->assertSee('Bayar persis');
+        DB::table('rekening_pembayaran')->where('id', $account)->update(['aktif' => false]);
+        $this->postJson($post, $data)->assertConflict();
+        DB::table('rekening_pembayaran')->where('id', $account)->update(['aktif' => true]);
+        foreach ([$end, $end->copy()->addSecond()] as $time) {
+            $this->travelTo($time);
+            $this->get($url)->assertOk()->assertDontSee('00123456');
+            $this->postJson($post, $data)->assertConflict();
+        }
+        $this->assertDatabaseHas('pembayaran', ['id' => $bill->id, 'dikonfirmasi_pelanggan_pada' => null]);
+        $this->travelTo($end->copy()->subSecond());
+        $this->postJson($post, $data)->assertAccepted();
+        $this->postJson($post, $data)->assertAccepted();
+        $this->get($url)->assertSee('Jangan bayar lagi')->assertDontSee('00123456');
+        $other = Pelanggan::create(['nomor_wa' => '628123456789', 'aktif' => true]);
+        $this->actingAs($other, 'customer')->getJson($url)->assertNotFound();
+        $this->postJson($post, $data)->assertNotFound();
+        $this->assertSame(0, $order->fresh()->jumlah_dibayar);
+    }
+
     public function test_cash_pickup_only_credits_at_successful_handover_once(): void
     {
         $d = $this->cart();
