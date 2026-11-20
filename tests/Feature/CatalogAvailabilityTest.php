@@ -21,7 +21,7 @@ class CatalogAvailabilityTest extends TestCase
         }
         $day = today()->addWeek();
         $url = route('catalog.show', ['slug' => 'utama', 'tanggal' => $day->toDateString()]);
-        $this->get(route('catalog.index', ['tanggal' => $day->toDateString()]))->assertOk()->assertSee('1 varian')->assertDontSee('Barang siap jual');
+        $this->get(route('catalog.index', ['tanggal' => $day->toDateString(), 'urut'=>'harga_naik']))->assertOk()->assertSee('Rp75.000')->assertSee('1 varian')->assertDontSee('Barang siap jual');
         $this->get($url)->assertOk()->assertSee('Bening')->assertDontSee('Merah');
         $staff = \App\Models\Pengguna::factory()->create();
         foreach ([0, 2] as $offset) {

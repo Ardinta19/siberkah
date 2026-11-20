@@ -16,8 +16,7 @@
         <a class="text-primary underline" href="{{ route('catalog.index',$koleksi) }}">Kembali ke katalog</a>
         <h1 class="font-display text-3xl font-bold">{{ $produk->nama }}</h1>
         <p>{{ $produk->deskripsi }}</p>
-        @php($harga = $varian->filter(fn ($v) => $v->harga > 0 && ($produk->jenis !== 'jual' || $v->stok > 0))->min('harga') ?? ($produk->jenis === 'custom' && !$produk->varianProduk()->exists() ? $produk->harga_dasar : null))
-        <strong>{{ $harga ? 'Mulai Rp'.number_format($harga,0,',','.') : 'Harga belum tersedia' }}</strong>
+        <strong>{{ $produk->harga_tampil !== null ? 'Mulai Rp'.number_format($produk->harga_tampil,0,',','.') : 'Harga belum tersedia' }}</strong>
         @if($varian->isNotEmpty())
             <h2 class="font-bold">Varian</h2>
             <ul>@foreach($varian as $v)<li>{{ $v->nama }} · Rp{{ number_format($v->harga, 0, ',', '.') }}</li>@endforeach</ul>

@@ -52,10 +52,7 @@ class CatalogController extends BaseController
         }
 
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
-        $variantPrice = \App\Models\VarianProduk::selectRaw('min(harga)')->whereColumn('produk_id','produk.id')->where('aktif',true)
-            ->where('harga','>',0)->where(fn ($q) => $q->where('produk.jenis','!=','jual')->orWhere('stok','>',0))
-            ->when($date, fn ($q) => $q->tersediaPada($date));
-        $query->select('produk.*')->selectRaw("coalesce(({$variantPrice->toSql()}), case when produk.jenis = 'custom' and not exists (select 1 from varian_produk v where v.produk_id = produk.id) then nullif(produk.harga_dasar,0) end) as harga_tampil", $variantPrice->getBindings());
+        $query->denganHargaTampil($date);
         if ($request->filled('urut')) {
             $query->orderByRaw('harga_tampil is null')->orderBy('harga_tampil', $request->input('urut') === 'harga_turun' ? 'desc' : 'asc');
         }
@@ -83,6 +80,7 @@ class CatalogController extends BaseController
 
         $tanggal = $request->validate(['tanggal' => 'nullable|date_format:Y-m-d'])['tanggal'] ?? null;
         $filter = $tanggal && $produk->jenis === 'sewa';
+        $produk->harga_tampil = Produk::denganHargaTampil($filter ? $tanggal : null)->whereKey($produk->id)->firstOrFail()->harga_tampil;
         $varian = $produk->varianProduk()->where('aktif', true)->when($filter, fn ($q) => $q->tersediaPada($tanggal))->get();
         $tersedia = $filter ? $varian->isNotEmpty() : null;
         $saran = [];

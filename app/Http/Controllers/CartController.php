@@ -15,7 +15,7 @@ final class CartController extends Controller
     public function index(Request $request)
     {
         $cart = $request->session()->get('cart', []);
-        $products = $this->available()->whereIn('id', array_keys($cart))->get();
+        $products = $this->available()->denganHargaTampil()->whereIn('id', array_keys($cart))->get();
         $cart = array_intersect_key($cart, array_flip($products->modelKeys()));
         $request->session()->put('cart', $cart);
         return response()->view('publik.keranjang', compact('products', 'cart'))->header('Cache-Control', 'private, no-store');
