@@ -40,11 +40,28 @@ window.utils = {
   }
 };
 const menuToggle = document.getElementById('guest-menu-toggle');
-menuToggle?.addEventListener('click', () => {
+if (menuToggle) {
   const menu = document.getElementById('mobile-menu');
-  menu.hidden = !menu.hidden;
-  menuToggle.setAttribute('aria-expanded', String(!menu.hidden));
-});
+  const desktop = matchMedia('(min-width:48rem)');
+  const set = (open, restore = false) => {
+    if (restore && !desktop.matches) menuToggle.focus();
+    menu.inert = !open;
+    menu.classList.toggle('is-open', open);
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuToggle.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
+  };
+  menuToggle.addEventListener('click', e => {
+    const open = menu.inert;
+    set(open);
+    if (open && e.detail === 0) menu.querySelector('a')?.focus();
+  });
+  const outside = e => !menu.contains(e.target) && !menuToggle.contains(e.target);
+  document.addEventListener('pointerdown', e => { if (!menu.inert && outside(e)) set(false); });
+  document.addEventListener('focusin', e => { if (!menu.inert && outside(e)) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.inert) set(false,true); });
+  desktop.addEventListener('change', () => set(false));
+  window.addEventListener('pageshow', () => set(false));
+}
 
 for (const button of document.querySelectorAll('[data-favorite]')) {
   const key = `siberkah:favorite:${button.dataset.favorite}`;
@@ -113,9 +130,7 @@ for (const form of document.querySelectorAll('form[data-pending]')) {
 }
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
-  const menu = document.querySelector('#mobile-menu');
-  if (menu && !menu.hidden) { menuToggle.click(); menuToggle.focus(); }
-  else if (filters && !filters.hidden && matchMedia('(max-width:47.99rem)').matches && filters.parentElement.contains(document.activeElement)) {
+  if (filters && !filters.hidden && matchMedia('(max-width:47.99rem)').matches && filters.parentElement.contains(document.activeElement)) {
     const toggle = document.querySelector('.kc-filter-toggle'); toggle.click(); toggle.focus();
   }
 });

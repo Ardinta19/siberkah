@@ -48,3 +48,26 @@ select:not([multiple]):not([size]):disabled {background-color:#f3eeea;color:#776
 #role-sidebar{z-index:52;overflow-y:auto}[data-shade]{z-index:51}#role-sidebar[hidden],[data-shade][hidden],#account-links[hidden]{display:none!important}#account-links{z-index:48}
 @media(min-width:64rem){[data-sidebar-close]{display:none!important}}
 @media(prefers-reduced-motion:no-preference){[data-workspace] main button,.bk-pages a{transition:transform .15s ease,background-color .15s ease}[data-workspace] main button:active:not(:disabled),.bk-pages a:active{transform:scale(.97)}#account-links:not([hidden]),#role-sidebar[aria-modal=true]{animation:kc-unfold .18s ease-out}}
+/* Public navigation unfolds from the header rather than pushing the page down. */
+#guest-menu-toggle {width:44px;height:44px;color:#801637}
+#guest-menu-toggle[aria-expanded=true]{background:#f5e5e9}
+.bk-burger{width:20px;height:16px;position:relative;display:block;margin:auto}
+.bk-burger i{position:absolute;left:0;width:100%;height:2px;border-radius:2px;background:currentColor;top:0}
+.bk-burger i:nth-child(2){top:7px}.bk-burger i:last-child{top:14px}
+[aria-expanded=true]>.bk-burger i:first-child{transform:translateY(7px) rotate(45deg)}
+[aria-expanded=true]>.bk-burger i:nth-child(2){opacity:0}
+[aria-expanded=true]>.bk-burger i:last-child{transform:translateY(-7px) rotate(-45deg)}
+.bk-mobile-sheet{display:grid;position:absolute;inset:100% 0 auto;grid-template-rows:0fr;opacity:0;visibility:hidden;background:#fffdf9;box-shadow:0 12px 24px #41182b1c}
+.bk-mobile-sheet.is-open{grid-template-rows:1fr;opacity:1;visibility:visible}
+.bk-mobile-clip{overflow:hidden;min-height:0}
+.bk-mobile-links{overflow:auto;max-height:calc(100dvh - 9rem);padding:1rem max(1rem,5vw);border-block:1px solid #e6d3d6}
+.bk-mobile-links .kc-kicker{margin:0 .75rem .5rem}.bk-mobile-links :is(a,button){min-height:44px}.bk-mobile-links [aria-current=page]{background:#f6e6ea;color:#801637;font-weight:650}
+@media(min-width:48rem){.bk-mobile-sheet{display:none}}
+@media(prefers-reduced-motion:no-preference){
+ .bk-mobile-sheet{transition:grid-template-rows .27s cubic-bezier(.22,.8,.26,1),opacity .2s ease,visibility 0s .27s}
+ .bk-mobile-sheet.is-open{transition-delay:0s}
+ .bk-burger i{transition:transform .22s ease,opacity .16s ease}
+ .bk-mobile-links{transform:translateY(-12px);transition:transform .27s ease-out}.is-open>.bk-mobile-clip>.bk-mobile-links{transform:none}
+ #role-sidebar[aria-modal=true]{animation:bk-sidebar-in .24s cubic-bezier(.22,.8,.26,1)}
+ @keyframes bk-sidebar-in{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+}

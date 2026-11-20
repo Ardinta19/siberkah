@@ -67,31 +67,29 @@
 
                 <!-- Mobile menu button -->
                 <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors-150" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu" id="guest-menu-toggle">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
+                    <span class="bk-burger" aria-hidden="true"><i></i><i></i><i></i></span>
 
                 </button>
                     <a class="bk-cart" href="{{ route('cart.index') }}" aria-label="Keranjang, {{ array_sum(session('cart', [])) }} item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="hidden lg:inline">Keranjang</span><b>{{ array_sum(session('cart', [])) }}</b></a>
             </div>
 
             <!-- Mobile menu -->
-            <div hidden class="md:hidden overflow-hidden bg-white border-t border-neutral-200" id="mobile-menu" role="navigation" aria-label="Menu mobile">
-                <div class="py-4 space-y-1 px-4">
-                    <a href="{{ route('catalog.index') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+            <div inert class="bk-mobile-sheet" id="mobile-menu" role="navigation" aria-label="Menu mobile">
+                <div class="bk-mobile-clip"><div class="bk-mobile-links"><p class="kc-kicker">Jelajahi Berkah Kreatif</p>
+                    <a href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.*')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Katalog
                     </a>
-                    <a href="{{ route('syarat-sewa') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('syarat-sewa') }}" @if(request()->routeIs('syarat-sewa')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Syarat Sewa
                     </a>
-                    <a href="{{ route('privasi') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('privasi') }}" @if(request()->routeIs('privasi')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Privasi
                     </a>
-                    <a href="{{ route('kontak') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('kontak') }}" @if(request()->routeIs('kontak')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Kontak
                     </a>
                     @auth('customer')
-                        <a href="{{ route('pesanan.index') }}" class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                        <a href="{{ route('pesanan.index') }}" @if(request()->routeIs('pesanan.index')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                             Pesanan Saya
                         </a>
                         @if(Route::has('otp.logout'))
@@ -103,11 +101,11 @@
                         </form>
                         @endif
                     @else
-                        <a href="{{ route('otp.form') }}" class="block px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                        <a href="{{ route('otp.form') }}" @if(request()->routeIs('otp.form')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                             Masuk / Daftar
                         </a>
                     @endauth
-                </div>
+                </div></div>
             </div>
         </div>
     </header>
