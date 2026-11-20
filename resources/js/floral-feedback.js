@@ -1,8 +1,8 @@
 // Decorative overlay outside overflow-clipped cards. Never intercept navigation.
-const controls = '.koleksi :is(button,a,summary), [data-product-detail] :is(button,a,select), .bk-cart, .kc-dock a';
+const controls = '#main-header :is(button,a), .koleksi :is(button,a,summary), [data-product-detail] :is(button,a,select), .bk-cart, .kc-dock a';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let flower, timer;
-function bloom(target, x, y) {
+export function bloom(target, x, y) {
   if (reduced.matches) return;
   const box = target.getBoundingClientRect();
   if (!box.width || !box.height) return;

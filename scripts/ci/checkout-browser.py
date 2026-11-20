@@ -49,6 +49,13 @@ with sync_playwright() as playwright:
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
+    # Desktop: replay on demand after the initial timeline has finished.
+    replay = page.get_by_role('button', name='Putar animasi')
+    replay.click()
+    expect(page.locator('.kc-hero-reveal .kc-still img')).not_to_have_css('transform', 'none')
+    photo = page.locator('.kc-photo-link').first
+    photo.hover()
+    expect(page.locator('.kc-card').first).not_to_have_css('transform','none')
     fav = page.locator('.kc-card [data-favorite]').first
     fav.scroll_into_view_if_needed()
     box = fav.bounding_box()

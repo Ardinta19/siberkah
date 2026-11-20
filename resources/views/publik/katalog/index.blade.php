@@ -12,6 +12,7 @@
         <a class="kc-discover" href="#produk-katalog">Jelajahi produk <span aria-hidden="true">↓</span></a>
       </div>
       <div class="kc-still" aria-hidden="true"><img src="{{ asset('images/katalog-editorial.webp') }}" alt="" fetchpriority="high"></div>
+      <button type="button" class="kc-replay" data-replay hidden><span aria-hidden="true">✿</span> Putar animasi</button><small class="kc-motion-note">Gerakan dikurangi sesuai pengaturan perangkat.</small>
     </header>
     <div id="produk-katalog" class="kc-bar"><h2>Temukan pilihan Anda</h2></div>
     <div class="kc-directory">
@@ -38,6 +39,7 @@
       @forelse($produk as $p)
         <article class="kc-card">
           <div class="kc-media">
+            <a class="kc-photo-link" aria-label="Lihat {{ $p->nama }}" href="{{ route('catalog.show',['slug'=>$p->slug,'tanggal'=>$filterTanggal,'koleksi'=>request()->only(['q','jenis','kategori','tanggal','urut','page'])]) }}"></a>
             @if($p->foto_utama)<img class="kc-product-photo" src="{{ asset('storage/'.$p->foto_utama) }}" loading="lazy" alt="{{ $p->nama }}">
             @else<img class="kc-monogram" src="{{ asset('images/berkah-kreatif.webp') }}" alt="">@endif
             <span class="kc-type">{{ ['sewa'=>'Sewa','jual'=>'Siap jual','custom'=>'Custom'][$p->jenis] ?? ucfirst($p->jenis) }}</span>
