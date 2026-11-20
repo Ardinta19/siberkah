@@ -16,7 +16,7 @@
     <div id="produk-katalog" class="kc-bar"><h2>Temukan pilihan Anda</h2></div>
     <div class="kc-directory">
     <aside class="kc-tools" aria-label="Penyaring katalog"><p class="kc-rail-title">Saring koleksi</p>
-    <form class="kc-search" action="{{ route('catalog.index') }}" role="search">
+    <form data-pending="Mencari…" class="kc-search" action="{{ route('catalog.index') }}" role="search">
       @if($filterKategori)<input type="hidden" name="kategori" value="{{ $filterKategori }}">@endif
       <label>Pencarian<input type="search" name="q" value="{{ request('q') }}" maxlength="150" placeholder="Nama produk atau kategori"></label>
       <button hidden type="button" class="kc-filter-toggle" aria-expanded="false" aria-controls="kc-extra">Filter &amp; urutan</button>

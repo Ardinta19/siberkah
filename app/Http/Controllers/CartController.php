@@ -23,16 +23,18 @@ final class CartController extends Controller
 
     public function save(Request $request, int $id)
     {
-        $this->available()->findOrFail($id);
+        $product = $this->available()->findOrFail($id);
         $qty = $request->validate(['jumlah' => 'required|integer|between:1,100'])['jumlah'];
-        abort_if(! $request->session()->has("cart.$id") && count($request->session()->get('cart', [])) >= 30, 422, 'Keranjang penuh.');
+        if (! $request->session()->has("cart.$id") && count($request->session()->get('cart', [])) >= 30) {
+            return back()->withErrors(['cart' => 'Keranjang penuh. Hapus satu produk sebelum menambahkan produk lain.']);
+        }
         $request->session()->put("cart.$id", (int) $qty);
-        return redirect()->route('cart.index');
+        return redirect()->route('cart.index')->with('cart_notice', $product->nama.' · '.$qty.' item tersimpan di keranjang.');
     }
 
     public function remove(Request $request, int $id)
     {
         $request->session()->forget("cart.$id");
-        return redirect()->route('cart.index');
+        return redirect()->route('cart.index')->with('cart_notice', 'Produk dihapus dari keranjang.');
     }
 }

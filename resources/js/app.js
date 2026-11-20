@@ -78,3 +78,41 @@ if (filters) {
   kind.addEventListener('change', syncDate);
   syncDate();
 }
+
+// Keep the native number field usable with JS disabled, keyboard, or touch.
+for (const stepper of document.querySelectorAll('[data-stepper]')) {
+  const field = stepper.querySelector('input');
+  const buttons = [...stepper.querySelectorAll('[data-step]')];
+  const sync = () => buttons.forEach(button => {
+    button.hidden = false;
+    button.disabled = Number(button.dataset.step) < 0 ? field.valueAsNumber <= +field.min : field.valueAsNumber >= +field.max;
+  });
+  for (const button of buttons) button.addEventListener('click', () => {
+    if (!Number.isFinite(field.valueAsNumber)) field.value = field.min;
+    else if (+button.dataset.step > 0) field.stepUp(); else field.stepDown();
+    field.dispatchEvent(new Event('input', { bubbles:true }));
+  });
+  field.addEventListener('input', sync);
+  sync();
+}
+
+// Submit is emitted only after native validation. Do not signal success on click.
+for (const form of document.querySelectorAll('form[data-pending]')) {
+  const submit = form.querySelector('button:not([type=button])');
+  if (!submit) continue;
+  const label = submit.textContent;
+  form.addEventListener('submit', event => {
+    if (form.getAttribute('aria-busy') === 'true') { event.preventDefault(); return; }
+    form.setAttribute('aria-busy','true');
+    submit.textContent = form.dataset.pending;
+  });
+  window.addEventListener('pageshow', () => { form.removeAttribute('aria-busy'); submit.textContent = label; });
+}
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  const menu = document.querySelector('#mobile-menu');
+  if (menu && !menu.hidden) { menuToggle.click(); menuToggle.focus(); }
+  else if (filters && !filters.hidden && matchMedia('(max-width:47.99rem)').matches && filters.parentElement.contains(document.activeElement)) {
+    const toggle = document.querySelector('.kc-filter-toggle'); toggle.click(); toggle.focus();
+  }
+});

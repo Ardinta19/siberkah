@@ -1,6 +1,6 @@
 // Native :active provides immediate pressure. Accent the completed action, not
 // pointerdown (which may turn into a scroll, drag, or cancelled touch).
-const controls = '#main-header :is(button,a), .koleksi :is(button,a,summary), [data-product-detail] :is(button,a), .kc-dock a';
+const controls = '[data-storefront] :is(a[href],button:not(:disabled),summary)';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let accent;
 

@@ -10,7 +10,7 @@
 
     @yield('styles')
 </head>
-<body class="min-h-screen flex flex-col bg-[#fffdf9] text-neutral-900">
+<body data-storefront class="min-h-screen flex flex-col bg-[#fffdf9] text-neutral-900">
     <!-- Skip link for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only">Lewati ke konten utama</a>
 
