@@ -15,3 +15,5 @@ Rujukan persyaratan: `docs/SRS.html`. Kontrak, pengujian dan pembatasan per pake
 | NFR-04/05/27/28 dan operasi | Benchmark HTTP sintetis, uji konkurensi, latihan restore DB + disk publik/privat | Hasil CI bukan SLA hosting; backup offsite terjadwal, pemulihan kunci, RPO/RTO nyata dan pengujian beban gabungan operator |
 
 Prioritas lanjutan: (1) uji operator kas fisik terhadap buku setoran staging, (2) validasi checkout ambil/antar bersama operator (panduan `uji-operator.md`), (3) audit operasi/pengaturan serta verifikasi hosting. Tidak ada dummy rekening, kredensial, bukti transfer atau akun produksi yang boleh di-seed untuk sekadar meluluskan audit.
+
+Tambahan implementasi: publikasi katalog terpisah dari penyimpanan draf, bukti transfer privat per tagihan, peninjauan retensi per pesanan, tarif kerusakan dengan salinan rincian penilaian, pencarian pesanan menurut nama/nomor, dan edit teks papan oleh pemilik pesanan sebelum produksi. Ini bukan berita acara penerimaan produksi.

@@ -82,7 +82,7 @@ class BouquetCheckoutTest extends TestCase
         $this->artisan('privasi:bukti',$args)->assertFailed();
         $order->update(['status'=>'dibatalkan','dibatalkan_pada'=>now()->subYears(4)]);
         $this->artisan('privasi:bukti',$args)->assertFailed(); // unresolved payment
-        DB::table('pembayaran')->where('id',$bill->id)->update(['status'=>'kedaluwarsa']);
+        DB::table('pembayaran')->where('id',$bill->id)->update(['status'=>'kedaluwarsa','nominal_tertunda'=>null]);
         $this->artisan('privasi:bukti',['nomor'=>$order->nomor])->assertSuccessful();
         $this->assertDatabaseCount('bukti_transfer',1);
         $this->artisan('privasi:bukti',$args)->assertSuccessful();
