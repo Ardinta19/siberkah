@@ -14,4 +14,4 @@ Rujukan persyaratan: `docs/SRS.html`. Kontrak, pengujian dan pembatasan per pake
 | AUD-01, SET-01, LAP-01/03 | Log baca Owner, pengaturan efektif terbatas, penerimaan terverifikasi dan CSV anonim, arus bank terpisah | Audit sebelum/sesudah untuk semua perubahan penting dan konfigurasi bisnis/tarif yang belum tersedia |
 | NFR-04/05/27/28 dan operasi | Benchmark HTTP sintetis, uji konkurensi, latihan restore DB + disk publik/privat | Hasil CI bukan SLA hosting; backup offsite terjadwal, pemulihan kunci, RPO/RTO nyata dan pengujian beban gabungan operator |
 
-Prioritas lanjutan: (1) rekonsiliasi setoran tunai petugas, (2) sambungkan checkout di browser dan uji ambil/antar, (3) audit operasi/pengaturan serta verifikasi hosting. Tidak ada dummy rekening, kredensial, bukti transfer atau akun produksi yang boleh di-seed untuk sekadar meluluskan audit.
+Prioritas lanjutan: (1) uji operator kas fisik terhadap buku setoran staging, (2) sambungkan checkout di browser dan uji ambil/antar, (3) audit operasi/pengaturan serta verifikasi hosting. Tidak ada dummy rekening, kredensial, bukti transfer atau akun produksi yang boleh di-seed untuk sekadar meluluskan audit.

@@ -110,6 +110,30 @@ class BouquetCheckoutTest extends TestCase
         $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_kurir']), 'staff')->postJson(route('toko.serah', $order->id),
             ['barang_diperiksa' => true, 'diterima_pembeli' => true, 'tunai_diterima' => true, 'nominal_tunai' => 140000])->assertOk();
         $this->assertDatabaseHas('pembayaran', ['jenis' => 'pelunasan', 'tunai_saat_serah' => true, 'nominal_diterima' => 140000]);
+        $cashId = DB::table('pembayaran')->where('tunai_saat_serah', true)->value('id');
+        $url = route('kas-antar.record', $cashId);
+        $list = route('kas-antar.index', ['tanggal' => today()->toDateString()]);
+        $data = ['kunci' => (string) Str::uuid(), 'sebelum' => 0, 'sesudah' => 135000, 'diperiksa_fisik' => true];
+        $this->postJson($url, $data)->assertForbidden();
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'owner']), 'staff');
+        $this->getJson($list)->assertOk()->assertJsonPath('rincian.data.0.status_setoran', 'belum_disetor');
+        $this->postJson(route('kas-antar.record', $bill->id), $data)->assertNotFound();
+        $this->postJson($url, $data)->assertUnprocessable();
+        $data['catatan'] = 'Kurang saat hitung pertama';
+        $entry = $this->postJson($url, $data)->assertCreated()->json('id');
+        $this->postJson($url, $data)->assertOk()->assertJsonPath('id', $entry);
+        $this->postJson($url, array_replace($data, ['sesudah' => 140000]))->assertConflict();
+        $this->getJson($list)->assertOk()->assertJsonPath('rincian.data.0.status_setoran', 'kurang');
+        $data['kunci'] = (string) Str::uuid();
+        $this->postJson($url, $data)->assertConflict();
+        $data = array_replace($data, ['sebelum' => 135000, 'sesudah' => 141000, 'catatan' => 'Setoran tambahan']);
+        $this->postJson($url, $data)->assertCreated();
+        $this->getJson($list)->assertOk()->assertJsonPath('rincian.data.0.status_setoran', 'lebih');
+        $this->postJson($url, array_replace($data, ['kunci' => (string) Str::uuid(), 'sebelum' => 141000, 'sesudah' => 140000, 'catatan' => 'Kelebihan dikembalikan']))->assertCreated();
+        $this->getJson($list)->assertJsonPath('rincian.data.0.status_setoran', 'cocok');
+        $this->getJson(route('kas-antar.history', $cashId))->assertJsonPath('total', 3);
+        $this->assertDatabaseCount('pembayaran', 2);
+        $this->assertSame(0, $order->fresh()->saldo);
         $this->assertDatabaseCount('mutasi_masuk', 1);
     }
 
