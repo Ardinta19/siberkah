@@ -31,6 +31,7 @@
         @endif
         @if($errors->any())<p role="alert" class="bk-notice">{{ $errors->first() }}</p>@endif
         <form class="bk-form-row" data-pending="Menyimpan…" method="post" action="{{ route('cart.save',$produk->id) }}">@csrf @method('put')
+            <p class="w-full kc-kicker">Simpan untuk nanti</p>
             @include('partials.quantity',['quantity'=>session('cart.'.$produk->id,1),'itemId'=>$produk->id])
             <button class="kc-action">Simpan ke keranjang</button>
         </form>
