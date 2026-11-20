@@ -25,3 +25,5 @@ Nama view memakai titik untuk **folder**: `pelanggan.pesanan.show` menunjuk ke `
 - [Spesifikasi](docs/SRS.html) · [Kesiapan backend](docs/backend/kesiapan.md) · [Panduan uji operator](docs/backend/uji-operator.md).
 
 Riwayat sebelum penataan views: commit `f0d829d`. Prototipe Blade lama yang tidak terhubung ke aplikasi dapat ditinjau di commit tersebut.
+
+Standar visual dan navigasi: [Pola interaksi SIBERKAH](docs/desain/pola-interaksi.md).

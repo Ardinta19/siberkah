@@ -22,8 +22,15 @@ if (pill && header) {
     launcher.hidden=false;
     launcher.querySelector('kbd').textContent=/Mac|iPhone|iPad/.test(navigator.platform)?'⌘ K':'Ctrl K';
     const input=palette.querySelector('#palette-query');
+    const form = input.form, kind = form.elements.jenis, date = form.elements.tanggal;
+    const syncDate = () => { date.disabled = ['jual','custom'].includes(kind.value); };
+    kind.addEventListener('change',syncDate);syncDate();
+    palette.querySelector('[data-clear-search]').onclick=()=>{
+      for(const el of [input,form.elements.kategori,kind,date,form.elements.urut]) el.value='';
+      syncDate(); date.dispatchEvent(new Event('change',{bubbles:true}));input.focus();
+    };
     let invoker, exit;
-    const open=()=>{if(palette.open || document.querySelector('dialog[open]'))return;invoker=document.activeElement;input.value=input.defaultValue;palette.showModal();input.focus();};
+    const open=()=>{if(palette.open || document.querySelector('dialog[open]'))return;invoker=document.activeElement;form.reset();syncDate();date.dispatchEvent(new Event('change',{bubbles:true}));palette.showModal();input.focus();};
     const close=()=>{
       if(exit)return;
       if(!palette.animate || matchMedia('(prefers-reduced-motion:reduce)').matches){palette.close();return;}
@@ -31,7 +38,7 @@ if (pill && header) {
       exit.onfinish=()=>palette.close();
     };
     launcher.onclick=open;palette.querySelector('[data-dismiss]').onclick=close;
-    palette.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } });
+    palette.addEventListener('keydown', e => { if (e.key === 'Escape' && !e.target.closest('select')) { e.preventDefault(); e.stopPropagation(); close(); } });
     palette.addEventListener('cancel',e=>{e.preventDefault();close();});
     palette.addEventListener('close',()=>{exit?.cancel();exit=null;if(invoker?.isConnected)invoker.focus({preventScroll:true});});
     palette.addEventListener('click',e=>{if(e.target!==palette)return;const r=palette.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();});

@@ -41,3 +41,20 @@
  .kc-search-note,.kc-results .kc-meta{animation:bk-page-arrive .3s ease-out both}
  .bk-palette[open] form{animation:bk-page-arrive .36s ease-out both}
 }
+:root{--bk-logo-ink:#8a052b}.bk-wordmark{color:var(--bk-logo-ink);letter-spacing:.025em}
+@media(prefers-color-scheme:dark){[data-workspace] .bk-wordmark{background:#fffdf9;border-radius:.4rem;padding-inline:.35rem}}
+.kc-directory:has(>.kc-results:only-child){display:block}
+.bk-palette form .bk-search-facets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:.85rem;margin:1rem 0}
+.bk-palette form .bk-date-field{display:block}.bk-palette form :is(label,select,input:not([hidden])){width:100%}.bk-palette form .bk-search-facets select{display:block;margin-top:.35rem}.bk-palette form .bk-search-actions{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid #e4d5d6;padding-top:.85rem}.bk-search-actions [data-clear-search]{min-height:44px;color:var(--bk-logo-ink);text-decoration:underline}.bk-palette[open]::backdrop{animation:bk-backdrop-in .36s ease-out}
+@media(max-width:24rem){.bk-palette form .bk-search-facets{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:no-preference){
+ .bk-palette[open] .bk-search-facets>*{animation:bk-facet-arrive .45s cubic-bezier(.2,.75,.2,1) backwards}
+ .bk-palette[open] .bk-search-facets>:nth-child(2){animation-delay:45ms}.bk-palette[open] .bk-search-facets>:nth-child(3){animation-delay:80ms}.bk-palette[open] .bk-search-facets>:nth-child(4){animation-delay:110ms}
+ @keyframes bk-facet-arrive{from{opacity:.4;transform:translateY(12px)}to{opacity:1;transform:none}}
+}
+@media(prefers-reduced-motion:reduce){.bk-palette[open] .bk-search-facets{animation:bk-palette-fade .42s ease-out}.bk-compact #bk-expand-pill img{animation:bk-palette-fade .35s ease-out}}
+/* A bounded light sweep remains perceptible even without spatial motion. */
+.bk-palette[open] header::after{content:'';position:absolute;inset:auto 0 0;height:2px;border-radius:2px;background:linear-gradient(90deg,#8a052b,#d09ea5,#f3dfcb);transform-origin:left;pointer-events:none}
+.bk-palette header{position:relative;padding-bottom:.65rem}
+@media(prefers-reduced-motion:no-preference){.bk-palette[open] header::after{animation:bk-ink-line .65s ease-out both}@keyframes bk-ink-line{from{transform:scaleX(.08)}to{transform:scaleX(1)}}}
+@media(prefers-reduced-motion:reduce){.bk-palette[open] header::after{animation:bk-palette-fade .55s ease-out both}}

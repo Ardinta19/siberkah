@@ -27,7 +27,7 @@
                         <rect width="48" height="48" rx="12" fill="currentColor"/>
                         <path d="M12 24L20 32L36 16" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span class="font-bold text-xl">SIBERKAH</span>
+                    <span class="bk-wordmark font-bold text-xl">SIBERKAH</span>
                 </div>
 
                 <!-- User info -->

@@ -14,27 +14,11 @@
       <div class="kc-still" aria-hidden="true"><img src="{{ asset('images/katalog-editorial.webp') }}" alt="" fetchpriority="high"></div>
     </header>
     <div id="produk-katalog" class="kc-bar"><h2>Temukan pilihan Anda</h2></div>
-    <noscript><form action="{{ route('catalog.index') }}" role="search"><label>Nama produk <input type="search" maxlength="150" name="q"></label><button>Cari produk</button></form></noscript>
+    <noscript><form action="{{ route('catalog.index') }}" role="search">@include('partials.product-search-fields',['prefix'=>'fallback'])<button>Cari produk</button></form></noscript>
     @if(request()->filled('q'))<p class="kc-search-note">Hasil pencarian untuk <strong>“{{ request('q') }}”</strong> · <a href="{{ route('catalog.index',request()->only(['kategori','jenis','tanggal','urut'])) }}">Hapus pencarian</a></p>@endif
     <div class="kc-directory">
-    <aside class="kc-tools" aria-label="Penyaring katalog"><p class="kc-rail-title">Saring koleksi</p>
-    <form data-pending="Menerapkan…" class="kc-search" action="{{ route('catalog.index') }}" aria-label="Filter produk">
-      @if($filterKategori)<input type="hidden" name="kategori" value="{{ $filterKategori }}">@endif
-      @if(request()->filled('q'))<input type="hidden" name="q" value="{{ request('q') }}">@endif
-      <button hidden type="button" class="kc-filter-toggle" aria-expanded="false" aria-controls="kc-extra"><span>Filter &amp; urutan</span><span aria-hidden="true" class="kc-fold-icon">⌄</span></button>
-      <div id="kc-extra"><label>Jenis produk<select name="jenis"><option value="">Semua jenis</option>@foreach(['sewa'=>'Sewa','jual'=>'Siap jual','custom'=>'Custom'] as $jenis=>$nama)<option value="{{ $jenis }}" @selected($filterJenis === $jenis)>{{ $nama }}</option>@endforeach</select></label>
-      @include('partials.rental-date',['day'=>$filterTanggal,'required'=>false])
-      <label>Urutan<select name="urut"><option value="">Urutan katalog</option><option value="harga_naik" @selected(request('urut') === 'harga_naik')>Harga terendah</option><option value="harga_turun" @selected(request('urut') === 'harga_turun')>Harga tertinggi</option></select></label>
-      </div><button class="kc-action">Terapkan filter</button>
-    </form>
-    <nav class="kc-tags" aria-label="Kategori produk">
-      @foreach(collect([null => 'Semua'])->union($kategoris->pluck('nama','id')) as $id => $nama)
-        <a href="{{ route('catalog.index',array_filter(array_merge(request()->only(['q','jenis','tanggal','urut']),['kategori'=>$id]),fn ($v)=>$v !== '')) }}" @if((string)$filterKategori === (string)$id) aria-current="page" @endif>{{ $nama }}</a>
-      @endforeach
-    </nav>
-    </aside>
     <div class="kc-results">
-    <div class="kc-meta"><p role="status"><strong>{{ $produk->total() }}</strong> produk ditemukan @if($filterTanggal) · Tersedia untuk sewa pada {{ $filterTanggal }} @endif</p>@if(request()->anyFilled(['kategori','jenis','q','tanggal','urut']))<a href="{{ route('catalog.index') }}">Reset filter ↺</a>@endif</div>
+    <div class="kc-meta"><p role="status">@if($filterKategori){{ $kategoris->firstWhere('id',$filterKategori)?->nama }} · @endif<strong>{{ $produk->total() }}</strong> produk ditemukan @if($filterTanggal) · Tersedia untuk sewa pada {{ $filterTanggal }} @endif</p>@if(request()->anyFilled(['kategori','jenis','q','tanggal','urut']))<a href="{{ route('catalog.index') }}">Reset filter ↺</a>@endif</div>
     @if($filterJenis || request('urut'))<p class="kc-applied">Filter aktif: {{ ['jual'=>'Siap jual','sewa'=>'Sewa','custom'=>'Custom'][$filterJenis] ?? 'Semua jenis' }} @if(request('urut')) · {{ request('urut') === 'harga_naik' ? 'Harga terendah' : 'Harga tertinggi' }} @endif</p>@endif
     <div class="kc-grid">
       @forelse($produk as $p)

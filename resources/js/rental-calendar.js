@@ -39,7 +39,7 @@ for (const field of document.querySelectorAll('[data-rental-date]')) {
     if (trigger.animate) trigger.animate([{boxShadow:'0 0 0 2px #b6718a'},{boxShadow:'0 0 0 2px transparent'}],{duration:320});
   }
   function open(){if(input.disabled || dialog.open)return;cursor=parse(input.value || iso(new Date()));render();dialog.showModal();days.querySelector('[tabindex="0"]').focus();}
-  trigger.id='rental-date-trigger'; field.querySelector('label').htmlFor=trigger.id;
+  trigger.id=input.id+'-trigger'; field.querySelector('label').htmlFor=trigger.id;
   input.hidden=true;trigger.hidden=false;sync();
   new MutationObserver(sync).observe(input,{attributes:true,attributeFilter:['disabled']});
   input.addEventListener('change',sync); input.addEventListener('invalid',e=>{e.preventDefault();open();});

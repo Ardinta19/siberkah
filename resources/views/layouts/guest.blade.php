@@ -23,7 +23,7 @@
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
                     <img src="{{ asset('images/berkah-kreatif.webp') }}" width="44" height="44" alt="" class="size-11 object-contain">
-                    <span class="font-bold text-xl block">SIBERKAH</span>
+                    <span class="bk-wordmark font-bold text-xl block">SIBERKAH</span>
                 </a>
 
                 <!-- Navigation -->
@@ -127,7 +127,7 @@
                 <div class="space-y-3">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 text-primary-600" aria-label="SIBERKAH - Beranda">
                         <img src="{{ asset('images/berkah-kreatif.webp') }}" width="44" height="44" alt="">
-                        <span class="font-bold text-xl">SIBERKAH</span>
+                        <span class="bk-wordmark font-bold text-xl">SIBERKAH</span>
                     </a>
                     <p class="text-sm text-neutral-600 leading-relaxed">
                         Penyewaan papan pengucapan, akrilik, dan dekorasi acara dengan kualitas terbaik dan harga terjangkau.

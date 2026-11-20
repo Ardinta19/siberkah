@@ -1,5 +1,4 @@
 import "./storefront-navigation.js";
-import { disclosure } from './disclosure-motion.js';
 import "./role-navigation.js";
 import "./rental-calendar.js";
 import "./floral-feedback.js";
@@ -79,29 +78,6 @@ for (const button of document.querySelectorAll('[data-favorite]')) {
   });
 }
 
-// Progressive disclosure: without JS the catalog keeps all filters visible.
-const filters = document.querySelector('#kc-extra');
-if (filters) {
-  const toggle = document.querySelector('.kc-filter-toggle');
-  const mobile = matchMedia('(max-width:47.99rem)');
-  let open = false;
-  const reveal = disclosure(filters,true);
-  const sync = (animate = false) => {
-    toggle.hidden = !mobile.matches;
-    const visible = !mobile.matches || open;
-    reveal(visible,animate && mobile.matches);
-    toggle.setAttribute('aria-expanded', String(visible));
-  };
-  toggle.addEventListener('click', () => { open = !open; sync(true); });
-  mobile.addEventListener('change', () => sync());
-  sync();
-  const kind = filters.querySelector('[name=jenis]');
-  const day = filters.querySelector('[name=tanggal]');
-  const syncDate = () => { day.disabled = ['jual','custom'].includes(kind.value); };
-  kind.addEventListener('change', syncDate);
-  syncDate();
-}
-
 // Keep the native number field usable with JS disabled, keyboard, or touch.
 for (const stepper of document.querySelectorAll('[data-stepper]')) {
   const field = stepper.querySelector('input');
@@ -132,9 +108,3 @@ for (const form of document.querySelectorAll('form[data-pending]')) {
   });
   window.addEventListener('pageshow', () => { form.removeAttribute('aria-busy'); if(submit) submit.textContent = label; });
 }
-document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  if (filters && !filters.inert && matchMedia('(max-width:47.99rem)').matches && filters.parentElement.contains(document.activeElement)) {
-    const toggle = document.querySelector('.kc-filter-toggle'); toggle.click(); toggle.focus();
-  }
-});

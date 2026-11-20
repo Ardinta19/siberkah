@@ -56,39 +56,45 @@ with sync_playwright() as playwright:
         panel = page.locator('.koleksi')
         assert panel.evaluate('(el) => el.scrollWidth <= innerWidth'), f'Catalog overflow at {width}px'
         assert page.locator('.kc-dock').is_visible() == (width < 768)
-        assert panel.locator('.kc-rail-title').is_visible() == (768 <= width < 1200)
         columns = panel.locator('.kc-grid').evaluate("el => getComputedStyle(el).gridTemplateColumns.split(' ').length")
         assert columns == (1 if width < 768 else 2 if width < 1200 else 3)
-        if width < 768:
-            page.get_by_role('button',name='Filter & urutan').click()
-        for field in ('jenis','tanggal','urut'):
-            box = panel.locator('.bk-date-trigger' if field == 'tanggal' else f'[name={field}]').bounding_box()
+        page.keyboard.press('Control+k')
+        for field in ('kategori','jenis','tanggal','urut'):
+            box = palette.locator('.bk-date-trigger' if field == 'tanggal' else f'[name={field}]').bounding_box()
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
-        if width < 768:
-            page.get_by_role('button',name='Filter & urutan').click()
-    kind = page.get_by_label('Jenis produk')
+        page.keyboard.press('Escape')
+        expect(palette).to_be_hidden()
+    page.keyboard.press('Control+k')
+    kind = palette.get_by_label('Jenis produk')
     kind.focus()
-    kind.press('ArrowDown')
-    kind.press('Enter')
-    kind.press('Escape')
     kind.select_option('jual')
-    expect(panel.locator('input[name=tanggal]')).to_be_disabled()
+    expect(palette.locator('input[name=tanggal]')).to_be_disabled()
     if page.evaluate("CSS.supports('appearance:base-select') && CSS.supports('selector(::picker(select))')"):
         assert kind.evaluate("el => getComputedStyle(el,'::picker(select)').appearance") == 'base-select'
         assert kind.locator('option:checked').evaluate("el => getComputedStyle(el).backgroundColor") == 'rgb(245, 228, 234)'
     kind.select_option('sewa')
-    expect(panel.locator('input[name=tanggal]')).to_be_enabled()
-    panel.locator('.bk-date-trigger').click()
+    expect(palette.locator('input[name=tanggal]')).to_be_enabled()
+    palette.locator('.bk-date-trigger').click()
     calendar = page.get_by_role('dialog',name='Pilih tanggal sewa')
     calendar.get_by_role('button',name='Bulan berikutnya').click()
     date_button = calendar.locator('[data-date]').first
     picked = date_button.get_attribute('data-date')
     date_button.click()
-    expect(panel.locator('[name=tanggal]')).to_have_value(picked)
-    panel.locator('.bk-date-trigger').click()
+    expect(palette.locator('[name=tanggal]')).to_have_value(picked)
+    palette.locator('.bk-date-trigger').click()
     calendar.get_by_role('button',name='Kosongkan').click()
-    expect(panel.locator('[name=tanggal]')).to_have_value('')
-    kind.select_option('')
+    expect(palette.locator('[name=tanggal]')).to_have_value('')
+    kind.select_option('jual')
+    palette.locator('[name=q]').fill('Browser')
+    palette.get_by_role('button',name='Cari produk').click()
+    expect(page.locator('.kc-grid')).to_contain_text('Buket Browser')
+    page.keyboard.press('Control+k')
+    expect(kind).to_have_value('jual')
+    palette.get_by_role('button',name='Kosongkan').click()
+    expect(kind).to_have_value('')
+    expect(palette.locator('[name=q]')).to_have_value('')
+    page.keyboard.press('Escape')
+    expect(palette).to_be_hidden()
     page.set_viewport_size({'width':375,'height':800})
     menu = page.locator('#mobile-menu')
     burger = page.locator('#guest-menu-toggle')
@@ -129,7 +135,7 @@ with sync_playwright() as playwright:
     assert page.locator('.kc-dock a').all_text_contents() == ['Beranda','Katalog','Lacak','Akun']
     page.evaluate('window.scrollTo(0,0)')
     expect(page.locator('#bk-expand-pill')).to_be_hidden()
-    for selector in ('#main-header','footer'):
+    for selector in ('#main-header','footer[role=contentinfo]'):
         rgb = page.locator(selector).evaluate("el => getComputedStyle(el).backgroundColor")
         assert rgb in ('rgb(255, 253, 249)','rgb(250, 245, 240)'), rgb
     page.goto(base+'/katalog/buket-browser')
