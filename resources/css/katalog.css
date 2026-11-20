@@ -86,13 +86,18 @@
 @media (hover:none) and (prefers-reduced-motion:no-preference) {
   .kc-grid .kc-card:active { transform:translateY(-2px);box-shadow:0 5px 14px #59263917 }
 }
-/* Rose + champagne bloom; anchored at the fingertip, never a blocking layer. */
-.bk-flower-glow { position:fixed; width:0; height:0; z-index:80; pointer-events:none }
-.bk-flower-glow::before,.bk-flower-glow i { content:''; position:absolute; pointer-events:none }
-.bk-flower-glow::before { width:60px; height:60px; margin:-30px; border-radius:50%; background:radial-gradient(circle,#fff3cbe6 0%,#ffa7c699 32%,transparent 69%); animation:bk-halo .62s ease-out both }
-.bk-flower-glow i { top:-15px; left:-4px; width:8px; height:15px; border-radius:80% 30% 70% 40%; background:linear-gradient(#fff1c2,#f898b5 55%,#af335f); box-shadow:0 0 5px #fcb6c7; transform-origin:50% 100%; animation:bk-petal .64s cubic-bezier(.16,.7,.32,1) both }
-@keyframes bk-petal { from {transform:rotate(var(--angle)) translateY(-2px) scale(.5)} 45%{opacity:1} to {transform:rotate(var(--angle)) translateY(-25px) scale(.82);opacity:0} }
-@keyframes bk-halo { from {transform:scale(.55);opacity:1} to {transform:scale(1.6);opacity:0} }
+/* A small floral seal marks a saved favorite; navigation gets only a soft rim. */
+.kc-media [data-favorite][aria-pressed=true]::after {
+  content:'✿'; position:absolute; right:-2px; bottom:-2px; display:grid; place-items:center;
+  width:17px; height:17px; border-radius:50%; background:#fce9ce; color:#821b43;
+  border:1px solid #fffaf3; font:13px/1 Georgia,serif; pointer-events:none;
+}
+@media(prefers-reduced-motion:no-preference){
+  .kc-media [data-favorite][aria-pressed=true]::after {animation:bk-seal .36s cubic-bezier(.2,.75,.3,1) both}
+  @keyframes bk-seal {from{opacity:0;transform:rotate(-18deg) scale(.6)} to{opacity:1;transform:none}}
+  .kc-action span {display:inline-block;transition:transform .18s ease}
+  .kc-action:active span {transform:translate(2px,-2px)}
+}
 [data-product-detail] h1 { border-inline-start:3px solid #c87790; padding-inline-start:.65rem }
 @media(prefers-reduced-motion:reduce){.koleksi :is(button,a,summary):active,[data-product-detail] :is(button,a):active,.bk-cart:active {outline:2px solid #b24e73;outline-offset:2px}}
 .kc-hero-reveal { position:relative }
@@ -103,12 +108,9 @@
   .kc-grid .kc-card:hover,.kc-grid .kc-card:focus-within {transform:translateY(-7px);border-color:#c78ba1;box-shadow:0 14px 32px #80163724}
   .kc-grid .kc-card:hover .kc-monogram {transform:scale(1.08)}
   .kc-monogram {transition:transform .3s ease}
-  .bk-flower-glow i {width:11px;height:19px;top:-19px;left:-5.5px}
 }
 /* Low-motion mode: an automatic wash of light without zoom, travel or flashing. */
 @media(prefers-reduced-motion:reduce){
   .kc-hero-reveal::after {content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 75% 45%,#ffc4d680,transparent 65%);animation:bk-soft-light 1.6s ease-out both}
-  .bk-flower-glow::before {animation:bk-soft-light .65s ease-out both}
-  .bk-flower-glow i {animation:none;transform:rotate(var(--angle)) translateY(-4px)}
   @keyframes bk-soft-light {from{opacity:.8}to{opacity:0}}
 }

@@ -61,10 +61,11 @@ with sync_playwright() as playwright:
     box = fav.bounding_box()
     page.mouse.move(box['x'] + box['width']/2, box['y'] + box['height']/2)
     page.mouse.down()
-    assert page.locator('.bk-flower-glow i').count() == 6
-    assert page.locator('.bk-flower-glow i').first.evaluate("el => el.getAnimations().some(a => a.playState === 'running')")
+    expect(fav).to_have_attribute('aria-pressed','false')
     page.mouse.up()
     expect(fav).to_have_attribute('aria-pressed','true')
+    assert fav.evaluate("el => getComputedStyle(el,'::after').content.includes('✿')")
+    assert fav.evaluate("el => el.getAnimations().some(a => a.effect.getKeyframes().some(k => k.boxShadow))")
     page.reload()
     expect(fav).to_have_attribute('aria-pressed','true')
     page.set_viewport_size({'width':375,'height':800})

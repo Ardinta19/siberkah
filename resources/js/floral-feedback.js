@@ -1,36 +1,21 @@
-// Decorative overlay outside overflow-clipped cards. Never intercept navigation.
-const controls = '#main-header :is(button,a), .koleksi :is(button,a,summary), [data-product-detail] :is(button,a,select), .bk-cart, .kc-dock a';
+// Native :active provides immediate pressure. Accent the completed action, not
+// pointerdown (which may turn into a scroll, drag, or cancelled touch).
+const controls = '#main-header :is(button,a), .koleksi :is(button,a,summary), [data-product-detail] :is(button,a), .kc-dock a';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-let flower, timer;
-function bloom(target, x, y) {
-  const box = target.getBoundingClientRect();
-  if (!box.width || !box.height) return;
-  flower?.remove();
-  clearTimeout(timer);
-  flower = document.createElement('span');
-  flower.className = 'bk-flower-glow';
-  flower.setAttribute('aria-hidden', 'true');
-  flower.style.left = `${x ?? box.left + box.width / 2}px`;
-  flower.style.top = `${y ?? box.top + box.height / 2}px`;
-  for (let i = 0; i < 6; i++) {
-    const petal = document.createElement('i');
-    petal.style.setProperty('--angle', `${i * 60}deg`);
-    flower.append(petal);
-  }
-  document.body.append(flower);
-  timer = setTimeout(() => flower?.remove(), 700);
-}
+let accent;
 
-document.addEventListener('pointerdown', e => {
-  const control = e.target.closest?.(controls);
-  if (control && e.isPrimary && e.button === 0) bloom(control, e.clientX, e.clientY);
-}, {passive:true});
-document.addEventListener('click', e => {
-  const control = e.target.closest?.(controls);
-  if (control && e.detail === 0) bloom(control); // keyboard or assistive activation
-});
-const title = document.querySelector('[data-product-detail] h1');
-if (title && !reduced.matches) requestAnimationFrame(() => {
-  const box = title.getBoundingClientRect();
-  if (box.top >= 0 && box.top < innerHeight) bloom(title, box.left + 12, box.top + 5);
+document.addEventListener('click', event => {
+  const control = event.target.closest?.(controls);
+  if (!control || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  accent?.cancel();
+  // Favorite state is updated by the button's own handler before this bubbles.
+  const saved = control.matches('[data-favorite][aria-pressed="true"]');
+  const ink = saved ? '171,56,95' : '147,102,71';
+  const ring = (width, alpha) => `0 0 0 ${width}px rgba(${ink},${alpha})`;
+  if (typeof control.animate === 'function') {
+    accent = control.animate(reduced.matches
+      ? [{boxShadow:ring(2,.5)}, {boxShadow:ring(2,0)}]
+      : [{boxShadow:ring(0,.45)}, {boxShadow:ring(saved ? 7 : 4,.18),offset:.45}, {boxShadow:ring(saved ? 10 : 6,0)}],
+    {duration:reduced.matches ? 220 : saved ? 490 : 300, easing:'cubic-bezier(.2,.7,.3,1)'});
+  }
 });
