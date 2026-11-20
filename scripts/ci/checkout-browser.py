@@ -143,9 +143,10 @@ with sync_playwright() as playwright:
     assert page.locator('.kc-dock a').all_text_contents() == ['Beranda','Katalog','Lacak','Akun']
     page.evaluate('window.scrollTo(0,0)')
     expect(page.locator('#bk-expand-pill')).to_be_hidden()
-    for selector in ('#main-header','footer[role=contentinfo]'):
-        rgb = page.locator(selector).evaluate("el => getComputedStyle(el).backgroundColor")
-        assert rgb in ('rgb(255, 253, 249)','rgb(250, 245, 240)'), rgb
+    glass = page.locator('#main-header').evaluate("el => getComputedStyle(el,'::before').backgroundImage")
+    assert 'linear-gradient' in glass and '255, 253, 249' in glass, glass
+    footer = page.locator('footer[role=contentinfo]').evaluate("el => getComputedStyle(el).backgroundColor")
+    assert footer in ('rgb(255, 253, 249)','rgb(250, 245, 240)'), footer
     page.goto(base+'/katalog/buket-browser')
     page.emulate_media(reduced_motion='reduce')
     page.reload()
