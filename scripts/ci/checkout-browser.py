@@ -2,10 +2,21 @@
 import json
 import subprocess
 import os
+import sys
+import traceback
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright, expect
+
+def annotate(kind, error, trace):
+    lines = traceback.extract_tb(trace)
+    frame = next((f for f in reversed(lines) if f.filename.endswith('checkout-browser.py')), lines[-1])
+    # Synthetic CI only; avoid printing credential input or cookies.
+    message = str(error).split('Call log:')[0].splitlines()
+    print(f'::error::Chrome: line {frame.lineno}: {kind.__name__}: {" ".join(message[:3])[:300]}', flush=True)
+    sys.__excepthook__(kind, error, trace)
+sys.excepthook = annotate
 
 base = 'http://127.0.0.1:8127'
 fixture = json.loads(subprocess.check_output(['php', 'scripts/ci/checkout-session.php']))
@@ -14,8 +25,8 @@ with sync_playwright() as playwright:
     context = browser.new_context(locale='id-ID')
     context.add_cookies([{**fixture['cookie'], 'url': base}])
     page = context.new_page()
-    delivery_day = datetime.now(ZoneInfo('Asia/Jakarta')).date()
-    booking_day = delivery_day - timedelta(days=7)
+    booking_day = datetime.now(ZoneInfo('Asia/Jakarta')).date()
+    delivery_day = booking_day + timedelta(days=7)
     clock = Path(os.environ['CHECKOUT_CI_CLOCK'])
     clock.write_text(f'{booking_day} 10:00:00')
     def checkout():

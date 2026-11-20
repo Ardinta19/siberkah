@@ -3,7 +3,7 @@ set -euo pipefail
 [[ ${GITHUB_ACTIONS:-} == true && ${APP_ENV:-} == testing && ${DB_DATABASE:-} == siberkah_test ]]
 sql() { docker exec -i -e MYSQL_PWD="$DB_PASSWORD" "$CI_DB_CONTAINER" mariadb -uroot "$@"; }
 sql -e 'CREATE DATABASE siberkah_checkout_ci'
-export DB_DATABASE=siberkah_checkout_ci RENTAL_CHECKOUT_STAGING=true CHECKOUT_PRIVACY_VERSION=browser-ci SESSION_DRIVER=file APP_URL=http://127.0.0.1:8127
+export DB_DATABASE=siberkah_checkout_ci RENTAL_CHECKOUT_STAGING=true CHECKOUT_PRIVACY_VERSION=browser-ci SESSION_DRIVER=file SESSION_LIFETIME=43200 APP_URL=http://127.0.0.1:8127
 export CHECKOUT_CI_CLOCK="$RUNNER_TEMP/checkout-clock.txt"
 pid=''
 cleanup() { rm -f "$CHECKOUT_CI_CLOCK"; if [[ -n $pid ]]; then kill "$pid" || true; fi; sql -e 'DROP DATABASE siberkah_checkout_ci'; }
