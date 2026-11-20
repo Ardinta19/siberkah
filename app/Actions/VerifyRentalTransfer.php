@@ -108,7 +108,7 @@ final class VerifyRentalTransfer
             $order->status === 'kedaluwarsa' => 'lewat_batas',
             ! $permittedStatus, $invoice->status !== 'menunggu' => 'status_berubah',
             ! $closingBill && ! $deadline => 'batas_tidak_ada',
-            $balanceInvoice && ! $closingBill && $deadline->lt($now) => 'pelunasan_terlambat',
+            $balanceInvoice && ! $closingBill && $deadline->lte($now) => 'pelunasan_terlambat',
             $order->jumlah_dibayar + $order->saldo !== $order->total,
             ! $balanceInvoice && $order->jumlah_dibayar !== 0,
             $balanceInvoice && $order->jumlah_dibayar <= 0,

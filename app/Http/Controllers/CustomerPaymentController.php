@@ -19,6 +19,10 @@ final class CustomerPaymentController extends Controller
         if ($bill->status !== 'menunggu' || $bill->tunai_saat_serah || $bill->dikonfirmasi_pelanggan_pada) {
             return [false, null];
         }
+        if (DB::table('mutasi_masuk')->where(['pembayaran_id' => $bill->id, 'hasil' => 'perlu_rekonsiliasi'])->exists()
+            || DB::table('permohonan_batal')->where(['pesanan_id' => $order->id, 'status' => 'menunggu'])->exists()) {
+            return [false, null];
+        }
         if ($bill->jenis === 'pelunasan' && $order->status === 'sudah_dikembalikan') {
             return [DB::table('penutupan_sewa')->where(['pesanan_id' => $order->id, 'tagihan_id' => $bill->id])->exists(), null];
         }
