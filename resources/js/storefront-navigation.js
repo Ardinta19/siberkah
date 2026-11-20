@@ -32,6 +32,7 @@ if (pill && header) {
       exit.onfinish=()=>palette.close();
     };
     launcher.onclick=open;input.oninput=filter;palette.querySelector('[data-dismiss]').onclick=close;
+    palette.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } });
     palette.addEventListener('cancel',e=>{e.preventDefault();close();});
     palette.addEventListener('close',()=>{exit?.cancel();exit=null;if(invoker?.isConnected)invoker.focus({preventScroll:true});});
     palette.addEventListener('click',e=>{if(e.target!==palette)return;const r=palette.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();});
