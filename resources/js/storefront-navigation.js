@@ -29,8 +29,12 @@ if (pill && header) {
       for(const el of [input,form.elements.kategori,kind,date,form.elements.urut]) el.value='';
       syncDate(); date.dispatchEvent(new Event('change',{bubbles:true}));input.focus();
     };
-    let invoker, exit;
-    const open=()=>{if(palette.open || document.querySelector('dialog[open]'))return;invoker=document.activeElement;form.reset();syncDate();date.dispatchEvent(new Event('change',{bubbles:true}));palette.showModal();input.focus();};
+    let invoker, exit, selectionModule;
+    function enhanceSelection() {
+      selectionModule ??= import('./search-selection.jsx').then(({mount})=>mount(form.querySelector('[data-search-selection]')))
+        .catch(()=>{selectionModule=null;}); // The native search remains usable offline.
+    }
+    const open=()=>{if(palette.open || document.querySelector('dialog[open]'))return;invoker=document.activeElement;form.reset();syncDate();date.dispatchEvent(new Event('change',{bubbles:true}));palette.showModal();input.focus();enhanceSelection();};
     const close=()=>{
       if(exit)return;
       if(!palette.animate || matchMedia('(prefers-reduced-motion:reduce)').matches){palette.close();return;}

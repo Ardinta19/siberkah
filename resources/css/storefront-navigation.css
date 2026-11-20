@@ -58,3 +58,21 @@
 .bk-palette header{position:relative;padding-bottom:.65rem}
 @media(prefers-reduced-motion:no-preference){.bk-palette[open] header::after{animation:bk-ink-line .65s ease-out both}@keyframes bk-ink-line{from{transform:scaleX(.08)}to{transform:scaleX(1)}}}
 @media(prefers-reduced-motion:reduce){.bk-palette[open] header::after{animation:bk-palette-fade .55s ease-out both}}
+/* A small React island previews the submitted criteria; it never replaces the inputs. */
+.bk-selection {margin:.85rem 0;padding:.8rem 1rem;border-inline-start:2px solid var(--bk-logo-ink);border-radius:0 .7rem .7rem 0;background:#f8f0ed;color:#573541;font-size:.85rem}
+.bk-selection ul{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.35rem}.bk-selection li{max-width:100%}.bk-selection button{min-height:40px;max-width:100%;padding:.35rem .65rem;border:1px solid #d7b9c1;background:#fffaf7;border-radius:1.2rem;color:#771435;overflow-wrap:anywhere}.bk-selection small{font-weight:650}.bk-selection button span{margin-left:.25rem}.bk-selection button:focus-visible{outline:2px solid var(--bk-logo-ink);outline-offset:2px}
+/* A directional reflection on the primary action, never on a disabled or pending action. */
+[data-storefront] :is(.kc-action,.bk-checkout,.bk-cart,.bk-palette-key){position:relative;isolation:isolate;overflow:hidden}
+[data-storefront] :is(.kc-action,.bk-checkout,.bk-cart,.bk-palette-key)::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(105deg,transparent 12%,#e7b9a363 48%,transparent 78%);transform:translateX(-110%)}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ [data-storefront] :is(.kc-action,.bk-checkout,.bk-cart,.bk-palette-key):is(:hover,:focus-visible):not(:disabled)::before{animation:bk-satin .62s cubic-bezier(.22,.7,.28,1)}
+ @keyframes bk-satin{0%{opacity:0;transform:translateX(-110%)}25%{opacity:1}100%{opacity:0;transform:translateX(110%)}}
+ .bk-selection button:hover{background:#f3dfe5;border-color:#b87489}
+}
+@media(prefers-reduced-motion:no-preference){
+ .bk-selection li{animation:bk-tag-settle .24s ease-out backwards}@keyframes bk-tag-settle{from{opacity:.35;transform:translateY(5px) scale(.96)}to{opacity:1;transform:none}}
+ [data-storefront] :is(.kc-action,.bk-checkout,.bk-cart,.bk-palette-key,.bk-selection button,.kc-dock a){transition:scale .18s cubic-bezier(.2,.8,.2,1),background-color .18s,box-shadow .18s}
+ [data-storefront] :is(.kc-action,.bk-checkout,.bk-cart,.bk-palette-key,.bk-selection button,.kc-dock a):active:not(:disabled){scale:.96}
+}
+/* A warm contact state remains visible on touch devices with reduced movement. */
+[data-storefront] :is(.bk-selection button,.bk-palette-key,.bk-cart,.kc-dock a):active{background:#edd5de}

@@ -17,3 +17,5 @@ Acuan: `ui-ux/`. Terapkan menurut fungsi, bukan menyalin satu layout ke semua pe
 Panel masuk dari pemicunya; sheet dari bawah, kalender bergeser sesuai arah bulan. Utamakan transform/opacity, jeda tipis antarbagian, dan animasi sekali ketika keadaan berubah. Angka pembayaran tidak melompat. Mode kurangi gerakan memakai perubahan warna/opacity tanpa memaksa zoom atau pergeseran besar. Jangan menjanjikan 60 fps tanpa pengukuran perangkat nyata.
 
 Periksa 320–1440 px, keyboard, Escape, fokus kembali, ketukan berulang, mode kurangi gerakan, kombinasi pencarian+filter, dan keadaan kosong sebelum perubahan dinyatakan selesai.
+
+React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade. Ringkasan pencarian membaca keadaan form asli dan baru dimuat saat panel dibuka. Chip menghapus satu kriteria tanpa mengirim pesanan atau mengubah filter lain. Desktop menggunakan pantulan cahaya pada CTA saat hover; sentuhan merespons tekanan dan aktivasi, bukan sekadar pointer masuk. Jangan menganimasikan ulang setiap karakter pencarian atau memblokir navigasi demi memainkan efek.
