@@ -20,6 +20,10 @@ sys.excepthook = annotate
 
 base = 'http://127.0.0.1:8127'
 fixture = json.loads(subprocess.check_output(['php', 'scripts/ci/checkout-session.php']))
+# Read-only operator checklist; the CLI intentionally rejects any other database.
+subprocess.run(['php', 'artisan', 'uji:operator'], check=True)
+wrong_db = subprocess.run(['php', 'artisan', 'uji:operator'], env={**os.environ, 'DB_DATABASE':'siberkah_test'}, capture_output=True, text=True)
+assert wrong_db.returncode == 1 and 'basis data efektif' in wrong_db.stdout
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(channel='chrome', args=['--no-sandbox'])
     context = browser.new_context(locale='id-ID')
@@ -89,6 +93,9 @@ with sync_playwright() as playwright:
     expect(row).to_contain_text('belum_disetor')
     report_url = f'{base}/admin/laporan/penerimaan?mulai={booking_day}&akhir={delivery_day}'
     before = cashier.request.get(report_url).json()
+    audit = ['php','artisan','uji:operator','--pesanan='+number]
+    pending = subprocess.run(audit, capture_output=True, text=True)
+    assert pending.returncode == 1 and 'GAGAL Riwayat setoran' in pending.stdout
     row.locator('[name=sesudah]').fill('135000')
     row.locator('[name=diperiksa_fisik]').check()
     row.get_by_role('button').click()
@@ -96,4 +103,5 @@ with sync_playwright() as playwright:
     after = cashier.request.get(report_url).json()
     assert before == after and after['neto'] == 270000
     assert {r['kanal']: r['pokok'] for r in after['rincian']} == {'bank':135000, 'tunai':135000}
+    subprocess.run(audit, check=True)
     browser.close()
