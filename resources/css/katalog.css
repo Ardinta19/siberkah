@@ -17,3 +17,35 @@
 @media(max-width:26rem){.kc-search{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:no-preference){.kc-card,.kc-product-photo,.kc-action,.kc-card button,.kc-tags a,.kc-discover span{transition:transform .22s ease,box-shadow .22s ease,background-color .18s ease}.kc-action:active,.kc-card button:active{transform:scale(.96)}.kc-card button[aria-pressed=true]{animation:kc-heart .25s ease-out}@keyframes kc-heart{50%{transform:scale(1.1)}}@media(hover:hover){.kc-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px #59263912}.kc-card:hover .kc-product-photo{transform:scale(1.025)}.kc-discover:hover span{transform:translateY(3px)}}}
 @media(hover:hover){.kc-action:hover{background:#58102a}.kc-tags a:not([aria-current]):hover{background:#f6ece6}}
+
+/* Desktop: panoramic masthead and horizontal toolbar. */
+.kc-dock,.kc-rail-title { display:none }
+.kc-results,.kc-tools { min-width:0 }
+/* Tablet: keep filters beside the results rather than stacking desktop controls. */
+@media (min-width:48rem) and (max-width:74.99rem) {
+  .kc-directory { display:grid; grid-template-columns:clamp(11rem,21vw,15rem) minmax(0,1fr); align-items:start; gap:1.2rem }
+  .kc-tools { padding:.9rem; border:1px solid var(--line); border-radius:1rem; background:#faf5f0 }
+  .kc-rail-title { display:block; font:1.4rem Georgia,serif; margin-bottom:1rem }
+  .kc-search { grid-template-columns:minmax(0,1fr); padding:0; border:0 }
+  .kc-tools .kc-tags { margin-bottom:0 }
+  .kc-grid { grid-template-columns:repeat(2,minmax(0,1fr)) }
+  .kc-hero { grid-template-columns:3fr 2fr }
+}
+/* Phone: photographed cover, compact controls, one product per row and thumb nav. */
+@media (max-width:47.99rem) {
+  .kc-hero { display:grid; grid-template-columns:minmax(0,1fr); isolation:isolate; position:relative; background:#391822 }
+  .kc-still { position:absolute; inset:0; z-index:-1 }
+  .kc-still::after { content:''; position:absolute; inset:0; background:linear-gradient(100deg,#33121ff5,#33121fe8 40%,#33121f99) }
+  .kc-still span { display:none }
+  .kc-intro,.kc-intro .kc-kicker,.kc-intro em,.kc-discover { color:#fffdf9 }
+  .kc-discover { border-color:#efd6d5 }
+  .kc-intro { padding:1.35rem; max-width:32rem }
+  .kc-intro h1 { font-size:clamp(2.6rem,9vw,3.7rem) }
+  .kc-grid { grid-template-columns:minmax(0,1fr) }
+  .kc-dock { position:fixed; inset:auto 0 0; z-index:35; display:flex; justify-content:space-evenly; border-top:1px solid var(--line); background:#fffdf9; padding:.25rem .5rem calc(.25rem + env(safe-area-inset-bottom)); box-shadow:0 -4px 18px #39182212 }
+  .kc-dock a { display:grid; justify-items:center; align-content:center; min-width:5rem; min-height:48px; font-size:.75rem; font-weight:600; border-radius:.65rem }
+  .kc-dock span { font-size:1.3rem; line-height:1.1 }
+  .kc-dock [aria-current] { background:#f4e5e8; color:var(--wine) }
+  body:has(.kc-dock) { padding-bottom:calc(4rem + env(safe-area-inset-bottom)) }
+  html:has(.kc-dock) { scroll-padding-bottom:calc(4rem + env(safe-area-inset-bottom)) }
+}

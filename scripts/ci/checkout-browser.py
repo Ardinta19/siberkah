@@ -38,6 +38,10 @@ with sync_playwright() as playwright:
         page.set_viewport_size({'width':width,'height':900})
         panel = page.locator('.koleksi')
         assert panel.evaluate('(el) => el.scrollWidth <= innerWidth'), f'Catalog overflow at {width}px'
+        assert panel.locator('.kc-dock').is_visible() == (width < 768)
+        assert panel.locator('.kc-rail-title').is_visible() == (768 <= width < 1200)
+        columns = panel.locator('.kc-grid').evaluate("el => getComputedStyle(el).gridTemplateColumns.split(' ').length")
+        assert columns == (1 if width < 768 else 2 if width < 1200 else 3)
         for field in ('q','jenis','tanggal','urut'):
             box = panel.locator(f'[name={field}]').bounding_box()
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1

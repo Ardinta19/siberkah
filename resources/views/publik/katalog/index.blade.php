@@ -14,6 +14,8 @@
       <div class="kc-still" aria-hidden="true"><img src="{{ asset('images/katalog-editorial.webp') }}" alt="" fetchpriority="high"><span>STUDI FLORAL &nbsp; / &nbsp; 01</span></div>
     </header>
     <div id="produk-katalog" class="kc-bar"><p class="kc-kicker">01 &nbsp;/&nbsp; Direktori produk</p><h2>Temukan pilihan Anda</h2></div>
+    <div class="kc-directory">
+    <aside class="kc-tools" aria-label="Penyaring katalog"><p class="kc-rail-title">Saring koleksi</p>
     <form class="kc-search" action="{{ route('catalog.index') }}" role="search">
       @if($filterKategori)<input type="hidden" name="kategori" value="{{ $filterKategori }}">@endif
       <label>Pencarian<input type="search" name="q" value="{{ request('q') }}" maxlength="150" placeholder="Nama produk atau kategori"></label>
@@ -27,6 +29,8 @@
         <a href="{{ route('catalog.index',array_filter(array_merge(request()->only(['q','jenis','tanggal','urut']),['kategori'=>$id]),fn ($v)=>$v !== '')) }}" @if((string)$filterKategori === (string)$id) aria-current="page" @endif>{{ $nama }}</a>
       @endforeach
     </nav>
+    </aside>
+    <div class="kc-results">
     <div class="kc-meta"><p role="status"><strong>{{ $produk->total() }}</strong> produk ditemukan @if($filterTanggal) · Tersedia untuk sewa pada {{ $filterTanggal }} @endif</p>@if(request()->anyFilled(['kategori','jenis','q','tanggal','urut']))<a href="{{ route('catalog.index') }}">Reset filter ↺</a>@endif</div>
     <div class="kc-grid">
       @forelse($produk as $p)
@@ -47,6 +51,12 @@
       @endforelse
     </div>
     {{ $produk->links() }}
+    </div></div>
+    <nav class="kc-dock" aria-label="Navigasi cepat katalog">
+      <a href="#produk-katalog" aria-current="page"><span aria-hidden="true">▦</span>Katalog</a>
+      <a href="{{ route('pesanan.index') }}"><span aria-hidden="true">☷</span>Pesanan</a>
+      <a href="{{ auth('customer')->check() ? route('profile.edit') : route('otp.form') }}"><span aria-hidden="true">◎</span>Akun</a>
+    </nav>
   </div>
 </section>
 @endsection
