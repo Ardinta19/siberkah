@@ -444,7 +444,7 @@ table.sm{font-size:10pt}
 <li>Admin membuka daftar pembayaran yang menunggu dan mencocokkannya dengan mutasi rekening.</li>
 <li>Bila jumlah sama persis, Admin menekan Verifikasi. Sistem mencatat siapa dan kapan, dan pesanan menjadi Dikonfirmasi.</li>
 <li>Menjelang pelunasan, sistem membuat tagihan baru dengan kode unik baru. Admin memverifikasinya dengan cara yang sama.</li>
-<li>Pembayaran tunai hanya untuk pembelian langsung produk siap jual di toko dan untuk deposit jaminan yang diterima kurir. Admin atau Owner mencatatnya setelah setoran dari kurir dikonfirmasi.</li>
+<li>Pembayaran tunai juga tersedia untuk pesanan situs saat ambil atau antar. DP yang dipilih tetap dibayar di muka; deposit jaminan terpisah. Admin atau Owner mencatatnya setelah setoran dari kurir dikonfirmasi.</li>
 </ol></td></tr>
 <tr><td>Alternative Flow</td><td><ul>
 <li>Jumlah berbeda dari tagihan: Admin memilih Tolak (disertai alasan) atau Terima dengan catatan.</li>
@@ -464,7 +464,7 @@ table.sm{font-size:10pt}
 <tr><td>BYR-04</td><td>Status dan riwayat pembayaran</td><td class="tc">Must</td><td>Pelanggan dan staf melihat status tiap pembayaran: menunggu, terverifikasi, ditolak, atau kedaluwarsa, beserta alasan penolakan.</td><td class="tc">F</td></tr>
 <tr><td>BYR-06</td><td>Jenis pembayaran</td><td class="tc">Must</td><td>Jenis yang dikenal: DP, pelunasan, jaminan, dan refund. Pesanan yang saldonya belum nol tidak bisa diserahkan.</td><td class="tc">F</td></tr>
 <tr><td>BYR-07</td><td>Tolak atau terima dengan catatan</td><td class="tc">Must</td><td>Pembayaran yang jumlahnya berbeda tidak pernah diverifikasi otomatis. Admin atau Owner memilih tolak dengan alasan atau terima dengan catatan.</td><td class="tc">F</td></tr>
-<tr><td>BYR-08</td><td>Pembayaran tunai</td><td class="tc">Must</td><td>Tunai hanya untuk pembelian langsung produk siap jual di toko dan deposit jaminan dari kurir. Deposit berstatus ditahan, lalu dikembalikan atau disita.</td><td class="tc">F</td></tr>
+<tr><td>BYR-08</td><td>Pembayaran tunai</td><td class="tc">Must</td><td>Tunai untuk pembelian langsung atau pesanan situs saat ambil/antar; hanya sisa tagihan bila memakai DP. Deposit berstatus ditahan, lalu dikembalikan atau disita.</td><td class="tc">F</td></tr>
 <tr><td>BYR-09</td><td>Refund dan jaminan hanya dicatat</td><td class="tc">Must</td><td>Sistem menghitung nominal refund. Admin mencatat bahwa transfer sudah dilakukan. Sistem tidak mengirim uang.</td><td class="tc">F</td></tr>
 <tr><td>BYR-10</td><td>Petunjuk pembayaran</td><td class="tc">Must</td><td>Halaman pembayaran menampilkan jumlah persis, rekening tujuan, batas waktu, dan hitung mundur sisa waktu.</td><td class="tc">M</td></tr>
 <tr><td>BYR-11</td><td>Akun pembayaran</td><td class="tc">Must</td><td>Rekening bank (BCA, BRI atau Mandiri, Bank Jambi) dan QRIS statis disimpan sebagai data yang bisa diubah Owner, bukan di dalam kode.</td><td class="tc">F</td></tr>
@@ -691,7 +691,7 @@ table.sm{font-size:10pt}
 <tr><td><b>BR-01</b></td><td>Satu unit, satu pesanan</td><td>Satu unit sewa hanya boleh terikat pada satu pesanan aktif untuk satu tanggal.</td></tr>
 <tr><td><b>BR-02</b></td><td>Penahanan sementara</td><td>Unit ditahan 60 menit sejak pesanan dibuat. Pada periode puncak (dua hari sebelum acara sampai hari acara pada tanggal yang ditandai puncak) penahanan 30 menit.</td></tr>
 <tr><td><b>BR-03</b></td><td>Tanggal paling awal</td><td>Tanggal paling awal adalah hari ini ditambah lead time produk, lalu ditambah satu hari bila memesan setelah pukul 15.00 WIB. Lead time: satu hari untuk papan dengan stiker cutting dan buket artifisial custom, dua hari untuk buket segar. Pesanan hari yang sama hanya untuk buket siap jual dari katalog (sekitar 30 sampai 60 menit) dan papan sewa yang unitnya kosong dengan teks spidol atau templat (sekitar 2 sampai 3 jam).</td></tr>
-<tr><td><b>BR-04</b></td><td>Cara penagihan</td><td>Total di bawah Rp250.000 wajib dibayar lunas. Total sama dengan atau di atas Rp250.000 boleh DP 50 persen atau lunas. DP dihitung pada tingkat pesanan, bukan per item. Pelunasan paling lambat H-1 pukul 18.00 WIB. Pesanan custom tidak boleh bayar di tempat. Tunai hanya untuk pembelian langsung produk siap jual di toko.</td></tr>
+<tr><td><b>BR-04</b></td><td>Cara penagihan</td><td>Total di bawah Rp250.000 wajib dibayar lunas. Total sama dengan atau di atas Rp250.000 boleh DP 50 persen atau lunas. DP dihitung pada tingkat pesanan, bukan per item. Pelunasan bank paling lambat H-1 pukul 18.00 WIB. Untuk metode tunai saat serah, petugas mencatat pembayaran penuh atau sisa setelah DP pada saat barang diambil/diantar.</td></tr>
 <tr><td><b>BR-05</b></td><td>Kode unik</td><td>Kode tiga digit antara 1 dan 999 ditambahkan ke jumlah tagihan transfer, termasuk QRIS statis. Tidak boleh ada dua pembayaran berstatus menunggu dengan jumlah tagihan sama. Kode itu dicatat sebagai selisih lebih.</td></tr>
 <tr><td><b>BR-06</b></td><td>Rumus harga</td><td>Sewa: harga per hari dikali jumlah hari. Custom: harga dasar ditambah jumlah semua opsi. Siap jual: harga dikali jumlah. Total adalah jumlah semua item ditambah ongkos antar ditambah penyesuaian. Hasil dibulatkan ke atas ke kelipatan Rp1.000. Buket uang: uang berasal dari pelanggan dan sistem hanya menagih jasa serta pembungkus.</td></tr>
 <tr><td><b>BR-07</b></td><td>Teks papan</td><td>Tiga kolom: judul paling banyak 25 karakter, nama penerima 45, nama pengirim 40. Teks ditulis oleh Admin atau staf desain dan terkunci saat status Sedang Diproduksi. Stiker cutting untuk pesanan H-1 atau H-2. Spidol kapur cair atau acrylic marker untuk pesanan hari yang sama. UV flatbed hanya untuk papan yang dijual.</td></tr>
@@ -1181,7 +1181,7 @@ table.sm{font-size:10pt}
 <tr><td class="tc">18</td><td>Tanpa unggah KTP dan KTM</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
 <tr><td class="tc">19</td><td>Deposit tunai Rp100.000 sampai Rp150.000 oleh kurir</td><td>Pengamatan</td><td>bukti-deposit.png</td></tr>
 <tr><td class="tc">20</td><td>Ambang DP Rp250.000 dan DP 50 persen</td><td>Pengamatan</td><td>bukti-ambang-dp.png</td></tr>
-<tr><td class="tc">21</td><td>Pelunasan paling lambat H-1 pukul 18.00. Pesanan custom tidak boleh bayar di tempat</td><td>Pengamatan</td><td>bukti-pelunasan.png</td></tr>
+<tr><td class="tc">21</td><td>Pelunasan bank H-1 pukul 18.00; pelunasan tunai saat serah setelah DP terverifikasi bila memakai DP</td><td>Pengamatan</td><td>bukti-pelunasan.png</td></tr>
 <tr><td class="tc">22</td><td>Metode bayar: BCA, BRI atau Mandiri, Bank Jambi, dan QRIS</td><td>Pengamatan</td><td>bukti-metode-bayar.png</td></tr>
 <tr><td class="tc">23</td><td>Kode unik ditambahkan, rentang 1 sampai 999</td><td>Keputusan perancang</td><td>Tidak perlu</td></tr>
 <tr><td class="tc">24</td><td>Penahanan 60 menit, 30 menit pada periode puncak</td><td>Pengamatan</td><td>bukti-penahanan.png</td></tr>

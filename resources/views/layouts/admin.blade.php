@@ -125,43 +125,7 @@
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <!-- Notifications -->
-                            <div class="relative" x-data="{ open: false }">
-                                <button type="button" class="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150 relative" aria-label="Notifikasi" aria-expanded="false" @click="open = !open">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                                    </svg>
-                                    <span class="absolute top-1 right-1 w-4 h-4 bg-danger-500 text-white text-xs font-bold rounded-full flex items-center justify-center">3</span>
-                                </button>
-
-                                <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 transform -translate-y-1" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" @click.outside="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-neutral-200 py-1 animate-scale-in z-[var(--z-dropdown)] dark:bg-neutral-900 dark:border-neutral-700" role="menu">
-                                    <div class="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-                                        <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Notifikasi</h3>
-                                    </div>
-                                    <div class="max-h-64 overflow-y-auto">
-                                        <a href="#" class="block px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800" role="menuitem">
-                                            <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Pembayaran diverifikasi</p>
-                                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Pesanan BK-2411-0015</p>
-                                            <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">5 menit lalu</p>
-                                        </a>
-                                        <a href="#" class="block px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800" role="menuitem">
-                                            <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Pesanan baru masuk</p>
-                                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Pesanan BK-2411-0016</p>
-                                            <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">15 menit lalu</p>
-                                        </a>
-                                        <a href="#" class="block px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800" role="menuitem">
-                                            <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Unit sewa belum kembali</p>
-                                            <p class="text-xs text-neutral-500 dark:text-neutral-400">AKR-003 - BK-2411-0010</p>
-                                            <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">1 jam lalu</p>
-                                        </a>
-                                    </div>
-                                    <div class="px-4 py-2 border-t border-neutral-200 dark:border-neutral-700">
-                                        <a href="{{ route('admin.aktivitas.index') }}" class="text-sm text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400" role="menuitem">Lihat semua notifikasi</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- User menu -->
+<!-- User menu -->
                             <div class="relative" x-data="{ open: false }">
                                 <button type="button" class="flex items-center gap-2 p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150" aria-label="Menu pengguna" aria-expanded="false" aria-haspopup="true" @click="open = !open">
                                     <div class="avatar avatar-sm bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">

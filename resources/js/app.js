@@ -30,3 +30,23 @@ window.utils = {
     });
   }
 };
+const menuToggle = document.getElementById('guest-menu-toggle');
+menuToggle?.addEventListener('click', () => {
+  const menu = document.getElementById('mobile-menu');
+  menu.hidden = !menu.hidden;
+  menuToggle.setAttribute('aria-expanded', String(!menu.hidden));
+});
+
+for (const button of document.querySelectorAll('[data-favorite]')) {
+  const key = `siberkah:favorite:${button.dataset.favorite}`;
+  const render = saved => {
+    button.setAttribute('aria-pressed', String(saved));
+    button.textContent = saved ? '♥' : '♡';
+  };
+  try { render(localStorage.getItem(key) === '1'); } catch { /* Storage may be disabled. */ }
+  button.addEventListener('click', () => {
+    const saved = button.getAttribute('aria-pressed') !== 'true';
+    render(saved);
+    try { saved ? localStorage.setItem(key, '1') : localStorage.removeItem(key); } catch { /* Session only. */ }
+  });
+}

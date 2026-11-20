@@ -21,9 +21,9 @@
 
             <h2 class="text-xl font-bold text-primary-600 mb-4">Syarat Pembayaran</h2>
             <ul>
-                <li>DP (Down Payment) sebesar 25% dari total harga wajib dibayar sebelum pemesanan dikonfirmasi</li>
-                <li>Sisa pembayaran harus dibayar minimal 24 jam sebelum tanggal serah</li>
-                <li>Pembayaran terlambat akan dikenakan denda sebesar 5% dari total harga</li>
+                <li>Di bawah Rp{{ number_format(\App\Support\BusinessSettings::value('ambang_dp_rupiah'), 0, ',', '.') }}, pembayaran harus lunas. Mulai ambang tersebut, bila tenggat pelunasan belum lewat, Anda dapat membayar lunas atau DP 50%.</li>
+                <li>Batas pelunasan DP adalah pukul 18.00 WIB sehari sebelum tanggal serah.</li>
+                <li>Transfer yang terlambat diperiksa oleh Admin; transfer tidak otomatis mengaktifkan kembali reservasi.</li>
             </ul>
 
             <h2 class="text-xl font-bold text-primary-600 mb-4">Syarat Pengembalian</h2>

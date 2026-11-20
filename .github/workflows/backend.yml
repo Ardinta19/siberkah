@@ -1,0 +1,64 @@
+name: Backend
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: siberkah_test
+          MARIADB_ROOT_PASSWORD: ci_only
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: siberkah_test
+      DB_USERNAME: root
+      DB_PASSWORD: ci_only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, mbstring, dom, gd
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cp .env.example .env && composer install --no-interaction --prefer-dist && php artisan key:generate
+      - run: npm ci && npm run build
+      - run: php artisan migrate --force
+      - name: Latihan pemulihan MariaDB terisolasi
+        env:
+          CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
+        run: bash scripts/ci/restore-drill.sh
+      - name: Uji HTTP katalog 200 produk, 5.000 reservasi dan 50 klien
+        env:
+          CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
+        run: bash scripts/ci/catalog-benchmark.sh
+      - name: Checkout pelanggan melalui Chrome (ambil tunai, antar DP + tunai)
+        env:
+          CI_DB_CONTAINER: ${{ job.services.mariadb.id }}
+        run: |
+          python -m pip install playwright==1.55.0
+          bash scripts/ci/checkout-browser.sh
+      - run: php artisan test --log-junit "$RUNNER_TEMP/backend-results.xml"
+      - name: Ringkasan kegagalan pengujian
+        if: failure()
+        run: |
+          python - <<'PYTEST'
+          import os, pathlib, xml.etree.ElementTree as ET
+          report = pathlib.Path(os.environ['RUNNER_TEMP']) / 'backend-results.xml'
+          if report.exists():
+              for case in ET.parse(report).iter('testcase'):
+                  for failure in list(case):
+                      if failure.tag in ('failure', 'error'):
+                          lines = (failure.text or '').strip().splitlines()
+                          text = ' '.join(lines[:6])[:1200].replace('%', '%25')
+                          print(f"::error::{case.get('name')}: {text}")
+          PYTEST

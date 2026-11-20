@@ -14,6 +14,15 @@ return [
     |
     */
 
+    'whatsapp' => [
+        'admin_number' => env('WHATSAPP_ADMIN_NUMBER'),
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_id' => env('WHATSAPP_PHONE_ID'),
+        'version' => env('WHATSAPP_GRAPH_VERSION'),
+        'template' => env('WHATSAPP_AUTH_TEMPLATE'),
+        'language' => env('WHATSAPP_TEMPLATE_LANGUAGE', 'id'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

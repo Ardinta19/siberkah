@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Pesanan extends Model
 {
+    public const CREATED_AT = 'dibuat_pada';
+    public const UPDATED_AT = 'diubah_pada';
+
     protected $table = 'pesanan';
 
     protected $fillable = [
@@ -52,6 +55,7 @@ class Pesanan extends Model
 
     protected $casts = [
         'tanggal_serah' => 'date',
+        'tunai_saat_serah' => 'boolean',
         'jam_serah_mulai' => 'datetime:H:i',
         'jam_serah_selesai' => 'datetime:H:i',
         'tahan_hingga_pada' => 'datetime',

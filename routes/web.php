@@ -3,9 +3,13 @@
 use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\TransferReconciliationController;
+use App\Http\Controllers\PaidRentalCancellationController;
+use App\Http\Controllers\CancellationRequestController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\BoardOperationsController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\CustomerProfileController;
@@ -14,6 +18,12 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffDeliveryController;
+use App\Http\Controllers\RentalCloseoutController;
+use App\Http\Controllers\CatalogInventoryController;
+use App\Http\Controllers\CatalogMediaController;
+use App\Http\Controllers\StoreSaleController;
+use App\Http\Controllers\VerifiedRevenueController;
+use App\Http\Middleware\RentalStaging;
 use App\Http\Controllers\StaffProductionController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,9 +56,9 @@ Route::get('/kontak', [LegalController::class, 'kontak'])->name('kontak');
 /** OTP Authentication - guest:customer */
 Route::middleware(['guest:customer'])->group(function () {
     Route::get('/masuk', [OtpController::class, 'showForm'])->name('otp.form');
-    Route::post('/otp/issue', [OtpController::class, 'issue'])->name('otp.issue');
-    Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
-    Route::post('/otp/resend', [OtpController::class, 'resend'])->name('otp.resend');
+    Route::post('/otp/issue', [OtpController::class, 'issue'])->middleware('throttle:5,1')->name('otp.issue');
+    Route::post('/otp/verify', [OtpController::class, 'verify'])->middleware('throttle:10,1')->name('otp.verify');
+    Route::post('/otp/resend', [OtpController::class, 'issue'])->middleware('throttle:5,1')->name('otp.resend');
 });
 
 /**
@@ -60,28 +70,42 @@ Route::middleware(['guest:customer'])->group(function () {
 /** Staff authentication */
 Route::middleware(['guest:staff'])->group(function () {
     Route::get('/staff/login', [StaffAuthController::class, 'showLogin'])->name('staff.login');
-    Route::post('/staff/login', [StaffAuthController::class, 'login'])->name('staff.login.post');
-    Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->name('staff.logout');
-    Route::post('/staff/password-change', [StaffAuthController::class, 'passwordChangeFirstLogin'])->name('staff.password.change');
+    Route::post('/staff/login', [StaffAuthController::class, 'login'])->middleware('throttle:5,1')->name('staff.login.post');
 });
+
+Route::middleware(['auth:staff', 'auth.session'])->group(function () {
+    Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->name('staff.logout');
+    Route::view('/staff/password-change', 'staf.ganti-sandi')->middleware('role:owner,admin,staf_produksi,staf_kurir')->name('staff.password.form');
+    Route::post('/staff/password-change', [StaffAuthController::class, 'changePassword'])->middleware(['role:owner,admin,staf_produksi,staf_kurir', 'throttle:5,1'])->name('staff.password.change');
+});
+
+Route::post('/keluar', [OtpController::class, 'logout'])->middleware('auth:customer')->name('otp.logout');
 
 /**
  * CUSTOMER AUTH ROUTES (auth:customer)
  * --------------------------------------------------------
  * Routes requiring customer authentication via OTP.
  */
-Route::middleware(['auth:customer'])->group(function () {
+Route::middleware(['auth:customer', 'active.customer'])->group(function () {
+
+    Route::prefix('pelanggan/checkout/{slug}')->middleware(RentalStaging::class)->controller(\App\Http\Controllers\ProductCheckoutController::class)->group(function () {
+        Route::get('/', 'show')->name('checkout.product');
+        Route::post('/', 'store')->middleware('throttle:20,1')->name('checkout.submit');
+    });
     /** Customer profile and orders */
     Route::get('/pelanggan/profil', [CustomerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/pelanggan/profil', [CustomerProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/pelanggan/profil', [CustomerProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/pelanggan/profil', [CustomerProfileController::class, 'destroy'])->middleware([RentalStaging::class, 'throttle:5,1'])->name('profile.destroy');
 
     /** Customer orders */
     Route::get('/pelanggan/pesanan', [CustomerOrderController::class, 'index'])->name('pesanan.index');
-    Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->name('pesanan.store');
+    Route::post('/pelanggan/pesanan/buket', [CustomerOrderController::class, 'bouquet'])->middleware([RentalStaging::class, 'throttle:20,1'])->name('pesanan.buket');
+    Route::post('/pelanggan/pesanan', [CustomerOrderController::class, 'store'])->middleware('throttle:20,1')->name('pesanan.store');
     Route::get('/pelanggan/pesanan/{nomor}', [CustomerOrderController::class, 'show'])->name('pesanan.show');
-    Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->name('pesanan.cancel');
-    Route::post('/pelanggan/pesanan/{nomor}/request-cancellation', [CustomerOrderController::class, 'requestCancellation'])->name('pesanan.request-cancellation');
+    Route::put('/pelanggan/pesanan/{nomor}/teks-papan', [BoardOperationsController::class, 'customerEdit'])->middleware([RentalStaging::class,'throttle:20,1'])->name('pesanan.teks-papan');
+    Route::post('/pelanggan/pesanan/{nomor}/cancel', [CustomerOrderController::class, 'cancel'])->middleware(RentalStaging::class)->name('pesanan.cancel');
+    Route::get('/pelanggan/pesanan/{nomor}/request-cancellation', [CancellationRequestController::class, 'show'])->name('pesanan.cancellation-status');
+    Route::post('/pelanggan/pesanan/{nomor}/request-cancellation', [CancellationRequestController::class, 'submit'])->middleware('throttle:10,1')->name('pesanan.request-cancellation');
 });
 
 /**
@@ -89,9 +113,9 @@ Route::middleware(['auth:customer'])->group(function () {
  * --------------------------------------------------------
  * Payment-related routes for authenticated customers.
  */
-Route::middleware(['auth:customer'])->group(function () {
-    Route::get('/pesanan/{nomor}/bayar', [CustomerPaymentController::class, 'show'])->name('payment.show');
-    Route::post('/pesanan/{nomor}/bayar/konfirmasi', [CustomerPaymentController::class, 'confirm'])->name('payment.confirm');
+Route::middleware(['auth:customer', 'active.customer'])->group(function () {
+    Route::get('/pesanan/{nomor}/bayar', [CustomerPaymentController::class, 'show'])->middleware(RentalStaging::class)->name('payment.show');
+    Route::post('/pesanan/{nomor}/bayar/konfirmasi', [CustomerPaymentController::class, 'confirm'])->middleware(RentalStaging::class)->name('payment.confirm');
 });
 
 /**
@@ -99,54 +123,96 @@ Route::middleware(['auth:customer'])->group(function () {
  * --------------------------------------------------------
  * Routes for staff with owner or admin privileges.
  */
-Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
+Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(function () {
     /** Dashboard */
     Route::get('/owner', [DashboardController::class, 'hariIni'])->name('dashboard.hari-ini');
 
     /** Admin Orders */
     Route::prefix('admin')->group(function () {
+        Route::prefix('setoran-kas-antar')->middleware(RentalStaging::class)->controller(\App\Http\Controllers\DeliveryCashController::class)->group(function () {
+            Route::get('/', 'index')->name('kas-antar.index');
+            Route::get('{id}', 'history')->whereNumber('id')->name('kas-antar.history');
+            Route::post('{id}', 'record')->whereNumber('id')->middleware('throttle:60,1')->name('kas-antar.record');
+        });
+        Route::post('penjualan-toko', [StoreSaleController::class, 'store'])->middleware(RentalStaging::class)->name('toko.store');
+        Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
-        Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->name('admin.pesanan.show');
-        Route::post('pesanan/{id}/manual-store', [AdminOrderController::class, 'manualStore'])->name('admin.pesanan.manual-store');
-        Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->name('admin.pesanan.transition');
+        Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->whereNumber('id')->name('admin.pesanan.show');
+        Route::post('pesanan/manual/buket', [AdminOrderController::class, 'manualBouquet'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-buket');
+        Route::post('pesanan/manual/sewa', [AdminOrderController::class, 'manualStore'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-store');
+        Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
+        Route::prefix('pesanan/{id}/retur')->where(['id' => '[0-9]+'])->middleware(RentalStaging::class)->group(function () {
+            Route::get('inspeksi', [RentalCloseoutController::class, 'evidence']);
+            Route::get('foto/{foto}', [RentalCloseoutController::class, 'photo'])->whereNumber('foto');
+            Route::post('nilai', [RentalCloseoutController::class, 'assess'])->name('retur.nilai');
+            Route::post('potong-deposit', [RentalCloseoutController::class, 'applyDeposit'])->middleware('role:owner')->name('retur.potong');
+            Route::post('setoran', [RentalCloseoutController::class, 'confirmDeposit'])->name('retur.setoran');
+            Route::post('selesai', [RentalCloseoutController::class, 'complete'])->name('retur.selesai');
+        });
+        Route::get('rekonsiliasi', [TransferReconciliationController::class, 'index'])->name('admin.rekonsiliasi.index');
+        Route::post('rekonsiliasi/{mutasi}/pengembalian', [TransferReconciliationController::class, 'recordReturn'])
+            ->whereNumber('mutasi')->name('admin.rekonsiliasi.pengembalian');
+        Route::get('pesanan/{id}/bukti-transfer/{bill}', [\App\Http\Controllers\DeliveryCashController::class, 'proof'])->whereNumber('id')->whereNumber('bill')->middleware(RentalStaging::class)->name('admin.bukti-transfer');
         Route::post('pesanan/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('admin.pesanan.verify-payment');
-        Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->name('admin.pesanan.reject-payment');
-        Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->name('admin.pesanan.record-cash');
-        Route::post('pesanan/{id}/record-refund', [AdminOrderController::class, 'recordRefund'])->name('admin.pesanan.record-refund');
-        Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->name('admin.pesanan.reactivate-expired');
+        Route::post('pesanan/{id}/reject-payment', [AdminOrderController::class, 'rejectOrAcceptPayment'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reject-payment');
+        Route::post('pesanan/{id}/record-cash', [AdminOrderController::class, 'recordCash'])->middleware('pending.transaction')->name('admin.pesanan.record-cash');
+        Route::get('permohonan-batal', [CancellationRequestController::class, 'index'])->name('admin.permohonan-batal.index');
+        Route::post('pesanan/{id}/approve-cancellation', [PaidRentalCancellationController::class, 'approve'])->whereNumber('id')->name('admin.pesanan.approve-cancellation');
+        Route::post('pesanan/{id}/reject-cancellation', [CancellationRequestController::class, 'reject'])->whereNumber('id')->name('admin.pesanan.reject-cancellation');
+        Route::post('pesanan/{id}/cancel-paid', [PaidRentalCancellationController::class, 'cancel'])->whereNumber('id')->name('admin.pesanan.cancel-paid');
+        Route::post('pesanan/{id}/record-refund', [PaidRentalCancellationController::class, 'record'])->whereNumber('id')->name('admin.pesanan.record-refund');
+        Route::post('pesanan/{id}/perpanjangan', [BoardOperationsController::class, 'extend'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.perpanjang');
+        Route::post('unit/{unit}/blokir', [BoardOperationsController::class, 'block'])->whereNumber('unit')->middleware(RentalStaging::class)->name('papan.blokir');
+        Route::delete('unit/{unit}/blokir/{blokir}', [BoardOperationsController::class, 'unblock'])->whereNumber('unit')->whereNumber('blokir')->middleware(RentalStaging::class)->name('papan.buka');
+        Route::post('pesanan/{id}/ganti-unit', \App\Http\Controllers\RentalUnitReplacementController::class)->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.ganti-unit');
+        Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reactivate-expired');
     });
 
     /** Admin Catalog */
     Route::prefix('admin/katalog')->group(function () {
-        Route::get('/', [AdminCatalogController::class, 'index'])->name('admin.katalog.index');
-        Route::get('create', [AdminCatalogController::class, 'create'])->name('admin.katalog.create');
-        Route::post('/', [AdminCatalogController::class, 'store'])->name('admin.katalog.store');
-        Route::get('{id}/edit', [AdminCatalogController::class, 'edit'])->name('admin.katalog.edit');
-        Route::put('{id}', [AdminCatalogController::class, 'update'])->name('admin.katalog.update');
-        Route::post('{id}/archive', [AdminCatalogController::class, 'archive'])->name('admin.katalog.archive');
-        Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->name('admin.katalog.publish');
-        Route::post('{id}/manage-variants', [AdminCatalogController::class, 'manageVariants'])->name('admin.katalog.manage-variants');
-        Route::post('{id}/manage-options', [AdminCatalogController::class, 'manageOptions'])->name('admin.katalog.manage-options');
-        Route::post('{id}/manage-images', [AdminCatalogController::class, 'manageImages'])->name('admin.katalog.manage-images');
-        Route::post('{id}/manage-units', [AdminCatalogController::class, 'manageUnits'])->name('admin.katalog.manage-units');
+        Route::get('/', [AdminCatalogController::class, 'index'])->middleware('role:owner')->name('admin.katalog.index');
+        Route::get('create', [AdminCatalogController::class, 'create'])->middleware('role:owner')->name('admin.katalog.create');
+        Route::post('/', [AdminCatalogController::class, 'store'])->middleware('role:owner')->name('admin.katalog.store');
+        Route::get('{id}/edit', [AdminCatalogController::class, 'edit'])->middleware('role:owner')->name('admin.katalog.edit');
+        Route::put('{id}', [AdminCatalogController::class, 'update'])->middleware('role:owner')->name('admin.katalog.update');
+        Route::post('{id}/archive', [AdminCatalogController::class, 'archive'])->middleware('role:owner')->name('admin.katalog.archive');
+        Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->middleware('role:owner')->name('admin.katalog.publish');
+        Route::post('{id}/manage-variants', [CatalogInventoryController::class, 'variant'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-variants');
+        Route::post('{id}/manage-options', [CatalogInventoryController::class, 'option'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-options');
+        Route::prefix('{id}/manage-images')->where(['id' => '[0-9]+'])->middleware('role:owner')->group(function () {
+            Route::get('/', [CatalogMediaController::class, 'index'])->name('admin.katalog.images');
+            Route::post('/', [CatalogMediaController::class, 'store'])->middleware('throttle:30,1')->name('admin.katalog.manage-images');
+            Route::put('urutan', [CatalogMediaController::class, 'reorder'])->name('admin.katalog.images.order');
+            Route::delete('{foto}', [CatalogMediaController::class, 'remove'])->whereNumber('foto')->name('admin.katalog.images.delete');
+        });
+        Route::post('{id}/manage-units', [CatalogInventoryController::class, 'unit'])->whereNumber('id')->name('admin.katalog.manage-units');
     });
 
     /** Admin Settings */
     Route::prefix('admin/pengaturan')->group(function () {
-        Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.pengaturan.index');
-        Route::post('update', [AdminSettingsController::class, 'update'])->name('admin.pengaturan.update');
+        Route::get('/', [AdminSettingsController::class, 'index'])->middleware('role:owner')->name('admin.pengaturan.index');
+        Route::post('update', [AdminSettingsController::class, 'update'])->middleware('role:owner')->name('admin.pengaturan.update');
+        Route::prefix('tujuan-bayar')->middleware(['role:owner', RentalStaging::class])->controller(\App\Http\Controllers\PaymentDestinationController::class)->group(function () {
+            Route::get('/', 'index')->name('tujuan.index');
+            Route::post('/', 'store')->middleware('throttle:10,1')->name('tujuan.store');
+            Route::patch('{id}', 'status')->whereNumber('id')->name('tujuan.status');
+        });
+        Route::patch('kerusakan/{id}/tarif', [AdminSettingsController::class, 'damageRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.tarif-kerusakan');
+        Route::patch('zona/{id}/ongkir', [AdminSettingsController::class, 'zoneRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.ongkir');
         Route::post('manage-calendar-blocks', [AdminSettingsController::class, 'manageCalendarBlocks'])->name('admin.pengaturan.manage-calendar-blocks');
         Route::post('manage-production-capacity', [AdminSettingsController::class, 'manageProductionCapacity'])->name('admin.pengaturan.manage-production-capacity');
     });
 
     /** Admin Reports */
-    Route::prefix('admin/laporan')->group(function () {
+    Route::prefix('admin/laporan')->middleware('role:owner')->group(function () {
         Route::get('/', [AdminReportController::class, 'index'])->name('admin.laporan.index');
+        Route::get('penerimaan', [VerifiedRevenueController::class, 'index'])->name('laporan.penerimaan');
+        Route::get('penerimaan/csv', [VerifiedRevenueController::class, 'export'])->name('laporan.penerimaan.csv');
         Route::get('export-csv', [AdminReportController::class, 'exportAnonymousCsv'])->name('admin.laporan.export-csv');
     });
 
     /** Admin Activity Log */
-    Route::prefix('admin/aktivitas')->group(function () {
+    Route::prefix('admin/aktivitas')->middleware('role:owner')->group(function () {
         Route::get('/', [AdminActivityLogController::class, 'index'])->name('admin.aktivitas.index');
     });
 });
@@ -156,19 +222,22 @@ Route::middleware(['auth:staff', 'role:owner,admin'])->group(function () {
  * --------------------------------------------------------
  * Routes for production staff and delivery personnel.
  */
-Route::middleware(['auth:staff', 'role:staf_produksi,staf_kurir'])->group(function () {
+Route::middleware(['auth:staff', 'auth.session'])->group(function () {
     /** Staff Production */
-    Route::prefix('staf/produksi')->group(function () {
+    Route::prefix('staf/produksi')->middleware('role:owner,admin,staf_produksi')->group(function () {
         Route::get('/', [StaffProductionController::class, 'index'])->name('staf.produksi.index');
+        Route::get('/papan/{id}', [BoardOperationsController::class, 'show'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.show');
+        Route::put('/papan/{id}', [BoardOperationsController::class, 'edit'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.edit');
         Route::post('/start-production', [StaffProductionController::class, 'startProduction'])->name('staf.produksi.start');
         Route::post('/mark-ready', [StaffProductionController::class, 'markReady'])->name('staf.produksi.mark-ready');
     });
 
     /** Staff Delivery */
-    Route::prefix('staf/kurir')->group(function () {
+    Route::prefix('staf/kurir')->middleware('role:owner,admin,staf_kurir')->group(function () {
         Route::get('/', [StaffDeliveryController::class, 'index'])->name('staf.kurir.index');
-        Route::post('/handover', [StaffDeliveryController::class, 'handover'])->name('staf.kurir.handover');
-        Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->name('staf.kurir.receive-return');
+        Route::post('/penjualan-toko/{id}/serah', [StoreSaleController::class, 'handover'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.serah');
+        Route::post('/handover', [StaffDeliveryController::class, 'handover'])->middleware(RentalStaging::class)->name('staf.kurir.handover');
+        Route::post('/receive-return', [StaffDeliveryController::class, 'receiveReturn'])->middleware(RentalStaging::class)->name('staf.kurir.receive-return');
     });
 });
 

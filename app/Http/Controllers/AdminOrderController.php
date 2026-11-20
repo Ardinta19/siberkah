@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\VerifyRentalTransfer;
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
@@ -24,78 +25,49 @@ class AdminOrderController extends BaseController
      */
     public function index(Request $request)
     {
+        $filters = $request->validate(['q' => 'nullable|string|max:150', 'status' => 'sometimes|string|max:30', 'tanggal' => 'sometimes|date_format:Y-m-d', 'pelanggan' => 'sometimes|integer|min:1']);
         $query = Pesanan::query();
-
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        foreach (['status' => 'status', 'tanggal' => 'tanggal_serah', 'pelanggan' => 'pelanggan_id'] as $field => $column) {
+            if (isset($filters[$field])) {
+                $query->where($column, $filters[$field]);
+            }
         }
-
-        // Filter by tanggal
-        if ($request->has('tanggal')) {
-            $query->whereDate('tanggal_serah', $request->tanggal);
+        if (filled($filters['q'] ?? null)) {
+            $q = '%'.str_replace(['!', '%', '_'], ['!!','!%','!_'], $filters['q']).'%';
+            $query->where(fn ($row) => $row->whereRaw("nama_pemesan LIKE ? ESCAPE '!'", [$q])->orWhereRaw("nomor LIKE ? ESCAPE '!'", [$q]));
         }
-
-        // Filter by pelanggan
-        if ($request->has('pelanggan')) {
-            $query->where('pelanggan_id', $request->pelanggan);
-        }
-
-        $pesanan = $query->latest()->paginate(20);
-
-        // Get filter options
-        $statuses = ['menunggu_pembayaran', 'dikonfirmasi', 'sedang_diproduksi', 'siap', 'sudah_diserahkan', 'sudah_dikembalikan', 'selesai', 'dibatalkan'];
-
-        return view('admin.pesanan.index', [
-            'pesanan' => $pesanan,
-            'filterStatus' => $request->get('status'),
-            'filterTanggal' => $request->get('tanggal'),
-            'statuses' => $statuses,
-        ]);
+        return response()->json($query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo']))
+            ->header('Cache-Control', 'private, no-store');
     }
 
-    /**
-     * Show a specific order detail.
-     *
-     * @param  int  $id
-     * @return View
-     */
-    public function show($id)
+    public function show(int $id)
     {
-        $pesanan = Pesanan::with(['itemPesanan', 'pembayaran', 'pelanggan'])->findOrFail($id);
-
-        return view('admin.pesanan.show', [
-            'pesanan' => $pesanan,
-        ]);
+        $order = Pesanan::with(['items', 'pembayaran'])->findOrFail($id);
+        $order->setAttribute('tautan_whatsapp', \App\Services\WhatsAppLinks::order($order, true));
+        return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
 
-    /**
-     * Manual store order (from WA input).
-     * K-08: Admin Pesanan - manual input (form sama pelanggan + alasan pengecualian)
-     *
-     * @return RedirectResponse
-     */
-    public function manualStore(Request $request)
+    public function manualStore(Request $request, \App\Actions\CreateRentalOrder $checkout)
     {
-        $request->validate([
-            'pelanggan_id' => 'required|exists:pelanggan,id',
-            'produk_id' => 'required|exists:produk,id',
-            'varian_id' => 'sometimes|exists:varian_produk,id',
-            'tanggal_serah' => 'required|date',
-            'cara_serah' => 'required|in:antar,ambil',
-            'alamat_antar' => 'sometimes|string',
-            'zona_antar_id' => 'sometimes|exists:zona_antar,id',
-            'jam_serah_mulai' => 'sometimes|date_format:H:i',
-            'jam_serah_selesai' => 'sometimes|date_format:H:i',
-            'catatan' => 'sometimes|string',
-            'alasan_pengecualian' => 'sometimes|string',
-        ]);
+        $data = $request->validate(['pelanggan_id' => 'required|integer|min:1', 'persetujuan_pelanggan_diperiksa' => 'accepted', 'alasan_pengecualian' => 'prohibited']);
+        $customer = \App\Models\Pelanggan::findOrFail($data['pelanggan_id']);
+        try {
+            $order = $checkout->create($customer, $request->all(), $request->user('staff'));
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
+        return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor]);
+    }
 
-        // TODO: Implement order creation from manual input
-        // Similar to CustomerOrderController::store but with admin notes
-
-        return back()
-            ->with('success', 'Pesanan manual berhasil dibuat.');
+    public function manualBouquet(Request $request, \App\Actions\CreateBouquetOrder $checkout)
+    {
+        $d = $request->validate(['pelanggan_id' => 'required|integer|min:1', 'persetujuan_pelanggan_diperiksa' => 'accepted', 'alasan_pengecualian' => 'prohibited']);
+        try {
+            $order = $checkout->create(\App\Models\Pelanggan::findOrFail($d['pelanggan_id']), $request->all(), $request->user('staff'));
+        } catch (\DomainException $e) {
+            abort(409, $e->getMessage());
+        }
+        return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor, 'total' => $order->total]);
     }
 
     /**
@@ -106,44 +78,18 @@ class AdminOrderController extends BaseController
      */
     public function transitionStatus(Request $request, $id)
     {
-        $request->validate([
-            'status_baru' => 'required|in:menunggu_pembayaran,kedaluwarsa,dikonfirmasi,sedang_diproduksi,siap,sudah_diserahkan,sudah_dikembalikan,selesai,dibatalkan',
-            'kode_transisi' => 'required|string|size:3',
-            'catatan' => 'sometimes|string',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-
-        // TODO: Use TransitionOrderStatus action
-        // $action = new TransitionOrderStatus();
-        // $result = $action->handle($pesanan, $request->status_baru, $request->kode_transisi, auth('staff')->user(), $request->catatan);
-
-        // For now, just update status
-        $pesanan->status = $request->status_baru;
-        $pesanan->save();
-
-        // Log the transition
-        // \App\Models\LogAktivitas::create([...]);
-
-        return back()
-            ->with('success', 'Status pesanan berhasil diubah menjadi '.$request->status_baru);
+        abort(410, 'Gunakan aksi khusus sesuai tahap pesanan.');
     }
 
-    /**
-     * Verify payment for an order.
-     *
-     * @param  int  $id
-     * @return View
-     */
-    public function verifyPayment($id)
+    public function verifyPayment(Request $request, int $id, VerifyRentalTransfer $transfers)
     {
-        $pesanan = Pesanan::findOrFail($id);
-        $pembayaran = $pesanan->pembayaran()->first();
-
-        return view('admin.pembayaran.verify', [
-            'pesanan' => $pesanan,
-            'pembayaran' => $pembayaran,
-        ]);
+        abort_unless(app()->environment('local', 'testing', 'staging') && config('checkout.staging'), 503, 'Verifikasi belum dibuka.');
+        try {
+            $result = $transfers->record($request->user('staff'), $id, $request->all());
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
+        return response()->json(['hasil' => $result], $result === 'perlu_rekonsiliasi' ? 202 : 200);
     }
 
     /**
@@ -152,41 +98,15 @@ class AdminOrderController extends BaseController
      * @param  int  $id
      * @return RedirectResponse
      */
-    public function rejectOrAcceptPayment(Request $request, $id)
+    public function rejectOrAcceptPayment(Request $request, int $id, VerifyRentalTransfer $transfers)
     {
-        $request->validate([
-            'action' => 'required|in:terima,tolak',
-            'nominal_diterima' => 'sometimes|integer',
-            'catatan' => 'required_if:action,tolak|string',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-        $pembayaran = $pesanan->pembayaran()->first();
-
-        if ($request->action === 'terima') {
-            // Update payment status
-            $pembayaran->status = 'terverifikasi';
-            $pembayaran->diterima_pana = now();
-            $pembayaran->save();
-
-            // Update order status to diskonfirmasi
-            $pesanan->status = 'dikonfirmasi';
-            $pesanan->dikonfirmasi_pana = now();
-            $pesanan->save();
-
-            // Log aktivitas
-            // \App\Models\LogAktivitas::create([...]);
-        } elseif ($request->action === 'tolak') {
-            $pembayaran->status = 'ditolak';
-            $pembayaran->catatan_verifikasi = $request->catatan;
-            $pembayaran->diverifikasi_pana = now();
-            $pembayaran->save();
-
-            // Keep order status or set to specific rejection status
+        $data = $request->validate(['mutasi_id' => 'required|integer|min:1', 'action' => 'required|in:terima,tolak', 'catatan' => 'required|string|max:300']);
+        try {
+            $result = $transfers->decide($request->user('staff'), $id, (int) $data['mutasi_id'], $data['action'], $data['catatan']);
+        } catch (\DomainException $e) {
+            abort(409, $e->getMessage());
         }
-
-        return back()
-            ->with('success', 'Verifikasi pembayaran '.$request->action.' berhasil.');
+        return response()->json(['keputusan' => $result]);
     }
 
     /**
@@ -197,52 +117,7 @@ class AdminOrderController extends BaseController
      */
     public function recordCash(Request $request, $id)
     {
-        $request->validate([
-            'cara_serah' => 'required|in:antar,ambil',
-            'alamat_antar' => 'sometimes|string',
-            'zona_antar_id' => 'sometimes|exists:zona_antar,id',
-            'nominal_jaminan' => 'sometimes|integer',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-
-        // TODO: Implement cash payment recording
-        // - Set wajib_dp based on nominal
-        // - Generate tagihan
-        // - Create Pembayaran record
-
-        return back()
-            ->with('success', 'Pembayaran tunai tercatat.');
-    }
-
-    /**
-     * Record refund.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function recordRefund(Request $request, $id)
-    {
-        $request->validate([
-            'action' => 'required|in:terima,tolak',
-            'catatan' => 'required|string',
-        ]);
-
-        $pesanan = Pesanan::findOrFail($id);
-        $pembayaran = $pesanan->pembayaran()->first();
-
-        // TODO: Implement refund recording using RecordRefund action
-        // - Hitung BR-13 (min dari waktu & status)
-        // - Catat penyesuaian
-        // - Update status
-
-        if ($request->action === 'terima') {
-            $pembayaran->status = 'terverifikasi';
-            $pembayaran->save();
-        }
-
-        return back()
-            ->with('success', 'Catatan refund berhasil disimpan.');
+        abort(410, 'Gunakan aksi khusus sesuai tahap pesanan.');
     }
 
     /**
@@ -251,20 +126,13 @@ class AdminOrderController extends BaseController
      * @param  int  $id
      * @return RedirectResponse
      */
-    public function reactivateExpired($id)
+    public function reactivateExpired(Request $request, int $id, \App\Actions\ResolveLateRental $action)
     {
-        $pesanan = Pesanan::findOrFail($id);
-
-        // TODO: Implement ExpireStaleOrders scheduler logic
-        // - Cek status awaiting_payment + tahan_hingga_pada < now → expired
-        // - Release unit
-        // - Set status menjadi kedaluwarsa
-
-        $pesanan->status = 'kedaluwarsa';
-        $pesanan->dibatalkan_pana = now();
-        $pesanan->save();
-
-        return back()
-            ->with('success', 'Pesanan expired telah diaktifkan kembali.');
+        $data = $request->validate(['mutasi_id' => 'required|integer|min:1']);
+        try {
+            return response()->json(['hasil' => $action->handle($request->user('staff'), $id, (int) $data['mutasi_id'])]);
+        } catch (\DomainException $exception) {
+            abort(409, $exception->getMessage());
+        }
     }
 }

@@ -2,71 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pelanggan;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\View\View;
 
-/**
- * Customer Profile Controller - Profile management for authenticated customers
- * --------------------------------------------------------
- * auth:customer middleware applied at route level.
- */
-class CustomerProfileController extends BaseController
+class CustomerProfileController extends Controller
 {
-    /**
-     * Show the edit profile form.
-     *
-     * @return View
-     */
-    public function edit()
+    public function edit(Request $request)
     {
-        // Get the authenticated pelanggan
-        // In a real app: $pelanggan = auth('customer')->user();
-        // For now, we'll assume the pelanggan is in the session
-        $pelanggan = Pelanggan::find(1); // Placeholder - replace with auth
-
-        return view('pages.profile.edit', ['pelanggan' => $pelanggan]);
+        return view('pelanggan.profil', ['pelanggan' => $request->user('customer')]);
     }
 
-    /**
-     * Update the profile.
-     *
-     * @return RedirectResponse
-     */
     public function update(Request $request)
     {
-        $request->validate([
-            'nama' => 'sometimes|string|max:100',
-        ]);
-
-        // Get the authenticated pelanggan
-        // $pelanggan = auth('customer')->user();
-        // $pelanggan->nama = $request->nama;
-        // $pelanggan->save();
-
-        return back()
-            ->with('success', 'Profil berhasil diperbarui.');
+        $data = $request->validate(['nama' => 'required|string|max:100']);
+        $onboarding = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data) {
+            $customer = \App\Models\Pelanggan::lockForUpdate()->findOrFail($request->user('customer')->id);
+            abort_unless($customer->isActive() && $customer->isVerified(), 403);
+            $first = ! $customer->isOnboarded();
+            if ($first) {
+                $version = config('checkout.privacy_version');
+                abort_unless(is_string($version) && filled($version) && mb_strlen($version) <= 40, 503, 'Versi kebijakan privasi belum tersedia.');
+                $request->validate(['setuju_privasi' => 'accepted', 'versi_privasi' => ['required', 'string', \Illuminate\Validation\Rule::in([$version])]]);
+                $customer->versi_kebijakan = $version;
+                $customer->disetujui_pada = now('Asia/Jakarta');
+            }
+            $customer->fill($data)->save();
+            return $first;
+        });
+        return ($onboarding ? redirect()->route('catalog.index') : back())->with('status', 'Profil berhasil diperbarui.');
     }
 
-    /**
-     * Destroy the account (anonymize).
-     *
-     * @return RedirectResponse
-     */
-    public function destroy(Request $request)
+    public function destroy(Request $request, \App\Actions\AnonymizeCustomer $action)
     {
-        // $pelanggan = auth('customer')->user();
-        // $pelanggan->nomor_wa = hash('sha256', $pelanggan->nomor_wa);
-        // $pelanggan->nama = 'Pelanggan Dihapus';
-        // $pelanggan->dihapus_pana = now();
-        // $pelanggan->save();
-
-        // Log aktivitas
-        // \App\Models\LogAktivitas::create([...]);
-
-        return redirect()->route('index')
-            ->with('success', 'Akun telah dihapus secara anonim.');
+        $request->validate(['konfirmasi' => 'required|in:HAPUS AKUN SAYA']);
+        $id = $request->user('customer')->id;
+        $proof = $request->session()->get('otp.verified');
+        abort_unless(is_array($proof) && ($proof['id'] ?? null) === $id && ($proof['at'] ?? 0) >= now()->subMinutes(5)->timestamp,
+            403, 'Masuk kembali dengan OTP sebelum menghapus akun.');
+        $action->handle($id);
+        \Illuminate\Support\Facades\Auth::guard('customer')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return response()->noContent();
     }
 }

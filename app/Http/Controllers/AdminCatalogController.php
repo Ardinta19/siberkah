@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
+use App\Support\StaffAudit;
+use Illuminate\Support\Facades\DB;
 use App\Models\Produk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +26,7 @@ class AdminCatalogController extends BaseController
      */
     public function index()
     {
-        $produk = Produk::with('kategori')->latest()->paginate(20);
+        $produk = Produk::with('kategori')->orderByDesc('id')->paginate(20);
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
 
         return view('admin.katalog.index', [
@@ -56,27 +58,26 @@ class AdminCatalogController extends BaseController
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'kategori_id' => 'required|exists:kategori,id',
             'nama' => 'required|string|max:150',
             'slug' => 'required|string|max:170|unique:produk,slug',
             'jenis' => 'required|in:sewa,jual,custom',
             'kelompok_kapasitas' => 'nullable|string|max:30',
             'deskripsi' => 'nullable|string',
+            'izin_hari_sama' => 'sometimes|boolean',
+            'lead_custom_hari' => 'sometimes|integer|in:1,2',
             'harga_dasar' => 'required|integer|min:0',
-            'foto_utama' => 'nullable|image|max:5120',
+            'foto_utama' => 'prohibited',
             'aktif' => 'boolean',
         ]);
 
-        $data = $request->except('foto_utama');
-        $data['aktif'] = $request->has('aktif');
-
-        if ($request->hasFile('foto_utama')) {
-            $path = $request->file('foto_utama')->store('produk', 'public');
-            $data['foto_utama'] = $path;
-        }
-
-        $produk = Produk::create($data);
+        unset($data['foto_utama']);
+        $data['aktif'] = false; // Publishing is a separate Owner action.
+        DB::transaction(function () use ($data) {
+            $product = Produk::create($data);
+            StaffAudit::record('buat_draf', 'produk', $product->id, null, $product->fresh()->only(array_keys($data)));
+        });
 
         return redirect()
             ->route('admin.katalog.index')
@@ -110,31 +111,28 @@ class AdminCatalogController extends BaseController
     {
         $produk = Produk::findOrFail($id);
 
-        $request->validate([
+        $data = $request->validate([
             'kategori_id' => 'required|exists:kategori,id',
             'nama' => 'required|string|max:150',
             'slug' => 'required|string|max:170|unique:produk,slug,'.$id,
             'jenis' => 'required|in:sewa,jual,custom',
             'kelompok_kapasitas' => 'nullable|string|max:30',
             'deskripsi' => 'nullable|string',
+            'izin_hari_sama' => 'sometimes|boolean',
+            'lead_custom_hari' => 'sometimes|integer|in:1,2',
             'harga_dasar' => 'required|integer|min:0',
-            'foto_utama' => 'nullable|image|max:5120',
+            'foto_utama' => 'prohibited',
             'aktif' => 'boolean',
         ]);
 
-        $data = $request->except('foto_utama');
-        $data['aktif'] = $request->has('aktif');
-
-        if ($request->hasFile('foto_utama')) {
-            // Delete old image if exists
-            if ($produk->foto_utama) {
-                \Storage::disk('public')->delete($produk->foto_utama);
-            }
-            $path = $request->file('foto_utama')->store('produk', 'public');
-            $data['foto_utama'] = $path;
-        }
-
-        $produk->update($data);
+        unset($data['foto_utama'], $data['aktif']);
+        DB::transaction(function () use ($data, $id) {
+            $product = Produk::lockForUpdate()->findOrFail($id);
+            abort_if($product->jenis !== $data['jenis'] && DB::table('item_pesanan')->where('produk_id', $id)->exists(), 409, 'Jenis produk dalam riwayat pesanan tidak dapat diubah.');
+            $before = $product->only(array_keys($data));
+            $product->update($data);
+            StaffAudit::record('ubah_produk', 'produk', $product->id, $before, $product->fresh()->only(array_keys($data)));
+        });
 
         return redirect()
             ->route('admin.katalog.index')
@@ -149,9 +147,7 @@ class AdminCatalogController extends BaseController
      */
     public function archive($id)
     {
-        $produk = Produk::findOrFail($id);
-        $produk->aktif = false;
-        $produk->save();
+        $this->visibility($id, false);
 
         return redirect()
             ->route('admin.katalog.index')
@@ -166,89 +162,22 @@ class AdminCatalogController extends BaseController
      */
     public function publish($id)
     {
-        $produk = Produk::findOrFail($id);
-        $produk->aktif = true;
-        $produk->save();
+        $this->visibility($id, true);
 
         return redirect()
             ->route('admin.katalog.index')
             ->with('success', 'Produk dipublikasikan.');
     }
 
-    /**
-     * Manage variants for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageVariants(Request $request, $id)
+    private function visibility(int $id, bool $active): void
     {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle variant management
-        // - Create/update variants
-        // - Set stok per variant
-        // - Associate with unit_sewa
-
-        return back()
-            ->with('success', 'Varian produk berhasil dikelola.');
-    }
-
-    /**
-     * Manage options for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageOptions(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle option management
-        // - Create/update opsi_produk
-        // - Create/update nilai_opsi
-        // - Set wajib/opsional
-
-        return back()
-            ->with('success', 'Opsi produk berhasil dikelola.');
-    }
-
-    /**
-     * Manage images for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageImages(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle image upload and management
-        // - WebP conversion
-        // - EXIF strip
-        // - Alt text wajib
-        // - Max 5MB, min 800px width
-
-        return back()
-            ->with('success', 'Gambar produk berhasil dikelola.');
-    }
-
-    /**
-     * Manage units for a product.
-     *
-     * @param  int  $id
-     * @return RedirectResponse
-     */
-    public function manageUnits(Request $request, $id)
-    {
-        $produk = Produk::findOrFail($id);
-
-        // TODO: Handle unit management
-        // - CRUD unit_sewa
-        // - Set status aktif/nonaktif
-        // - Associate with varian_produk
-
-        return back()
-            ->with('success', 'Unit sewa berhasil dikelola.');
+        DB::transaction(function () use ($id, $active) {
+            $product = Produk::lockForUpdate()->findOrFail($id);
+            $old = $product->aktif;
+            if ($old === $active) { return; }
+            abort_if($active && ! $product->kategori()->where('aktif', true)->exists(), 409, 'Kategori belum aktif.');
+            $product->update(['aktif' => $active]);
+            StaffAudit::record($active ? 'terbit_produk' : 'arsip_produk', 'produk', $id, ['aktif' => $old], ['aktif' => $active]);
+        });
     }
 }

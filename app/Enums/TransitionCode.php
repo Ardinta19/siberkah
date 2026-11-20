@@ -27,23 +27,6 @@ enum TransitionCode: string
     case T14 = 'T14';
 
     /**
-     * Valid transisi ke status berikutnya dari status saat ini.
-     */
-    public function validTransitionsFrom(self $current): array
-    {
-        return match ($current) {
-            self::MENUNGGU_PEMBAYARAN => [self::DIKONFIRMASI, self::KEDALUWARSA, self::DIBATALKAN],
-            self::DIKONFIRMASI => [self::SEDANG_DIPRODUKSI, self::SIAP, self::DIBATALKAN],
-            self::SEDANG_DIPRODUKSI => [self::SIAP, self::DIBATALKAN],
-            self::SIAP => [self::SUDAH_DISERAHKAAN, self::DIBATALKAN],
-            self::SUDAH_DISERAHKAAN => [self::SUDAH_DIKEMBALIKAN, self::SELESAI],
-            self::SUDAH_DIKEMBALIKAN => [self::SELESAI],
-            self::SELESAI => [],
-            self::DIBATALKAN => [],
-        };
-    }
-
-    /**
      * Semua kode transisi dalam array.
      */
     public static function allCodes(): array

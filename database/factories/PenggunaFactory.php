@@ -29,6 +29,7 @@ class PenggunaFactory extends Factory
             'surel' => fake()->unique()->safeEmail(),
             'kata_sandi' => static::$password ??= Hash::make('password'),
             'peran' => 'staf_produksi',
+            'wajib_ganti_sandi' => false, // Existing staff unless the test exercises onboarding.
             'aktif' => true,
             'remember_token' => Str::random(10),
         ];

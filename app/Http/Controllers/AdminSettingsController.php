@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BlokirKalender;
 use App\Models\KapasitasProduksiHarian;
-use App\Models\Pengaturan;
+use App\Support\BusinessSettings;
+use Illuminate\Support\Facades\DB;
 use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,41 +27,57 @@ class AdminSettingsController extends BaseController
      */
     public function index()
     {
-        $pengaturan = Pengaturan::orderBy('kunci')->get();
-
-        $pengaturanMap = [];
-        foreach ($pengaturan as $setting) {
-            $pengaturanMap[$setting->kunci] = $setting->nilai;
+        $settings = [];
+        foreach (BusinessSettings::RULES as $key => [$default, $min, $max]) {
+            $settings[$key] = ['nilai' => BusinessSettings::value($key), 'bawaan' => $default, 'min' => $min, 'maks' => $max];
         }
-
-        return view('admin.settings.index', [
-            'pengaturan' => $pengaturanMap,
-        ]);
+        return response()->json(['pengaturan' => $settings, 'tarif_kerusakan' => DB::table('tarif_kerusakan')->orderBy('kode')->get(['id','kode','nama','satuan','tarif']), 'zona' => DB::table('zona_antar')->orderBy('jarak_maks_km')->get(['id','nama','jarak_maks_km','aktif','ongkir'])])->header('Cache-Control', 'private, no-store');
     }
 
-    /**
-     * Update a setting value.
-     *
-     * @return RedirectResponse
-     */
     public function update(Request $request)
     {
-        $request->validate([
-            'kunci' => 'required|string|max:60',
-            'nilai' => 'required|string',
-            'tipe' => 'sometimes|string|max:15|default:teks',
-        ]);
-
-        $setting = Pengaturan::updateOrCreate(
-            ['kunci' => $request->kunci],
-            [
-                'nilai' => $request->nilai,
-                'tipe' => $request->tipe ?? 'teks',
-            ]
-        );
+        $key = $request->validate(['kunci' => ['required', \Illuminate\Validation\Rule::in(array_keys(BusinessSettings::RULES))]])['kunci'];
+        [$default, $min, $max] = BusinessSettings::RULES[$key];
+        $number = (int) $request->validate(['nilai' => "required|integer|between:$min,$max"])['nilai'];
+        DB::transaction(function () use ($key, $number, $default, $request) {
+            DB::table('pengaturan')->insertOrIgnore(['kunci' => $key, 'tipe' => 'integer', 'nilai' => (string) $default, 'dibuat_pada' => now()]);
+            $row = DB::table('pengaturan')->where('kunci', $key)->lockForUpdate()->first();
+            if ((string) $row->nilai === (string) $number) {
+                return;
+            }
+            DB::table('pengaturan')->where('id', $row->id)->update(['tipe' => 'integer', 'nilai' => (string) $number, 'diubah_pada' => now()]);
+            DB::table('log_aktivitas')->insert(['aksi' => 'ubah_pengaturan', 'pengguna_id' => $request->user('staff')->id,
+                'subjek_tabel' => 'pengaturan', 'subjek_id' => $row->id, 'dibuat_pada' => now(),
+                'sebelum' => json_encode([$key => $row->nilai], JSON_THROW_ON_ERROR), 'sesudah' => json_encode([$key => $number], JSON_THROW_ON_ERROR)]);
+        }, 3);
 
         return back()
             ->with('success', 'Pengaturan "'.$request->kunci.'" berhasil diupdate.');
+    }
+
+    public function zoneRate(Request $request, int $id)
+    {
+        return $this->updateRate($request, $id, 'zona_antar', 'ongkir', 'ubah_tarif_zona');
+    }
+
+    public function damageRate(Request $request, int $id)
+    {
+        return $this->updateRate($request, $id, 'tarif_kerusakan', 'tarif', 'ubah_tarif_kerusakan');
+    }
+
+    private function updateRate(Request $request, int $id, string $table, string $field, string $action)
+    {
+        $data = $request->validate(['sebelum' => 'required|integer|min:0', $field => 'required|integer|between:0,10000000']);
+        DB::transaction(function () use ($data, $id, $table, $field, $action) {
+            $row = DB::table($table)->where('id', $id)->lockForUpdate()->first();
+            abort_unless($row, 404);
+            $fee = (int) $data[$field];
+            if ((int) $row->$field === $fee) { return; }
+            abort_unless((int) $data['sebelum'] === (int) $row->$field, 409, 'Tarif sudah berubah, muat ulang.');
+            DB::table($table)->where('id', $id)->update([$field => $fee, 'diubah_pada' => now()]);
+            \App\Support\StaffAudit::record($action,$table,$id,[$field=>(int)$row->$field],[$field=>$fee]);
+        }, 3);
+        return response()->noContent();
     }
 
     /**
@@ -76,25 +93,25 @@ class AdminSettingsController extends BaseController
             'alasan' => 'required|string|max:160',
         ]);
 
-        // Cek bentrok dengan pesanan aktif
-        $bentrok = Pesanan::where('tanggal_serah', $request->tanggal)
-            ->where('status', '!=', 'dibatalkan')
-            ->exists();
+        $bentrok = Pesanan::whereDate('tanggal_serah', $request->tanggal)
+            ->whereIn('status', ['menunggu_pembayaran','dikonfirmasi','sedang_diproduksi','siap','sudah_diserahkan'])
+            ->when($request->filled('produk_id'), fn ($q) => $q->whereHas('items', fn ($i) => $i->where('produk_id', $request->produk_id)))
+            ->pluck('nomor');
 
-        if ($bentrok && ! $request->has('produk_id')) {
-            return back()
-                ->with('error', 'Tanggal ini sudah memiliki pesanan aktif. Hanya bisa blokir untuk produk tertentu.');
-        }
-
-        BlokirKalender::create([
+        DB::transaction(function () use ($request) {
+            $block = BlokirKalender::create([
             'tanggal' => $request->tanggal,
             'produk_id' => $request->produk_id,
             'alasan' => $request->alasan,
             'pengguna_id' => auth('staff')->id(),
-        ]);
+            ]);
+            \App\Support\StaffAudit::record('blokir_kalender', 'blokir_kalender', $block->id, null, $request->only('tanggal','produk_id','alasan'));
+        });
 
-        return back()
-            ->with('success', 'Kalender berhasil diblokir.');
+        if ($request->expectsJson()) {
+            return response()->json(['peringatan_pesanan_aktif' => $bentrok], 201);
+        }
+        return back()->with('success', 'Kalender berhasil diblokir.')->with('peringatan_pesanan_aktif', $bentrok->all());
     }
 
     /**
@@ -105,16 +122,22 @@ class AdminSettingsController extends BaseController
     public function manageProductionCapacity(Request $request)
     {
         $request->validate([
+            'tanggal' => 'required|date_format:Y-m-d',
             'kelompok_kapasitas' => 'required|string|max:30',
-            'batas' => 'required|integer|min:1',
+            'batas' => 'required|integer|between:0,65535',
         ]);
 
-        KapasitasProduksiHarian::updateOrCreate(
-            ['kelompok_kapasitas' => $request->kelompok_kapasitas],
-            [
-                'batas' => $request->batas,
-            ]
-        );
+        $key = $request->only('tanggal', 'kelompok_kapasitas');
+        $limit = (int) $request->batas;
+        abort_if($key['kelompok_kapasitas'] === 'buket_custom' && $limit > 15, 422);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($key, $limit) {
+            $table = \Illuminate\Support\Facades\DB::table('kapasitas_produksi_harian');
+            $created = $table->insertOrIgnore($key + ['batas' => $limit, 'dibuat_pada' => now()]);
+            $current = $table->where($key)->lockForUpdate()->first();
+            abort_if($current->terpakai > $limit, 409, 'Kapasitas baru di bawah jumlah yang sudah dipesan.');
+            $table->update(['batas' => $limit, 'diubah_pada' => now()]);
+            \App\Support\StaffAudit::record('ubah_kapasitas','kapasitas_produksi_harian',$current->id,$created ? null : $key + ['batas' => (int) $current->batas], $key + ['batas' => $limit]);
+        }, 3);
 
         return back()
             ->with('success', 'Kapasitas produksi harian berhasil diupdate.');

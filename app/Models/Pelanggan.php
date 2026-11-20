@@ -3,31 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Pelanggan extends Model
+class Pelanggan extends Authenticatable
 {
+    public const CREATED_AT = 'dibuat_pada';
+    public const UPDATED_AT = 'diubah_pada';
+    protected $rememberTokenName = null;
+
     protected $table = 'pelanggan';
 
     protected $fillable = [
         'nomor_wa',
         'nama',
         'aktif',
-        'nomor_terverifikasi_pana',
-        'masuk_terakhir_pana',
-        'dihapus_pana',
-        'persetujuan_kebijakan',
-        'versi_kebijakan',
+        'nomor_terverifikasi_pada',
+        'masuk_terakhir_pada',
+        'dihapus_pada',
     ];
 
     protected $casts = [
         'aktif' => 'boolean',
-        'nomor_terverifikasi_pana' => 'datetime',
-        'masuk_terakhir_pana' => 'datetime',
-        'dihapus_pana' => 'datetime',
-        'persetujuan_kebijakan' => 'boolean',
+        'nomor_terverifikasi_pada' => 'datetime',
+        'masuk_terakhir_pada' => 'datetime',
+        'dihapus_pada' => 'datetime',
+        'disetujui_pada' => 'datetime',
         'versi_kebijakan' => 'string',
     ];
 
@@ -36,13 +38,7 @@ class Pelanggan extends Model
      *
      * @var array
      */
-    protected $appends = [
-        'role_label',
-        'is_verified',
-        'is_active',
-        'formatted_wa',
-        'is_onboarded',
-    ];
+    protected $appends = ['formatted_wa'];
 
     /**
      * Get the user associated with this pelanggan (many-to-many).
@@ -103,7 +99,7 @@ class Pelanggan extends Model
      */
     public function isVerified(): bool
     {
-        return ! is_null($this->nomor_terverifikasi_pana);
+        return ! is_null($this->nomor_terverifikasi_pada);
     }
 
     /**
@@ -111,7 +107,7 @@ class Pelanggan extends Model
      */
     public function isActive(): bool
     {
-        return $this->aktif && ! is_null($this->dihapus_pana);
+        return $this->aktif && is_null($this->dihapus_pada);
     }
 
     /**
@@ -119,7 +115,8 @@ class Pelanggan extends Model
      */
     public function isOnboarded(): bool
     {
-        return $this->persetujuan_kebijakan && ! is_null($this->versi_kebijakan) && $this->masuk_terakhir_pana !== null;
+        return filled($this->nama) && $this->disetujui_pada !== null && filled($this->versi_kebijakan)
+            && $this->versi_kebijakan === config('checkout.privacy_version');
     }
 
     /**
@@ -161,7 +158,7 @@ class Pelanggan extends Model
      */
     public function scopeTerverifikasi($query)
     {
-        return $query->whereNotNull('nomor_terverifikasi_pana');
+        return $query->whereNotNull('nomor_terverifikasi_pada');
     }
 
     /**
@@ -173,7 +170,7 @@ class Pelanggan extends Model
     public function scopeAktifDanTerverifikasi($query)
     {
         return $query->where('aktif', true)
-            ->whereNotNull('nomor_terverifikasi_pana');
+            ->whereNotNull('nomor_terverifikasi_pada');
     }
 
     /**
@@ -184,7 +181,7 @@ class Pelanggan extends Model
      */
     public function scopeTidakDihapus($query)
     {
-        return $query->whereNull('dihapus_pana');
+        return $query->whereNull('dihapus_pada');
     }
 
     /**
@@ -196,7 +193,8 @@ class Pelanggan extends Model
     public function scopeBisaMemesan($query)
     {
         return $query->where('aktif', true)
-            ->whereNotNull('nomor_terverifikasi_pana')
-            ->where('persetujuan_kebijakan', true);
+            ->whereNotNull('nomor_terverifikasi_pada')
+            ->whereNotNull('nama')->where('nama', '!=', '')->whereNotNull('disetujui_pada')
+            ->whereNotNull('versi_kebijakan')->where('versi_kebijakan', '!=', '')->where('versi_kebijakan', config('checkout.privacy_version'));
     }
 }
