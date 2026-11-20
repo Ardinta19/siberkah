@@ -50,6 +50,24 @@ with sync_playwright() as playwright:
     expect(fav).to_have_attribute('aria-pressed','true')
     page.reload()
     expect(fav).to_have_attribute('aria-pressed','true')
+    page.set_viewport_size({'width':375,'height':800})
+    page.emulate_media(color_scheme='dark')
+    assert page.locator('.kc-dock a').all_text_contents() == ['Beranda','Katalog','Lacak','Akun']
+    for selector in ('#main-header','footer'):
+        rgb = page.locator(selector).evaluate("el => getComputedStyle(el).backgroundColor")
+        assert rgb in ('rgb(255, 253, 249)','rgb(250, 245, 240)'), rgb
+    page.goto(base+'/katalog/buket-browser')
+    page.get_by_role('button',name='Simpan ke keranjang').click()
+    expect(page.get_by_role('heading',name='Keranjang Anda')).to_be_visible()
+    page.locator('[name=jumlah]').fill('2')
+    page.get_by_role('button',name='Perbarui').click()
+    page.get_by_role('link',name='Lanjut pesan').click()
+    expect(page.locator('[name=jumlah]')).to_have_value('2')
+    page.goto(base+'/keranjang')
+    page.get_by_role('button',name='Hapus').click()
+    expect(page.get_by_text('Keranjang masih kosong.')).to_be_visible()
+    page.set_viewport_size({'width':1440,'height':900})
+    page.emulate_media(color_scheme='light')
     def checkout():
         page.goto(base+'/katalog/buket-browser')
         page.get_by_role('link', name='Pesan produk ini').click()
