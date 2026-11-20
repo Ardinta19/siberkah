@@ -74,6 +74,12 @@ final class StoreSaleController extends Controller
             abort_unless($online || DB::table('penjualan_toko')->where('pesanan_id', $id)->exists(), 404);
             $from = $complete ? 'sudah_diserahkan' : 'siap';
             $to = $complete ? 'selesai' : 'sudah_diserahkan';
+            if (! $complete && $order->status === $to && $order->tunai_saat_serah) {
+                $cash = $request->validate(['tunai_diterima' => 'accepted', 'nominal_tunai' => 'required|integer|min:1']);
+                abort_unless(DB::table('pembayaran')->where(['pesanan_id' => $id, 'tunai_saat_serah' => true,
+                    'pengguna_id' => $request->user('staff')->id, 'nominal_diterima' => (int) $cash['nominal_tunai'], 'status' => 'terverifikasi'])->exists(),
+                    409, 'Serah terima sudah dicatat dengan petugas atau nominal berbeda.');
+            }
             if ($order->status !== $to) {
                 abort_if($online && DB::table('permohonan_batal')->where(['pesanan_id' => $id, 'status' => 'menunggu'])->exists(), 409, 'Tinjau pembatalan sebelum serah.');
                 abort_if($online && ! $complete && ! $order->tanggal_serah->isToday(), 409, 'Serah pada tanggal pesanan.');

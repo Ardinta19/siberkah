@@ -13,10 +13,15 @@ $product = DB::table('produk')->insertGetId(['nama' => 'Buket Browser', 'slug' =
 DB::table('varian_produk')->insert(['produk_id' => $product, 'nama' => 'Putih', 'harga' => 130000, 'stok' => 5]);
 DB::table('zona_antar')->insert(['nama' => 'Zona Uji', 'jarak_maks_km' => 5, 'ongkir' => 10000]);
 DB::table('rekening_pembayaran')->insert(['nama_bank' => 'BRI', 'nomor_rekening' => '00000000', 'atas_nama' => 'BUKAN REKENING NYATA']);
+$password = bin2hex(random_bytes(24));
+foreach (['owner','admin','staf_kurir'] as $role) {
+    DB::table('pengguna')->insert(['nama' => 'Operator CI', 'surel' => $role.'@example.test', 'peran' => $role, 'aktif' => true,
+        'wajib_ganti_sandi' => false, 'kata_sandi' => password_hash($password, PASSWORD_BCRYPT)]);
+}
 $session = app('session.store');
 $session->start();
 $session->put(auth('customer')->getName(), $customer);
 $session->save();
 $name = config('session.cookie');
 $enc = app('encrypter');
-echo json_encode(['name' => $name, 'value' => $enc->encrypt(CookieValuePrefix::create($name, $enc->getKey()).$session->getId(), false)]);
+echo json_encode(['password' => $password, 'cookie' => ['name' => $name, 'value' => $enc->encrypt(CookieValuePrefix::create($name, $enc->getKey()).$session->getId(), false)]]);

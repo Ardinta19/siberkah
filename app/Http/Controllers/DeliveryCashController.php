@@ -26,7 +26,16 @@ final class DeliveryCashController extends Controller
         $summary = (clone $base)->groupBy('b.pengguna_id')->orderBy('b.pengguna_id')->selectRaw('b.pengguna_id AS petugas_id, COUNT(*) AS pembayaran, SUM(b.nominal_diterima) AS tagihan_setor, SUM(COALESCE(s.sesudah,0)) AS disetor, SUM(GREATEST(CAST(b.nominal_diterima AS SIGNED)-CAST(COALESCE(s.sesudah,0) AS SIGNED),0)) AS kurang, SUM(GREATEST(CAST(COALESCE(s.sesudah,0) AS SIGNED)-CAST(b.nominal_diterima AS SIGNED),0)) AS lebih')->get();
         $rows = $base->orderBy('b.id')->paginate(50, ['b.id as pembayaran_id','p.nomor','b.pengguna_id as petugas_id','b.diterima_pada','b.nominal_diterima as tagihan_setor',
                 DB::raw('COALESCE(s.sesudah,0) AS sudah_disetor'), DB::raw("CASE WHEN s.id IS NULL THEN 'belum_disetor' WHEN s.sesudah = b.nominal_diterima THEN 'cocok' WHEN s.sesudah < b.nominal_diterima THEN 'kurang' ELSE 'lebih' END AS status_setoran")])->withQueryString();
-        return response()->json(['ringkasan' => $summary, 'rincian' => $rows])->header('Cache-Control', 'private, no-store');
+        $data = ['ringkasan' => $summary, 'rincian' => $rows];
+        if ($request->expectsJson()) {
+            return response()->json($data)->header('Cache-Control', 'private, no-store');
+        }
+        $queue = DB::table('pembayaran as b')->join('pesanan as p', 'p.id', '=', 'b.pesanan_id')
+            ->join('rekening_pembayaran as r', 'r.id', '=', 'b.rekening_pembayaran_id')
+            ->where('b.status', 'menunggu')->whereNotNull('b.dikonfirmasi_pelanggan_pada')->where('b.tunai_saat_serah', false)
+            ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('mutasi_masuk as m')->whereColumn('m.pembayaran_id', 'b.id')->where('m.hasil', 'perlu_rekonsiliasi'))
+            ->orderBy('b.dikonfirmasi_pelanggan_pada')->orderBy('b.id')->paginate(25, ['p.nomor','b.id','b.pesanan_id','b.jenis','b.nominal_diharapkan','r.nama_bank','r.nomor_rekening','r.atas_nama'], 'antrean')->withQueryString();
+        return response()->view('admin.kas-antar', $data + ['tanggal' => $filters['tanggal'], 'queue' => $queue])->header('Cache-Control', 'private, no-store');
     }
 
     public function history(int $id)

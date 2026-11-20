@@ -24,7 +24,7 @@ class StaffDeliveryController extends BaseController
     {
         return view('staf.agenda', [
             'judul' => 'Agenda serah terima',
-            'pesanan' => Pesanan::whereIn('status', ['siap', 'sudah_diserahkan'])
+            'pesanan' => Pesanan::addSelect(['buket_online' => \Illuminate\Support\Facades\DB::table('checkout_buket')->select('pesanan_id')->whereColumn('pesanan_id', 'pesanan.id')->limit(1)])->whereIn('status', ['siap', 'sudah_diserahkan'])
                 ->orderBy('tanggal_serah')->orderBy('id')->paginate(20),
         ]);
     }

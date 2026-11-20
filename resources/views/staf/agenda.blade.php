@@ -5,6 +5,18 @@
     @if(session('status')) <p role="status">{{ session('status') }}</p> @endif
     @forelse($pesanan as $p)
         <p class="border-b py-3">{{ $p->nomor }} · {{ $p->tanggal_serah->format('d/m/Y') }} · {{ str_replace('_', ' ', $p->status) }}</p>
+        @if(!($produksi ?? false) && config('checkout.staging') && app()->environment('testing','staging','local') && $p->buket_online && $p->status === 'siap' && $p->tanggal_serah->isToday())
+            <form method="post" action="{{ route('toko.serah', $p->id) }}" class="grid gap-3 p-3" data-ledger>
+                @csrf
+                <label><input type="checkbox" required name="barang_diperiksa" value="1"> Barang diperiksa</label>
+                <label><input type="checkbox" required name="diterima_pembeli" value="1"> Pembeli telah menerima barang</label>
+                @if($p->tunai_saat_serah)
+                    <label>Uang diterima (saldo Rp{{ number_format($p->saldo,0,',','.') }}) <input required type="number" min="1" name="nominal_tunai"></label>
+                    <label><input type="checkbox" required name="tunai_diterima" value="1"> Uang tunai sudah diterima</label>
+                @endif
+                <button class="btn-primary">Catat serah terima {{ $p->nomor }}</button><output role="status"></output>
+            </form>
+        @endif
         @if($produksi ?? false)
             <form method="post" class="flex gap-2 py-2">
                 @csrf
@@ -19,5 +31,6 @@
         <p>Tidak ada pesanan dalam antrean.</p>
     @endforelse
     {{ $pesanan->links() }}
+    @include('staf.submit-ledger')
 </section>
 @endsection
