@@ -18,7 +18,7 @@ export function disclosure(panel, fold = false) {
     const frames = fold
       ? [{height:`${wasHidden ? 0 : height}px`, opacity,overflow:'clip'}, {height:`${open ? endHeight : 0}px`,opacity:Number(open),overflow:'clip'}]
       : [{opacity,transform:`translateY(${wasHidden ? -8 : 0}px)`},{opacity:Number(open),transform:`translateY(${open ? 0 : -8}px)`}];
-    const current = panel.animate(frames,{duration:open ? 210 : 155,easing:'cubic-bezier(.22,.78,.26,1)'});
+    const current = panel.animate(frames,{duration:open ? 340 : 235,easing:'cubic-bezier(.22,.78,.26,1)'});
     animation = current;
     current.onfinish = () => { if(animation === current){ panel.hidden = !open; animation = null; } };
   };

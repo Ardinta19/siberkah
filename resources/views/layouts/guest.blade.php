@@ -14,10 +14,12 @@
     <!-- Skip link for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only">Lewati ke konten utama</a>
 
+    <span id="bk-scroll-marker" aria-hidden="true"></span>
     <!-- Header -->
     <header class="sticky top-0 z-40 bg-[#fffdf9] backdrop-blur-sm border-b border-neutral-200 transition-shadow-200" id="main-header">
         <div class="container-siberkah">
-            <div class="flex items-center gap-2 h-16">
+            <button type="button" id="bk-expand-pill" hidden aria-label="Tampilkan navigasi Berkah Kreatif"><img src="{{ asset('images/berkah-kreatif.webp') }}" width="40" height="40" alt=""></button>
+            <div class="bk-full-nav flex items-center gap-2 h-16">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
                     <img src="{{ asset('images/berkah-kreatif.webp') }}" width="44" height="44" alt="" class="size-11 object-contain">
@@ -65,6 +67,7 @@
                     @endauth
                 </div>
 
+                <button hidden type="button" data-open-palette class="bk-palette-key" aria-haspopup="dialog" aria-controls="bk-palette" aria-label="Cari produk atau buka perintah"><span aria-hidden="true">⌕</span><kbd>Ctrl K</kbd></button>
                 <!-- Mobile menu button -->
                 <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors-150" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu" id="guest-menu-toggle">
                     <span class="bk-burger" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -110,6 +113,7 @@
         </div>
     </header>
 
+    @include('partials.storefront-palette')
     <!-- Main content -->
     <main id="main-content" class="flex-1" role="main">
         @yield('content')

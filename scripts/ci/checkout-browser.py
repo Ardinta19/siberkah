@@ -34,6 +34,19 @@ with sync_playwright() as playwright:
     clock = Path(os.environ['CHECKOUT_CI_CLOCK'])
     clock.write_text(f'{booking_day} 10:00:00')
     page.goto(base+'/katalog')
+    page.keyboard.press('Control+k')
+    palette = page.get_by_role('dialog', name='Mau ke mana?')
+    expect(palette).to_be_visible()
+    page.locator('#palette-query').fill('keranjang')
+    expect(palette.locator('nav a:visible')).to_have_count(1)
+    page.keyboard.press('Escape')
+    expect(palette).to_be_hidden()
+    page.evaluate('window.scrollTo(0,400)')
+    pill = page.locator('#bk-expand-pill')
+    expect(pill).to_be_visible()
+    pill.click()
+    expect(pill).to_be_hidden()
+    page.evaluate('window.scrollTo(0,0)')
     for width in (320,375,430,768,1024,1440):
         page.set_viewport_size({'width':width,'height':900})
         panel = page.locator('.koleksi')
@@ -75,6 +88,8 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width':375,'height':800})
     menu = page.locator('#mobile-menu')
     burger = page.locator('#guest-menu-toggle')
+    page.evaluate('window.scrollTo(0,0)')
+    expect(page.locator('#bk-expand-pill')).to_be_hidden()
     burger.focus()
     burger.press('Enter')
     expect(burger).to_have_attribute('aria-expanded','true')
@@ -108,6 +123,8 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width':375,'height':800})
     page.emulate_media(color_scheme='dark')
     assert page.locator('.kc-dock a').all_text_contents() == ['Beranda','Katalog','Lacak','Akun']
+    page.evaluate('window.scrollTo(0,0)')
+    expect(page.locator('#bk-expand-pill')).to_be_hidden()
     for selector in ('#main-header','footer'):
         rgb = page.locator(selector).evaluate("el => getComputedStyle(el).backgroundColor")
         assert rgb in ('rgb(255, 253, 249)','rgb(250, 245, 240)'), rgb
