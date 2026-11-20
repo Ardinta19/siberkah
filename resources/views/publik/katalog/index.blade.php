@@ -18,10 +18,10 @@
     <aside class="kc-tools" aria-label="Penyaring katalog"><p class="kc-rail-title">Saring koleksi</p>
     <form data-pending="Mencari…" class="kc-search" action="{{ route('catalog.index') }}" role="search">
       @if($filterKategori)<input type="hidden" name="kategori" value="{{ $filterKategori }}">@endif
-      <label>Pencarian<input type="search" name="q" value="{{ request('q') }}" maxlength="150" placeholder="Nama produk atau kategori"></label>
-      <button hidden type="button" class="kc-filter-toggle" aria-expanded="false" aria-controls="kc-extra">Filter &amp; urutan</button>
+      <label class="kc-query">Pencarian<input type="search" name="q" value="{{ request('q') }}" maxlength="150" placeholder="Nama produk atau kategori"></label>
+      <button hidden type="button" class="kc-filter-toggle" aria-expanded="false" aria-controls="kc-extra"><span>Filter &amp; urutan</span><span aria-hidden="true" class="kc-fold-icon">⌄</span></button>
       <div id="kc-extra"><label>Jenis produk<select name="jenis"><option value="">Semua jenis</option>@foreach(['sewa'=>'Sewa','jual'=>'Siap jual','custom'=>'Custom'] as $jenis=>$nama)<option value="{{ $jenis }}" @selected($filterJenis === $jenis)>{{ $nama }}</option>@endforeach</select></label>
-      <label>Tanggal sewa<input type="date" name="tanggal" value="{{ $filterTanggal }}"></label>
+      <label>Tanggal sewa<input aria-describedby="kc-date-help" type="date" name="tanggal" value="{{ $filterTanggal }}"><small id="kc-date-help">Khusus produk sewa.</small></label>
       <label>Urutan<select name="urut"><option value="">Urutan katalog</option><option value="harga_naik" @selected(request('urut') === 'harga_naik')>Harga terendah</option><option value="harga_turun" @selected(request('urut') === 'harga_turun')>Harga tertinggi</option></select></label>
       </div><button class="kc-action">Cari produk</button>
     </form>

@@ -134,3 +134,19 @@
 [data-pending][aria-busy=true] button:not([type=button]){cursor:progress;opacity:.8}
 @media(hover:hover){.bk-secondary:hover,.bk-stepper button:not(:disabled):hover,.bk-remove summary:hover{background:#f6e8e8}}
 @media(prefers-reduced-motion:no-preference){.bk-secondary,.bk-checkout,.bk-stepper button{transition:transform .16s,background-color .16s}.bk-secondary:active,.bk-checkout:active,.bk-stepper button:not(:disabled):active{transform:scale(.96)}.bk-notice{animation:kc-unfold .2s ease-out}}
+/* The toggle and submit stay paired even when the advanced panel expands. */
+.kc-filter-toggle {align-items:center;justify-content:center;gap:.5rem;font-weight:600}
+.kc-filter-toggle:not([hidden]) {display:inline-flex}
+.kc-fold-icon {font-size:1.15rem;line-height:1}
+.kc-filter-toggle[aria-expanded=true] .kc-fold-icon {transform:rotate(180deg)}
+#kc-date-help {display:block;font-size:.75rem;font-weight:400;color:#69545b;margin-top:.2rem}
+.kc-search label:has(input[type=date]:not(:disabled)) #kc-date-help {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.kc-search input:disabled {background:#f3eeea;color:#776a6b;cursor:not-allowed}
+@media(max-width:47.99rem){
+    .kc-search {grid-template-areas:'query query' 'filters filters' 'toggle submit'}
+    .kc-search .kc-query {grid-area:query}
+    .kc-search #kc-extra {grid-area:filters}
+    .kc-search .kc-filter-toggle {grid-area:toggle}
+    .kc-search .kc-action {grid-area:submit}
+    .kc-search #kc-extra label {grid-column:1/-1}
+}

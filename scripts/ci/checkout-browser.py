@@ -49,6 +49,19 @@ with sync_playwright() as playwright:
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
+    kind = page.get_by_label('Jenis produk')
+    kind.focus()
+    kind.press('ArrowDown')
+    kind.press('Enter')
+    kind.press('Escape')
+    kind.select_option('jual')
+    expect(panel.locator('input[name=tanggal]')).to_be_disabled()
+    if page.evaluate("CSS.supports('appearance:base-select') && CSS.supports('selector(::picker(select))')"):
+        assert kind.evaluate("el => getComputedStyle(el,'::picker(select)').appearance") == 'base-select'
+        assert kind.locator('option:checked').evaluate("el => getComputedStyle(el).backgroundColor") == 'rgb(245, 228, 234)'
+    kind.select_option('sewa')
+    expect(panel.locator('input[name=tanggal]')).to_be_enabled()
+    kind.select_option('')
     expect(page.locator('[data-replay]')).to_have_count(0)
     page.emulate_media(reduced_motion='reduce')
     assert page.locator('.kc-hero-reveal').evaluate("el => getComputedStyle(el,'::after').animationName") == 'bk-soft-light'
