@@ -19,3 +19,9 @@ Panel masuk dari pemicunya; sheet dari bawah, kalender bergeser sesuai arah bula
 Periksa 320–1440 px, keyboard, Escape, fokus kembali, ketukan berulang, mode kurangi gerakan, kombinasi pencarian+filter, dan keadaan kosong sebelum perubahan dinyatakan selesai.
 
 React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade. Ringkasan pencarian membaca keadaan form asli dan baru dimuat saat panel dibuka. Chip menghapus satu kriteria tanpa mengirim pesanan atau mengubah filter lain. Desktop menggunakan pantulan cahaya pada CTA saat hover; sentuhan merespons tekanan dan aktivasi, bukan sekadar pointer masuk. Jangan menganimasikan ulang setiap karakter pencarian atau memblokir navigasi demi memainkan efek.
+
+### Default lintas layout: kaca, navigasi, dan tindakan independen
+- Keempat layout (guest, customer, staff, admin termasuk owner) memakai shell pill yang merapat menuju logo, di desktop maupun ponsel. Area kerja dengan scroll internal mengamati penanda dalam konten, bukan posisi window. Logo membuka kembali kontrol.
+- Gunakan liquid glass pada permukaan navigasi tetap: tepi cahaya, warna dasar pekat dan blur bila didukung. Form, tabel keuangan, dan konfirmasi tetap opak agar nilai mudah diperiksa.
+- Desktop pelanggan mencari produk; ruang kerja mencari menu yang benar-benar dirender untuk perannya. Mobile memakai sheet; tab publik/pelanggan mengikuti empat tujuan belanja; tab kerja mengambil maksimal tiga tautan kerja, bukan tindakan logout. Sidebar kerja mempertahankan label dan fokus modal dengan susunan radial ringan.
+- Hapus pencarian berdampingan dengan nama: hanya menghapus q. Reset filter berada di kelompok tindakan filter: pertahankan q. Di panel, keduanya menyunting draf sampai Cari produk ditekan. Di hasil katalog, tautan langsung menerapkan perubahan dan kembali ke halaman pertama.

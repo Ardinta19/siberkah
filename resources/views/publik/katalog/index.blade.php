@@ -18,7 +18,7 @@
     @if(request()->filled('q'))<p class="kc-search-note">Hasil pencarian untuk <strong>“{{ request('q') }}”</strong> · <a href="{{ route('catalog.index',request()->only(['kategori','jenis','tanggal','urut'])) }}">Hapus pencarian</a></p>@endif
     <div class="kc-directory">
     <div class="kc-results">
-    <div class="kc-meta"><p role="status">@if($filterKategori){{ $kategoris->firstWhere('id',$filterKategori)?->nama }} · @endif<strong>{{ $produk->total() }}</strong> produk ditemukan @if($filterTanggal) · Tersedia untuk sewa pada {{ $filterTanggal }} @endif</p>@if(request()->anyFilled(['kategori','jenis','q','tanggal','urut']))<a href="{{ route('catalog.index') }}">Reset filter ↺</a>@endif</div>
+    <div class="kc-meta"><p role="status">@if($filterKategori){{ $kategoris->firstWhere('id',$filterKategori)?->nama }} · @endif<strong>{{ $produk->total() }}</strong> produk ditemukan @if($filterTanggal) · Tersedia untuk sewa pada {{ $filterTanggal }} @endif</p>@if(request()->anyFilled(['kategori','jenis','tanggal','urut']))<a href="{{ route('catalog.index',request()->only('q')) }}">Reset filter ↺</a>@endif</div>
     @if($filterJenis || request('urut'))<p class="kc-applied">Filter aktif: {{ ['jual'=>'Siap jual','sewa'=>'Sewa','custom'=>'Custom'][$filterJenis] ?? 'Semua jenis' }} @if(request('urut')) · {{ request('urut') === 'harga_naik' ? 'Harga terendah' : 'Harga tertinggi' }} @endif</p>@endif
     <div class="kc-grid">
       @forelse($produk as $p)

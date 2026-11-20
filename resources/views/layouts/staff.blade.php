@@ -88,8 +88,9 @@
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
             <!-- Top bar -->
-            <header class="sticky top-0 z-[var(--z-sticky)] bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200">
-                <div class="container-siberkah">
+            <header id="main-header" class="sticky top-0 z-[var(--z-sticky)] bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200">
+                @include('partials.expand-pill')
+                <div class="container-siberkah bk-full-nav">
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center gap-4">
                             <button type="button" class="lg:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150" aria-label="Buka sidebar" aria-controls="role-sidebar" aria-expanded="false" data-sidebar-toggle>
@@ -101,6 +102,7 @@
                         </div>
 
                         <div class="flex items-center gap-2">
+                            <button hidden data-role-command class="bk-palette-key" aria-haspopup="dialog" aria-label="Cari menu kerja">⌕ <kbd>Ctrl K</kbd></button>
                             <div class="hidden sm:flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
                                 <svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -113,6 +115,7 @@
             </header>
 
             <main id="main-content" class="flex-1 overflow-auto" role="main">
+                <span id="bk-scroll-marker" aria-hidden="true"></span>
                 <div class="container-siberkah py-6">
                     @yield('content')
                 </div>
@@ -123,5 +126,6 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-[var(--z-toast)] flex flex-col gap-2" role="region" aria-label="Notifikasi" aria-live="polite"></div>
 
     @yield('scripts')
+@include('partials.workspace-command')
 </body>
 </html>

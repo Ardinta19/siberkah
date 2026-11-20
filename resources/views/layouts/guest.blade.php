@@ -18,7 +18,7 @@
     <!-- Header -->
     <header class="sticky top-0 z-40 bg-[#fffdf9] backdrop-blur-sm border-b border-neutral-200 transition-shadow-200" id="main-header">
         <div class="container-siberkah">
-            <button type="button" id="bk-expand-pill" hidden aria-label="Tampilkan navigasi Berkah Kreatif"><img src="{{ asset('images/berkah-kreatif.webp') }}" width="40" height="40" alt=""></button>
+            @include('partials.expand-pill')
             <div class="bk-full-nav flex items-center gap-2 h-16">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
@@ -67,49 +67,14 @@
                     @endauth
                 </div>
 
-                <button hidden type="button" data-open-palette class="bk-palette-key" aria-haspopup="dialog" aria-controls="bk-palette" aria-label="Cari nama produk"><span aria-hidden="true">⌕</span><kbd>Ctrl K</kbd></button>
+                @include('partials.product-launcher')
                 <!-- Mobile menu button -->
-                <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors-150" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu" id="guest-menu-toggle">
-                    <span class="bk-burger" aria-hidden="true"><i></i><i></i><i></i></span>
-
-                </button>
+            @include('partials.mobile-menu-toggle')
                     <a class="bk-cart" href="{{ route('cart.index') }}" aria-label="Keranjang, {{ array_sum(session('cart', [])) }} item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="hidden lg:inline">Keranjang</span><b>{{ array_sum(session('cart', [])) }}</b></a>
             </div>
 
             <!-- Mobile menu -->
-            <div inert class="bk-mobile-sheet" id="mobile-menu" role="navigation" aria-label="Menu mobile">
-                <div class="bk-mobile-clip"><div class="bk-mobile-links"><p class="kc-kicker">Jelajahi Berkah Kreatif</p>
-                    <a href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.*')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
-                        Katalog
-                    </a>
-                    <a href="{{ route('syarat-sewa') }}" @if(request()->routeIs('syarat-sewa')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
-                        Syarat Sewa
-                    </a>
-                    <a href="{{ route('privasi') }}" @if(request()->routeIs('privasi')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
-                        Privasi
-                    </a>
-                    <a href="{{ route('kontak') }}" @if(request()->routeIs('kontak')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
-                        Kontak
-                    </a>
-                    @auth('customer')
-                        <a href="{{ route('pesanan.index') }}" @if(request()->routeIs('pesanan.index')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
-                            Pesanan Saya
-                        </a>
-                        @if(Route::has('otp.logout'))
-                        <form action="{{ route('otp.logout') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-3 py-2 text-base font-medium text-neutral-600 hover:text-danger-600 hover:bg-danger-50 rounded-xl transition-colors-150">
-                                Keluar
-                            </button>
-                        </form>
-                        @endif
-                    @else
-                        <a href="{{ route('otp.form') }}" @if(request()->routeIs('otp.form')) aria-current="page" @endif class="block px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
-                            Masuk / Daftar
-                        </a>
-                    @endauth
-                </div></div>
-            </div>
+            @include('partials.mobile-radial')
         </div>
     </header>
 

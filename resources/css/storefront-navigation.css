@@ -76,3 +76,15 @@
 }
 /* A warm contact state remains visible on touch devices with reduced movement. */
 [data-storefront] :is(.bk-selection button,.bk-palette-key,.bk-cart,.kc-dock a):active{background:#edd5de}
+/* Glass is navigation chrome, not a surface for financial data or product copy. */
+#main-header{background:transparent;backdrop-filter:none;border-color:transparent;box-shadow:none}
+#main-header::before,.kc-dock,#bk-expand-pill{background:linear-gradient(155deg,#fffdf9f7,#f6e8eced);border:1px solid #d7c0c7;box-shadow:inset 0 1px 1px white,0 6px 22px #4c203120}
+@supports(backdrop-filter:blur(10px)){#main-header::before,.kc-dock,#bk-expand-pill{background:linear-gradient(150deg,#fffdf9ed,#f3e6eada);backdrop-filter:blur(14px) saturate(135%)}}
+#main-header.bk-compact::before{transform:none;inset-inline:calc(50% - 27px);opacity:1;border-radius:50%}
+#main-header::before{inset-inline:0}
+@media(prefers-reduced-motion:no-preference){#main-header::before{transition:inset-inline .48s cubic-bezier(.23,.85,.22,1),border-radius .42s}#bk-expand-pill:not([hidden]){animation:bk-emerge .48s both}@keyframes bk-emerge{0%,35%{opacity:0}100%{opacity:1}}}
+.bk-palette [data-clear-query],.bk-palette [data-reset-filters]{color:#831739;text-decoration:underline;text-underline-offset:.2em;min-height:44px;font-size:.87rem}.bk-palette [data-clear-query]{display:block;margin-inline-start:auto}.bk-palette :is([data-clear-query],[data-reset-filters]):disabled{color:#786d72;text-decoration:none;opacity:.7}
+[data-workspace] main:has(#bk-scroll-marker){position:relative}.bk-work-dock a{min-width:0;flex:1;color:#642039}.bk-work-dock svg{width:19px;height:19px}
+@media(max-width:47.99rem){[data-workspace] main:has(#bk-scroll-marker){padding-bottom:calc(5rem + env(safe-area-inset-bottom))}body:has(.bk-work-dock){padding-bottom:0}}
+@media(max-width:63.99rem){#role-sidebar[aria-modal=true]{border-radius:0 2rem 3rem 0}#role-sidebar[aria-modal=true] nav a:nth-child(3n+2){margin-inline-start:.8rem}}
+@media(prefers-color-scheme:dark){[data-workspace] #main-header::before{background:#30262bf5;border-color:#69555e}}

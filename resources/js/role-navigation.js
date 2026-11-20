@@ -38,3 +38,25 @@ if (sidebar) {
   };
   large.addEventListener('change',()=>set(false)); set(false);
 }
+
+// Only use links actually rendered by Blade for this role (never POST actions).
+const command = document.querySelector('#workspace-command');
+if (command && sidebar && command.showModal) {
+  const trigger=document.querySelector('[data-role-command]'), input=command.querySelector('input');
+  const links=[...sidebar.querySelectorAll('nav a[href]')];
+  const list=command.querySelector('nav'), empty=command.querySelector('[data-empty]');
+  const dock=document.createElement('nav');dock.className='kc-dock bk-work-dock';dock.setAttribute('aria-label','Navigasi cepat ruang kerja');
+  links.forEach((source,index)=>{
+    const a=document.createElement('a');a.href=source.href;a.textContent=source.textContent.trim();
+    if(a.pathname===location.pathname)a.setAttribute('aria-current','page');list.append(a);
+    if(index<3){const tab=a.cloneNode(true), icon=source.querySelector('svg')?.cloneNode(true);if(icon){icon.setAttribute('aria-hidden','true');tab.prepend(icon);}dock.append(tab);}
+  });
+  // Keep tabs inside the inert workspace when the mobile sidebar opens.
+  sidebar.nextElementSibling.append(dock);
+  function filter(){let count=0;for(const a of list.children){a.hidden=!a.textContent.toLocaleLowerCase('id').includes(input.value.trim().toLocaleLowerCase('id'));if(!a.hidden)count++;}empty.hidden=!!count;}
+  let before;
+  function open(){if(document.querySelector('dialog[open],#role-sidebar[aria-modal=true]'))return;before=document.activeElement;input.value='';filter();command.showModal();input.focus();}
+  trigger.hidden=false;trigger.onclick=open;input.oninput=filter;
+  command.querySelector('[data-dismiss]').onclick=()=>command.close();command.onclose=()=>before?.focus();
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();command.open?command.close():open();}});
+}

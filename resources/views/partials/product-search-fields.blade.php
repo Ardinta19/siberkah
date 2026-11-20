@@ -1,5 +1,6 @@
 @php($selected = request()->routeIs('catalog.index') ? request()->only(['q','kategori','jenis','tanggal','urut']) : [])
 <label>Nama produk<input id="{{ $prefix }}-query" name="q" type="search" maxlength="150" placeholder="Contoh: buket mawar" value="{{ $selected['q'] ?? '' }}" autocomplete="off"></label>
+@if($prefix === 'palette')<button type="button" data-clear-query>Hapus pencarian</button>@endif
 <div class="bk-search-facets">
     <label>Kategori<select name="kategori"><option value="">Semua kategori</option>@foreach($searchCategories as $category)<option value="{{ $category->id }}" @selected((string)($selected['kategori'] ?? '') === (string)$category->id)>{{ $category->nama }}</option>@endforeach</select></label>
     <label>Jenis produk<select name="jenis"><option value="">Semua jenis</option>@foreach(['sewa'=>'Sewa','jual'=>'Siap jual','custom'=>'Custom'] as $type=>$label)<option value="{{ $type }}" @selected(($selected['jenis'] ?? '') === $type)>{{ $label }}</option>@endforeach</select></label>

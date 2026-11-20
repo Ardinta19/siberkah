@@ -14,8 +14,10 @@
 <body data-workspace class="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50">
     <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
 
+    <span id="bk-scroll-marker" aria-hidden="true"></span>
     <header class="sticky top-0 z-[var(--z-sticky)] bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200" id="main-header">
-        <div class="container-siberkah">
+        @include('partials.expand-pill')
+                <div class="container-siberkah bk-full-nav">
             <div class="flex items-center justify-between h-16">
                 <a href="{{ route('catalog.index') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
                     <svg class="w-8 h-8" viewBox="0 0 48 48" fill="none" aria-hidden="true">
@@ -35,6 +37,8 @@
                 </nav>
 
                 <div class="flex items-center gap-2">
+                    @include('partials.product-launcher')
+                    @include('partials.mobile-menu-toggle')
                     <div class="hidden sm:flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
                         <svg class="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -77,6 +81,7 @@
                 </div>
             </div>
         </div>
+        @include('partials.mobile-radial')
     </header>
 
     <main id="main-content" class="flex-1" role="main">
@@ -99,5 +104,7 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-[var(--z-toast)] flex flex-col gap-2" role="region" aria-label="Notifikasi" aria-live="polite"></div>
 
     @yield('scripts')
+@include('partials.storefront-palette')
+    @include('partials.mobile-dock')
 </body>
 </html>
