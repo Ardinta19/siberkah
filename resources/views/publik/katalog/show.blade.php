@@ -26,6 +26,10 @@
                 <p>Tanggal kosong terdekat:</p><ul>@foreach($saran as $hari)<li><a href="{{ route('catalog.show', ['slug' => $produk->slug, 'tanggal' => $hari]) }}">{{ $hari }}</a></li>@endforeach</ul>
             @endif
         @endif
+        <form method="post" action="{{ route('cart.save',$produk->id) }}">@csrf @method('put')
+            <label>Jumlah <input type="number" required min="1" max="100" name="jumlah" value="{{ session('cart.'.$produk->id,1) }}" class="w-16 border rounded p-2"></label>
+            <button class="kc-action">Simpan ke keranjang</button>
+        </form>
         @if(config('checkout.staging') && app()->environment('local','testing','staging'))
             @auth('customer')
                 <a class="btn-primary" href="{{ route('checkout.product', ['slug' => $produk->slug, 'tanggal' => $tanggalRequest]) }}">Pesan produk ini</a>

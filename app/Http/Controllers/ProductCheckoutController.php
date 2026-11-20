@@ -65,6 +65,7 @@ final class ProductCheckoutController extends Controller
             if (! in_array($e->getStatusCode(), [409,422], true)) { throw $e; }
             return back()->withInput()->withErrors(['checkout' => $e->getMessage() ?: 'Periksa pilihan, tanggal, dan ketersediaan produk.']);
         }
+        if ($request->boolean('dari_keranjang')) { $request->session()->forget('cart.'.$product->id); }
         return redirect()->route('pesanan.show', $order->nomor);
     }
 }

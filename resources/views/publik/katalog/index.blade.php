@@ -52,11 +52,7 @@
     </div>
     {{ $produk->links() }}
     </div></div>
-    <nav class="kc-dock" aria-label="Navigasi cepat katalog">
-      <a href="#produk-katalog" aria-current="page"><span aria-hidden="true">▦</span>Katalog</a>
-      <a href="{{ route('pesanan.index') }}"><span aria-hidden="true">☷</span>Pesanan</a>
-      <a href="{{ auth('customer')->check() ? route('profile.edit') : route('otp.form') }}"><span aria-hidden="true">◎</span>Akun</a>
-    </nav>
+
   </div>
 </section>
 @endsection

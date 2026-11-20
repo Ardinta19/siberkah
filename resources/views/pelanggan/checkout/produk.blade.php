@@ -9,10 +9,11 @@
     @else
     <form method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
         @csrf
+        @if(request()->boolean('dari_keranjang'))<input type="hidden" name="dari_keranjang" value="1">@endif
         <input type="hidden" name="kunci" value="{{ old('kunci', $key) }}">
         <input type="hidden" name="versi_privasi" value="{{ config('checkout.privacy_version') }}">
         @if($needsVariant)<label>Varian <select name="varian_id" required>@foreach($variants as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga }}" @selected(old('varian_id') == $v->id)>{{ $v->nama }} · Rp{{ number_format($v->harga,0,',','.') }}</option>@endforeach</select></label>@endif
-        <label>Jumlah <input required name="jumlah" type="number" min="1" max="100" value="{{ old('jumlah',1) }}"></label>
+        <label>Jumlah <input required name="jumlah" type="number" min="1" max="100" value="{{ old('jumlah',request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1) }}"></label>
         @foreach($options as $o)
             <label>{{ $o->nama }} @if($o->wajib)(wajib)@endif
             @if($o->tipe === 'teks')<input maxlength="300" name="opsi[{{ $o->id }}][teks]" value="{{ old('opsi.'.$o->id.'.teks') }}" @required($o->wajib)>

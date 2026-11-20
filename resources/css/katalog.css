@@ -49,3 +49,4 @@
   body:has(.kc-dock) { padding-bottom:calc(4rem + env(safe-area-inset-bottom)) }
   html:has(.kc-dock) { scroll-padding-bottom:calc(4rem + env(safe-area-inset-bottom)) }
 }
+.bk-cart{display:inline-flex;align-items:center;justify-content:center;gap:.2rem;color:#801637;min-width:44px;min-height:44px}.bk-cart b{font-size:.68rem;background:#f6e7eb;padding:.15rem .35rem;border-radius:1rem}.kc-dock{--line:#e3d7d0;--wine:#801637;color:#391822}.kc-dock a{min-width:0;flex:1}.kc-action{background-color:var(--wine,#801637)}
