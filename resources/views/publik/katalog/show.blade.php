@@ -23,7 +23,9 @@
             <ul class="bk-options">@foreach($varian as $v)<li>{{ $v->nama }} · Rp{{ number_format($v->harga, 0, ',', '.') }}</li>@endforeach</ul>
         @endif
         @if($produk->jenis === 'sewa')
-            <form class="bk-form-row" data-pending="Memeriksa…">@foreach($koleksi as $k=>$v)<input type="hidden" name="koleksi[{{ $k }}]" value="{{ $v }}">@endforeach<label>Tanggal sewa <input type="date" required name="tanggal" value="{{ $tanggalRequest }}"></label><button class="bk-secondary">Cek unit</button></form>
+            <form class="bk-form-row" data-pending="Memeriksa…">@foreach($koleksi as $k=>$v)<input type="hidden" name="koleksi[{{ $k }}]" value="{{ $v }}">@endforeach
+                @include('partials.rental-date',['day'=>$tanggalRequest,'required'=>true])
+                <button class="bk-secondary">Cek unit</button></form>
             @if($tersedia !== null)<p role="status">{{ $tersedia ? 'Ada unit pada tanggal ini. Unit belum dipesan.' : 'Tidak tersedia pada tanggal ini.' }}</p>@endif
             @if($saran)
                 <p>Tanggal kosong terdekat:</p><ul class="bk-options">@foreach($saran as $hari)<li><a href="{{ route('catalog.show', ['slug' => $produk->slug, 'tanggal' => $hari,'koleksi'=>$koleksi]) }}">{{ $hari }}</a></li>@endforeach</ul>

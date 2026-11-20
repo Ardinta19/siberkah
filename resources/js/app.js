@@ -1,3 +1,4 @@
+import "./rental-calendar.js";
 import "./floral-feedback.js";
 /* eslint-disable */
 // Load the editorial timeline only on the catalog, and only when motion is welcome.

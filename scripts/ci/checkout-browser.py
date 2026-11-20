@@ -45,7 +45,7 @@ with sync_playwright() as playwright:
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
         for field in ('q','jenis','tanggal','urut'):
-            box = panel.locator(f'[name={field}]').bounding_box()
+            box = panel.locator('.bk-date-trigger' if field == 'tanggal' else f'[name={field}]').bounding_box()
             assert box and box['x'] >= 0 and box['x']+box['width'] <= width+1
         if width < 768:
             page.get_by_role('button',name='Filter & urutan').click()
@@ -61,6 +61,16 @@ with sync_playwright() as playwright:
         assert kind.locator('option:checked').evaluate("el => getComputedStyle(el).backgroundColor") == 'rgb(245, 228, 234)'
     kind.select_option('sewa')
     expect(panel.locator('input[name=tanggal]')).to_be_enabled()
+    panel.locator('.bk-date-trigger').click()
+    calendar = page.get_by_role('dialog',name='Pilih tanggal sewa')
+    calendar.get_by_role('button',name='Bulan berikutnya').click()
+    date_button = calendar.locator('[data-date]').first
+    picked = date_button.get_attribute('data-date')
+    date_button.click()
+    expect(panel.locator('[name=tanggal]')).to_have_value(picked)
+    panel.locator('.bk-date-trigger').click()
+    calendar.get_by_role('button',name='Kosongkan').click()
+    expect(panel.locator('[name=tanggal]')).to_have_value('')
     kind.select_option('')
     expect(page.locator('[data-replay]')).to_have_count(0)
     page.emulate_media(reduced_motion='reduce')
