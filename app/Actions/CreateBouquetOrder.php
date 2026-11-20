@@ -17,7 +17,7 @@ final class CreateBouquetOrder
     {
         abort_if($staff && (! $staff->aktif || ! $staff->canVerifyPayment()), 403);
         $d = Validator::make($input, [
-            'kunci' => 'required|uuid', 'tanggal' => 'required|date_format:Y-m-d', 'pembayaran' => 'required|in:penuh,dp',
+            'kunci' => 'required|uuid', 'tanggal' => 'required|date_format:Y-m-d', 'pembayaran' => 'required|in:penuh,dp', 'metode_pelunasan' => 'sometimes|required|in:bank,tunai_saat_serah',
             'cara_serah' => 'required|in:ambil,antar', 'zona_antar_id' => 'required_if:cara_serah,antar|prohibited_if:cara_serah,ambil|integer|min:1',
             'alamat_antar' => 'required_if:cara_serah,antar|prohibited_if:cara_serah,ambil|string|max:500',
             'versi_privasi' => 'required|string|max:40', 'setuju_privasi' => 'accepted', 'items' => 'required|array|list|min:1|max:25',
@@ -108,8 +108,14 @@ final class CreateBouquetOrder
             $peak = DB::table('tanggal_puncak')->whereBetween('tanggal', [$now->toDateString(), $now->copy()->addDays(2)->toDateString()])->exists();
             $order->update(['subtotal' => $subtotal, 'ongkir' => $fee, 'total' => $total, 'saldo' => $total, 'wajib_dp' => $dp,
                 'tahan_hingga_pada' => $now->copy()->addMinutes(BusinessSettings::value($peak ? 'tahan_puncak_menit' : 'tahan_normal_menit')), 'batas_pelunasan_pada' => $dp ? $due : null]);
-            app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
+            $cash = ($d['metode_pelunasan'] ?? 'bank') === 'tunai_saat_serah';
+            if (! $cash || $dp) {
+                app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
+            }
             DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => $staff ? 'staf' : 'pelanggan', 'pengguna_id' => $staff?->id, 'dibuat_pada' => $now]);
+            if ($cash) {
+                app(HandoverCash::class)->arrange($order, $dp);
+            }
             DB::table('checkout_buket')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'], 'sidik' => $hash,
                 'versi_privasi' => $d['versi_privasi'], 'disetujui_pada' => $now, 'kapasitas_id' => $capacity?->id, 'jumlah_custom' => $custom]);
             return $order;

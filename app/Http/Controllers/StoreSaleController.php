@@ -77,6 +77,9 @@ final class StoreSaleController extends Controller
             if ($order->status !== $to) {
                 abort_if($online && DB::table('permohonan_batal')->where(['pesanan_id' => $id, 'status' => 'menunggu'])->exists(), 409, 'Tinjau pembatalan sebelum serah.');
                 abort_if($online && ! $complete && ! $order->tanggal_serah->isToday(), 409, 'Serah pada tanggal pesanan.');
+                if (! $complete) {
+                    app(\App\Actions\HandoverCash::class)->collect($request, $order);
+                }
                 abort_unless($order->status === $from && $order->saldo === 0 && $order->jumlah_dibayar === $order->total, 409);
                 $order->update(['status' => $to, ($complete ? 'selesai_pada' : 'diserahkan_pada') => now()]);
                 $this->history($id, $request->user('staff')->id, $from, $to, $complete ? 'T10' : 'T08');

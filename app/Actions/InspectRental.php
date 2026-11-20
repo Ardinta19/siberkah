@@ -37,6 +37,7 @@ final class InspectRental
                     $slot = DB::table('desain_papan')->where('pesanan_id', $order->id)->value('jadwal_serah');
                     abort_if($slot && $now->lt($slot), 409, 'Belum memasuki jadwal serah.');
                     abort_if(DB::table('permohonan_batal')->where('pesanan_id', $order->id)->where('status', 'menunggu')->exists(), 409, 'Putuskan permohonan pembatalan sebelum serah.');
+                    app(HandoverCash::class)->collect($request, $order);
                     abort_unless($order->saldo === 0 && $order->jumlah_dibayar === $order->total && $order->tanggal_serah->isSameDay($now), 409, 'Serah hanya pada hari acara setelah lunas.');
                 }
                 $items = $order->items()->orderBy('unit_sewa_id')->get();

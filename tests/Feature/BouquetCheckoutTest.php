@@ -28,6 +28,58 @@ class BouquetCheckoutTest extends TestCase
             'items' => [['produk_id' => $sale, 'varian_id' => $variant, 'jumlah' => 1], ['produk_id' => $custom, 'jumlah' => 2, 'opsi' => [['id' => $option, 'nilai_id' => $value, 'satuan' => 3]]]]];
     }
 
+    public function test_cash_pickup_only_credits_at_successful_handover_once(): void
+    {
+        $d = $this->cart();
+        $d['items'] = [$d['items'][0]];
+        $d['pembayaran'] = 'penuh';
+        $d['metode_pelunasan'] = 'tunai_saat_serah';
+        $this->postJson(route('pesanan.buket'), $d)->assertOk();
+        $this->postJson(route('pesanan.buket'), $d)->assertOk();
+        $order = Pesanan::sole();
+        $this->assertSame('dikonfirmasi', $order->status);
+        $this->assertSame(40000, $order->saldo);
+        $this->assertDatabaseCount('pembayaran', 0);
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'admin']), 'staff');
+        $this->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $order->id])->assertRedirect();
+        $url = route('toko.serah', $order->id);
+        $proof = ['barang_diperiksa' => true, 'diterima_pembeli' => true, 'tunai_diterima' => true];
+        $this->postJson($url, $proof + ['nominal_tunai' => 40000])->assertConflict();
+        $this->travelTo($order->tanggal_serah);
+        $this->postJson($url, $proof)->assertUnprocessable();
+        $this->postJson($url, $proof + ['nominal_tunai' => 39000])->assertConflict();
+        $this->assertDatabaseCount('pembayaran', 0);
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson($url, $proof + ['nominal_tunai' => 40000])->assertOk();
+        }
+        $this->assertSame(0, $order->fresh()->saldo);
+        $this->assertDatabaseCount('pembayaran', 1);
+        $this->assertDatabaseHas('pembayaran', ['tunai_saat_serah' => true, 'nominal_diterima' => 40000]);
+        $this->assertDatabaseCount('mutasi_masuk', 0);
+    }
+
+    public function test_delivery_cash_after_verified_dp_has_no_second_bank_invoice(): void
+    {
+        $d = $this->cart();
+        $d['cara_serah'] = 'antar';
+        $d['alamat_antar'] = 'Alamat uji';
+        $d['zona_antar_id'] = DB::table('zona_antar')->insertGetId(['nama' => 'Dekat', 'jarak_maks_km' => 5, 'ongkir' => 10000]);
+        $this->postJson(route('pesanan.buket'), $d + ['metode_pelunasan' => 'tunai_saat_serah'])->assertOk();
+        $order = Pesanan::sole();
+        $this->assertSame('menunggu_pembayaran', $order->status);
+        $bill = DB::table('pembayaran')->sole();
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'admin']), 'staff');
+        $this->postJson(route('admin.pesanan.verify-payment', $order->id), ['referensi' => 'BANK:DP', 'pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan])->assertOk();
+        $this->assertDatabaseCount('pembayaran', 1);
+        $this->post(route('staf.produksi.start'), ['pesanan_id' => $order->id])->assertRedirect();
+        $this->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $order->id])->assertRedirect();
+        $this->travelTo($order->tanggal_serah);
+        $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_kurir']), 'staff')->postJson(route('toko.serah', $order->id),
+            ['barang_diperiksa' => true, 'diterima_pembeli' => true, 'tunai_diterima' => true, 'nominal_tunai' => 140000])->assertOk();
+        $this->assertDatabaseHas('pembayaran', ['jenis' => 'pelunasan', 'tunai_saat_serah' => true, 'nominal_diterima' => 140000]);
+        $this->assertDatabaseCount('mutasi_masuk', 1);
+    }
+
     public function test_mixed_cart_from_checkout_through_payment_production_and_handover(): void
     {
         $d = $this->cart();

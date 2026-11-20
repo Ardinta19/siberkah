@@ -28,7 +28,7 @@ final class VerifyRentalTransfer
             $order = Pesanan::lockForUpdate()->findOrFail($orderId);
             abort_unless(DB::table('checkout_bank')->where('pesanan_id', $orderId)->exists(), 404);
             $invoice = DB::table('pembayaran')->where('pesanan_id', $orderId)->where('id', $data['pembayaran_id'])
-                ->whereIn('jenis', ['dp', 'penuh', 'pelunasan'])->lockForUpdate()->first();
+                ->where('tunai_saat_serah', false)->whereIn('jenis', ['dp', 'penuh', 'pelunasan'])->lockForUpdate()->first();
             abort_unless($invoice, 404);
             $previous = DB::table('mutasi_masuk')->where('referensi', $ref)->first();
             if ($previous) {
@@ -133,7 +133,7 @@ final class VerifyRentalTransfer
             return;
         }
         $order->update($balances + ['status' => 'dikonfirmasi', 'dikonfirmasi_pada' => $now]);
-        if ($invoice->jenis === 'dp') {
+        if ($invoice->jenis === 'dp' && ! $order->tunai_saat_serah) {
             app(IssueRentalInvoice::class)->issue($order->id, 'pelunasan', $remaining, $now);
         }
         DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_lama' => 'menunggu_pembayaran',

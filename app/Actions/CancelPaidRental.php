@@ -34,7 +34,7 @@ final class CancelPaidRental
             };
             $paid = (int) DB::table('pembayaran')->where('pesanan_id', $id)->whereIn('jenis', ['dp', 'pelunasan', 'penuh'])
                 ->where('status', 'terverifikasi')->sum('tagihan');
-            abort_unless($paid > 0 && $paid === $order->jumlah_dibayar && $paid + $order->saldo === $order->total, 409, 'Saldo tidak cocok. Periksa pembayaran terlebih dahulu.');
+            abort_unless(($paid > 0 || ($order->tunai_saat_serah && ! $order->wajib_dp)) && $paid === $order->jumlah_dibayar && $paid + $order->saldo === $order->total, 409, 'Saldo tidak cocok. Periksa pembayaran terlebih dahulu.');
             $now = now('Asia/Jakarta');
             $days = $now->copy()->startOfDay()->diffInDays($order->tanggal_serah->copy()->startOfDay(), false);
             $percent = min($stagePercent, $days >= 2 ? 100 : ($days >= 1 ? 50 : 0));

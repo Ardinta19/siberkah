@@ -32,7 +32,7 @@ final class ResolveLateRental
             $now = now('Asia/Jakarta');
             $basket = DB::table('checkout_buket')->where('pesanan_id', $id)->first();
             $activeCustomer = DB::table('pelanggan')->where('id', $order->pelanggan_id)->where('aktif', true)->whereNull('dihapus_pada')->exists();
-            $available = $activeCustomer && ($invoice->jenis !== 'dp' || $order->batas_pelunasan_pada?->gt($now)) && ($basket
+            $available = $activeCustomer && ($invoice->jenis !== 'dp' || ($order->tunai_saat_serah && $order->tanggal_serah->isFuture()) || $order->batas_pelunasan_pada?->gt($now)) && ($basket
                 ? app(RebookBouquet::class)->reserve($order, $basket, $now)
                 : $this->reserveRental($order, $now));
             $receiptQuery = DB::table('mutasi_masuk')->where('id', $receiptId);
@@ -44,7 +44,7 @@ final class ResolveLateRental
                 DB::table('pembayaran')->where('id', $invoice->id)->update(['status' => 'terverifikasi', 'nominal_diterima' => $receipt->nominal,
                     'diterima_pada' => $receipt->dicatat_pada, 'diverifikasi_pada' => $now, 'diubah_pada' => $now, 'pengguna_id' => $staff->id]);
                 $receiptQuery->update(['hasil' => 'terverifikasi', 'alasan' => 'reaktivasi_t13']);
-                if ($remaining) {
+                if ($remaining && ! $order->tunai_saat_serah) {
                     app(IssueRentalInvoice::class)->issue($id, 'pelunasan', $remaining, $now);
                 }
             }

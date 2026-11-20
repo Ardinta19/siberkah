@@ -23,7 +23,7 @@ final class CreateRentalOrder
             'alamat_antar' => 'required|string|max:500', 'zona_antar_id' => 'required|integer|min:1',
             'metode_teks' => 'sometimes|required|in:spidol,templat,cutting', 'jam_serah' => 'sometimes|required|date_format:H:i',
             'cara_serah' => 'sometimes|in:antar', 'opsi' => 'prohibited', 'tanggal_selesai' => 'prohibited',
-            'pembayaran' => 'required|in:penuh,dp', 'setuju_privasi' => 'accepted', 'versi_privasi' => 'required|string|max:40',
+            'pembayaran' => 'required|in:penuh,dp', 'metode_pelunasan' => 'sometimes|required|in:bank,tunai_saat_serah', 'setuju_privasi' => 'accepted', 'versi_privasi' => 'required|string|max:40',
         ])->validate();
         foreach (['produk_id', 'varian_id', 'jumlah', 'zona_antar_id'] as $key) {
             $d[$key] = (int) $d[$key];
@@ -99,8 +99,14 @@ final class CreateRentalOrder
                     'jumlah' => 1, 'subtotal' => $variant->harga, 'tanggal_mulai' => $d['tanggal'], 'tanggal_selesai' => $d['tanggal'], 'dibuat_pada' => $now, 'diubah_pada' => $now]);
                 DB::table('hari_reservasi')->insert(['pesanan_id' => $order->id, 'item_pesanan_id' => $item, 'unit_sewa_id' => $unit, 'tanggal' => $d['tanggal'], 'dibuat_pada' => $now]);
             }
-            app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
+            $cash = ($d['metode_pelunasan'] ?? 'bank') === 'tunai_saat_serah';
+            if (! $cash || $dp) {
+                app(IssueRentalInvoice::class)->issue($order->id, $d['pembayaran'], $dp ? intdiv($total, 2) : $total, $now);
+            }
             DB::table('riwayat_status_pesanan')->insert(['pesanan_id' => $order->id, 'status_baru' => $order->status, 'kode_transisi' => 'T01', 'pelaku' => $operator ? 'staf' : 'pelanggan', 'pengguna_id' => $operator?->id, 'dibuat_pada' => $now]);
+            if ($cash) {
+                app(HandoverCash::class)->arrange($order, $dp);
+            }
             DB::table('checkout_sewa')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'],
                 'sidik' => $fingerprint, 'versi_privasi' => $d['versi_privasi'], 'disetujui_pada' => $now]);
             return $order;

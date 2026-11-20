@@ -25,7 +25,7 @@ final class VerifiedRevenueController extends Controller
             ->where('b.status', 'terverifikasi')->whereIn('b.jenis', ['dp','penuh','pelunasan','refund'])
             ->where('b.diverifikasi_pada', '>=', $start)->where('b.diverifikasi_pada', '<', $end)
             ->selectRaw("b.id, b.pesanan_id, DATE(b.diverifikasi_pada) AS tanggal, COALESCE(c.kategori, 'Tanpa kategori') AS kategori,
-                CASE WHEN d.pembayaran_id IS NOT NULL THEN 'deposit' WHEN t.pesanan_id IS NULL THEN 'bank' ELSE 'tunai' END AS kanal,
+                CASE WHEN d.pembayaran_id IS NOT NULL THEN 'deposit' WHEN b.tunai_saat_serah = 1 THEN 'tunai' WHEN t.pesanan_id IS NULL THEN 'bank' ELSE 'tunai' END AS kanal,
                 CASE WHEN b.jenis = 'refund' THEN 0 ELSE b.tagihan END AS pokok,
                 CASE WHEN b.jenis = 'refund' THEN b.nominal_diterima ELSE 0 END AS refund");
     }

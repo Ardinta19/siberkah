@@ -27,7 +27,7 @@ final class CancellationRequestController extends Controller
                 abort_unless($existing->alasan === $reason, 409, 'Permohonan sudah tercatat.');
                 return [$existing->status, false];
             }
-            abort_unless(in_array($order->status, ['dikonfirmasi', 'sedang_diproduksi', 'siap'], true) && $order->jumlah_dibayar > 0,
+            abort_unless(in_array($order->status, ['dikonfirmasi', 'sedang_diproduksi', 'siap'], true) && ($order->jumlah_dibayar > 0 || $order->tunai_saat_serah),
                 409, 'Hanya pesanan berbayar sebelum serah terima yang dapat diajukan.');
             DB::table('permohonan_batal')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'alasan' => $reason, 'diajukan_pada' => now()]);
             return ['menunggu', true];
