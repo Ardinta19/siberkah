@@ -32,6 +32,9 @@ final class CancellationRequestController extends Controller
             DB::table('permohonan_batal')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'alasan' => $reason, 'diajukan_pada' => now()]);
             return ['menunggu', true];
         }, 3);
+        if (! $request->expectsJson()) {
+            return redirect()->route('pesanan.show', $nomor)->with('status', 'Status permohonan pembatalan: '.$status.'.');
+        }
         return response()->json(['status_permohonan' => $status], $created ? 201 : 200);
     }
 

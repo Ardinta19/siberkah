@@ -7,7 +7,7 @@
     @if(($needsVariant && $variants->isEmpty()) || ($product->jenis === 'sewa' && ($options->isNotEmpty() || $zones->isEmpty())))
         <p>Produk belum dapat dipesan melalui formulir ini. Hubungi Admin.</p>
     @else
-    <form method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
+    <form data-pending="Membuat pesanan…" method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
         @csrf
         @if(request()->boolean('dari_keranjang'))<input type="hidden" name="dari_keranjang" value="1">@endif
         <input type="hidden" name="kunci" value="{{ old('kunci', $key) }}">

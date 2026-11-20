@@ -42,7 +42,7 @@ final class BoardOperationsController extends Controller
             $design->update($data + ['editor_id'=>null,'diubah_pada'=>now()]);
             DB::table('log_aktivitas')->insert(['aksi'=>'ubah_teks_papan','pelanggan_id'=>$customer->id,'subjek_tabel'=>'pesanan','subjek_id'=>$order->id,'dibuat_pada'=>now()]);
         },3);
-        return $request->expectsJson() ? response()->noContent() : redirect()->route('pesanan.show',$nomor);
+        return $request->expectsJson() ? response()->noContent() : redirect()->route('pesanan.show',$nomor)->with('status','Teks papan berhasil disimpan.');
     }
 
     public function extend(Request $request, int $id)

@@ -3,7 +3,7 @@
 <section class="p-6">
     <h1 class="mb-4 text-2xl font-bold">{{ $judul }}</h1>
     @if(session('status')) <p role="status">{{ session('status') }}</p> @endif
-    @isset($tanggal)<form><label>Tanggal WIB <input type="date" required name="tanggal" value="{{ $tanggal }}"></label><button>Tampilkan</button></form>@endisset
+    @isset($tanggal)<form data-pending="Memuat agenda…"><label>Tanggal WIB <input type="date" required name="tanggal" value="{{ $tanggal }}"></label><button>Tampilkan</button></form>@endisset
     @forelse($pesanan as $p)
         <p class="border-b py-3">{{ $p->nomor }} · {{ $p->tanggal_serah->format('d/m/Y') }} · {{ str_replace('_', ' ', $p->status) }}</p>
         @if($produksi ?? false)
@@ -28,7 +28,7 @@
             </form>
         @endif
         @if($produksi ?? false)
-            <form method="post" class="flex gap-2 py-2">
+            <form data-pending="Memperbarui produksi…" method="post" class="flex gap-2 py-2">
                 @csrf
                 <input type="hidden" name="pesanan_id" value="{{ $p->id }}">
                 @if($p->status === 'dikonfirmasi')
@@ -40,7 +40,7 @@
     @empty
         <p>Tidak ada pesanan dalam antrean.</p>
     @endforelse
-    {{ $pesanan->links() }}
+    {{ $pesanan->links('partials.pagination') }}
     @include('partials.submit-ledger')
 </section>
 @endsection

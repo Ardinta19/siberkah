@@ -11,9 +11,9 @@
     <label>Nominal masuk aktual <input required name="nominal" type="number" min="1"></label>
     <button class="btn-primary">Catat mutasi yang sudah diperiksa</button><output role="status"></output>
 </form>@empty<p>Tidak ada konfirmasi baru.</p>@endforelse
-{{ $queue->links() }}
+{{ $queue->links('partials.pagination') }}
 <h2>Setoran uang pengantaran</h2>
-<form><label>Tanggal penerimaan pelanggan (WIB) <input required type="date" name="tanggal" value="{{ $tanggal }}"></label><button>Tampilkan</button></form>
+<form data-pending="Memuat agenda…"><label>Tanggal penerimaan pelanggan (WIB) <input required type="date" name="tanggal" value="{{ $tanggal }}"></label><button>Tampilkan</button></form>
 @forelse($rincian as $r)
 <article class="grid gap-2 border p-3"><p>{{ $r->nomor }} · Petugas #{{ $r->petugas_id }} · {{ $r->status_setoran }} · Tagihan setor Rp{{ number_format($r->tagihan_setor,0,',','.') }} · Sudah disetor Rp{{ number_format($r->sudah_disetor,0,',','.') }}</p>
 @if((int)$r->petugas_id !== auth('staff')->id())
@@ -25,7 +25,7 @@
     <button class="btn-primary">Catat hasil hitung</button><output role="status"></output>
 </form>@endif</article>
 @empty<p>Tidak ada pembayaran tunai antar pada tanggal ini.</p>@endforelse
-{{ $rincian->links() }}
+{{ $rincian->links('partials.pagination') }}
 @include('partials.submit-ledger')
 </section>
 @endsection

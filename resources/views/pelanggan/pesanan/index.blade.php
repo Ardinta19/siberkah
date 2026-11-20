@@ -7,6 +7,6 @@
     @empty
         <p>Belum ada pesanan.</p>
     @endforelse
-    {{ $pesanan->links() }}
+    {{ $pesanan->links('partials.pagination') }}
 </section>
 @endsection

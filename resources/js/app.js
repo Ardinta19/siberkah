@@ -1,3 +1,4 @@
+import "./role-navigation.js";
 import "./rental-calendar.js";
 import "./floral-feedback.js";
 /* eslint-disable */
@@ -99,15 +100,16 @@ for (const stepper of document.querySelectorAll('[data-stepper]')) {
 
 // Submit is emitted only after native validation. Do not signal success on click.
 for (const form of document.querySelectorAll('form[data-pending]')) {
-  const submit = form.querySelector('button:not([type=button])');
-  if (!submit) continue;
-  const label = submit.textContent;
+  let submit, label;
   form.addEventListener('submit', event => {
     if (form.getAttribute('aria-busy') === 'true') { event.preventDefault(); return; }
+    submit = event.submitter || form.querySelector('button:not([type=button])');
+    if (!submit || event.defaultPrevented) return;
+    label = submit.textContent;
     form.setAttribute('aria-busy','true');
     submit.textContent = form.dataset.pending;
   });
-  window.addEventListener('pageshow', () => { form.removeAttribute('aria-busy'); submit.textContent = label; });
+  window.addEventListener('pageshow', () => { form.removeAttribute('aria-busy'); if(submit) submit.textContent = label; });
 }
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;

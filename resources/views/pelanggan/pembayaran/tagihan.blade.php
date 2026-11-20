@@ -12,7 +12,7 @@
                 <div data-payment-window data-end="{{ $bill->batas_wib }}" data-server="{{ $waktu_server }}">
                     <p>Bayar persis <strong>Rp{{ number_format($bill->nominal_diharapkan, 0, ',', '.') }}</strong>, termasuk kode unik. Pilih satu tujuan saja.</p>
                     @if($bill->batas_wib)<p>Batas: {{ \Illuminate\Support\Carbon::parse($bill->batas_wib)->format('d/m/Y H:i:s') }} WIB. <span data-clock></span></p>@endif
-                    <form method="post" enctype="multipart/form-data" action="{{ route('payment.confirm', $nomor) }}">@csrf
+                    <form data-pending="Mengirim konfirmasi…" method="post" enctype="multipart/form-data" action="{{ route('payment.confirm', $nomor) }}">@csrf
                         <input type="hidden" name="pembayaran_id" value="{{ $bill->id }}">
                         @foreach($tujuan as $account)
                             <label class="block my-3"><input type="radio" name="tujuan_id" value="{{ $account->id }}" required>

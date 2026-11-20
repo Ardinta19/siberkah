@@ -36,6 +36,7 @@ for (const field of document.querySelectorAll('[data-rental-date]')) {
   }
   function pick(value) {
     input.value=value; input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true})); dialog.close();
+    if (trigger.animate) trigger.animate([{boxShadow:'0 0 0 2px #b6718a'},{boxShadow:'0 0 0 2px transparent'}],{duration:320});
   }
   function open(){if(input.disabled || dialog.open)return;cursor=parse(input.value || iso(new Date()));render();dialog.showModal();days.querySelector('[tabindex="0"]').focus();}
   trigger.id='rental-date-trigger'; field.querySelector('label').htmlFor=trigger.id;

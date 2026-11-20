@@ -1,5 +1,5 @@
 @if($errors->any())<p role="alert">{{ $errors->first() }}</p>@endif
-<form method="post" action="{{ isset($produk) ? route('admin.katalog.update',$produk->id) : route('admin.katalog.store') }}" class="grid max-w-lg gap-3 p-4">@csrf
+<form data-pending="Menyimpan produk…" method="post" action="{{ isset($produk) ? route('admin.katalog.update',$produk->id) : route('admin.katalog.store') }}" class="grid max-w-lg gap-3 p-4">@csrf
 @isset($produk) @method('put') @endisset
 <label>Nama <input required maxlength="150" name="nama" value="{{ old('nama',$produk->nama ?? '') }}"></label>
 <label>Slug <input required maxlength="170" name="slug" value="{{ old('slug',$produk->slug ?? '') }}"></label>

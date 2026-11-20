@@ -141,6 +141,24 @@ with sync_playwright() as playwright:
     page.get_by_role('button', name='Saya sudah membayar ke tujuan yang dipilih').click()
     expect(page.get_by_text('Konfirmasi diterima, menunggu pemeriksaan Admin.', exact=False)).to_be_visible()
     number = page.url.split('/')[-2]
+    def check_account(tab):
+        toggle = tab.locator('[data-account-toggle]')
+        toggle.click()
+        expect(tab.locator('#account-links')).to_be_visible()
+        toggle.press('Escape')
+        expect(toggle).to_have_attribute('aria-expanded','false')
+        expect(toggle).to_be_focused()
+    def check_drawer(tab):
+        tab.set_viewport_size({'width':375,'height':800})
+        toggle = tab.locator('[data-sidebar-toggle]')
+        expect(tab.locator('#role-sidebar')).to_be_hidden()
+        toggle.click()
+        expect(tab.locator('[data-sidebar-close]')).to_be_focused()
+        tab.keyboard.press('Escape')
+        expect(toggle).to_be_focused()
+        tab.set_viewport_size({'width':1440,'height':900})
+        expect(tab.locator('#role-sidebar')).to_be_visible()
+    check_account(page)
     def login(role):
         operator = browser.new_context(locale='id-ID').new_page()
         operator.goto(base+'/staff/login')
@@ -149,6 +167,8 @@ with sync_playwright() as playwright:
         operator.get_by_role('button', name='Masuk', exact=True).click()
         return operator
     admin = login('admin')
+    check_drawer(admin)
+    check_account(admin)
     admin.get_by_role('link', name='Periksa pembayaran dan setoran antar').click()
     verification = admin.locator('form[data-ledger]').filter(has_text=number)
     text = verification.inner_text()
@@ -165,6 +185,7 @@ with sync_playwright() as playwright:
     expect(admin.locator('p').filter(has_text=number)).to_have_count(0)
     clock.write_text(f'{delivery_day} 10:00:00')
     courier = login('staf_kurir')
+    check_drawer(courier)
     handover = courier.locator('form[data-ledger]').filter(has_text=number)
     for field in ('barang_diperiksa','diterima_pembeli','tunai_diterima'):
         handover.locator(f'[name={field}]').check()

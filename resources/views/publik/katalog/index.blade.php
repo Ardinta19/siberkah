@@ -54,7 +54,7 @@
         <div class="kc-empty"><span aria-hidden="true">✧</span><h3>Tidak ada produk yang ditemukan.</h3><p>Coba kata lain atau periksa kembali filter pencarian Anda.</p><a class="kc-action" href="{{ route('catalog.index') }}">Lihat semua produk</a></div>
       @endforelse
     </div>
-    {{ $produk->links() }}
+    {{ $produk->links('partials.pagination') }}
     </div></div>
 
   </div>
