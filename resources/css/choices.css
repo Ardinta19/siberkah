@@ -47,7 +47,7 @@ select:not([multiple]):not([size]):disabled {background-color:#f3eeea;color:#776
 [data-workspace] form[aria-busy=true] button{cursor:progress}.bk-pages a:focus-visible{outline:2px solid #aa466a}
 #role-sidebar{z-index:52;overflow-y:auto}[data-shade]{z-index:51}#role-sidebar[hidden],[data-shade][hidden],#account-links[hidden]{display:none!important}#account-links{z-index:48}
 @media(min-width:64rem){[data-sidebar-close]{display:none!important}}
-@media(prefers-reduced-motion:no-preference){[data-workspace] main button,.bk-pages a{transition:transform .15s ease,background-color .15s ease}[data-workspace] main button:active:not(:disabled),.bk-pages a:active{transform:scale(.97)}#account-links:not([hidden]),#role-sidebar[aria-modal=true]{animation:kc-unfold .18s ease-out}}
+@media(prefers-reduced-motion:no-preference){[data-workspace] main button,.bk-pages a{transition:transform .15s ease,background-color .15s ease}[data-workspace] main button:active:not(:disabled),.bk-pages a:active{transform:scale(.97)}#role-sidebar[aria-modal=true]{animation:kc-unfold .18s ease-out}}
 /* Public navigation unfolds from the header rather than pushing the page down. */
 #guest-menu-toggle {width:44px;height:44px;color:#801637}
 #guest-menu-toggle[aria-expanded=true]{background:#f5e5e9}
@@ -70,4 +70,16 @@ select:not([multiple]):not([size]):disabled {background-color:#f3eeea;color:#776
  .bk-mobile-links{transform:translateY(-12px);transition:transform .27s ease-out}.is-open>.bk-mobile-clip>.bk-mobile-links{transform:none}
  #role-sidebar[aria-modal=true]{animation:bk-sidebar-in .24s cubic-bezier(.22,.8,.26,1)}
  @keyframes bk-sidebar-in{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+}
+/* Disclose secondary content at its source. Never animate payment values or delay submits. */
+@media(prefers-reduced-motion:no-preference){
+  #checkout :is(#delivery,#slot):not([hidden]){animation:bk-field-in .19s ease-out}
+  .bk-calendar[open]{animation:bk-field-in .18s ease-out}
+  .bk-calendar[open]::backdrop{animation:bk-backdrop-in .18s ease-out}
+  @keyframes bk-field-in{from{opacity:.55;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  @keyframes bk-backdrop-in{from{opacity:0}to{opacity:1}}
+  @supports (interpolate-size:allow-keywords) and selector(details::details-content){
+    :is(.kc-info details,.bk-confirm,.bk-remove)::details-content{interpolate-size:allow-keywords;block-size:0;overflow:clip;transition:block-size .2s ease,content-visibility .2s allow-discrete}
+    :is(.kc-info details,.bk-confirm,.bk-remove)[open]::details-content{block-size:auto}
+  }
 }

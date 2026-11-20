@@ -49,7 +49,7 @@
                             </svg>
                         </button>
 
-                        <div id="account-links" hidden class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-200 py-1 animate-scale-in z-[var(--z-dropdown)] dark:bg-neutral-900 dark:border-neutral-700" >
+                        <div id="account-links" hidden class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-200 py-1 z-[var(--z-dropdown)] dark:bg-neutral-900 dark:border-neutral-700" >
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800" >
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>

@@ -1,8 +1,13 @@
+import { disclosure } from './disclosure-motion.js';
 const account = document.querySelector('[data-account]');
 if (account) {
   const toggle = account.querySelector('[data-account-toggle]'), panel = account.querySelector('#account-links');
-  const set = open => { panel.hidden = !open; toggle.setAttribute('aria-expanded', String(open)); };
-  toggle.onclick = () => set(panel.hidden);
+  const reveal = disclosure(panel);
+  const set = open => {
+    if ((toggle.getAttribute('aria-expanded') === 'true') === open) return;
+    toggle.setAttribute('aria-expanded', String(open)); reveal(open);
+  };
+  toggle.onclick = () => set(toggle.getAttribute('aria-expanded') !== 'true');
   document.addEventListener('click', e => { if (!account.contains(e.target)) set(false); });
   account.addEventListener('focusout', e => { if (!account.contains(e.relatedTarget)) set(false); });
   account.addEventListener('keydown', e => { if (e.key === 'Escape') { set(false); toggle.focus(); } });

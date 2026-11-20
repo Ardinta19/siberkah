@@ -44,7 +44,12 @@ for (const field of document.querySelectorAll('[data-rental-date]')) {
   new MutationObserver(sync).observe(input,{attributes:true,attributeFilter:['disabled']});
   input.addEventListener('change',sync); input.addEventListener('invalid',e=>{e.preventDefault();open();});
   trigger.addEventListener('click',open);dialog.addEventListener('close',()=>trigger.focus());
-  dialog.querySelectorAll('.bk-cal-head button').forEach((btn,i)=>btn.onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()+(i?1:-1),1,12);render();});
+  dialog.querySelectorAll('.bk-cal-head button').forEach((btn,i)=>btn.onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()+(i?1:-1),1,12);render();
+    if(days.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      days.getAnimations().forEach(a=>a.cancel());
+      days.animate([{transform:`translateX(${i ? 12 : -12}px)`,opacity:.55},{transform:'none',opacity:1}],{duration:180,easing:'ease-out'});
+    }
+  });
   days.onclick=e=>{if(e.target.dataset.date)pick(e.target.dataset.date);};
   days.onkeydown=e=>{
     const shifts={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7};

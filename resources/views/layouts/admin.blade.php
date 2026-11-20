@@ -140,7 +140,7 @@
                                     </svg>
                                 </button>
 
-                                <div id="account-links" hidden class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-200 py-1 animate-scale-in z-[var(--z-dropdown)] dark:bg-neutral-900 dark:border-neutral-700" >
+                                <div id="account-links" hidden class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-200 py-1 z-[var(--z-dropdown)] dark:bg-neutral-900 dark:border-neutral-700" >
                                     <div class="px-4 py-2 border-b border-neutral-200 dark:border-neutral-700">
                                         <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ auth('staff')->user()->nama ?? 'Admin' }}</p>
                                         <p class="text-xs text-neutral-500 dark:text-neutral-400 capitalize">{{ auth('staff')->user()->peran ?? 'owner' }}</p>

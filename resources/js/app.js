@@ -1,3 +1,4 @@
+import { disclosure } from './disclosure-motion.js';
 import "./role-navigation.js";
 import "./rental-calendar.js";
 import "./floral-feedback.js";
@@ -83,13 +84,15 @@ if (filters) {
   const toggle = document.querySelector('.kc-filter-toggle');
   const mobile = matchMedia('(max-width:47.99rem)');
   let open = false;
-  const sync = () => {
+  const reveal = disclosure(filters,true);
+  const sync = (animate = false) => {
     toggle.hidden = !mobile.matches;
-    filters.hidden = mobile.matches && !open;
-    toggle.setAttribute('aria-expanded', String(!filters.hidden));
+    const visible = !mobile.matches || open;
+    reveal(visible,animate && mobile.matches);
+    toggle.setAttribute('aria-expanded', String(visible));
   };
-  toggle.addEventListener('click', () => { open = !open; sync(); });
-  mobile.addEventListener('change', sync);
+  toggle.addEventListener('click', () => { open = !open; sync(true); });
+  mobile.addEventListener('change', () => sync());
   sync();
   const kind = filters.querySelector('[name=jenis]');
   const day = filters.querySelector('[name=tanggal]');
@@ -130,7 +133,7 @@ for (const form of document.querySelectorAll('form[data-pending]')) {
 }
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
-  if (filters && !filters.hidden && matchMedia('(max-width:47.99rem)').matches && filters.parentElement.contains(document.activeElement)) {
+  if (filters && !filters.inert && matchMedia('(max-width:47.99rem)').matches && filters.parentElement.contains(document.activeElement)) {
     const toggle = document.querySelector('.kc-filter-toggle'); toggle.click(); toggle.focus();
   }
 });
