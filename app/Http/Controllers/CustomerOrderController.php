@@ -26,7 +26,7 @@ class CustomerOrderController extends BaseController
     {
         $pesanan = auth('customer')->user()->pesanan()->latest('dibuat_pada')->paginate(10);
 
-        return view('pelanggan.riwayat', [
+        return view('pelanggan.pesanan.index', [
             'pesanan' => $pesanan,
         ]);
     }
@@ -70,7 +70,7 @@ class CustomerOrderController extends BaseController
             ->where('nomor', $nomor)
             ->firstOrFail();
 
-        return response()->view('pelanggan.rincian', [
+        return response()->view('pelanggan.pesanan.show', [
             'papan' => \Illuminate\Support\Facades\DB::table('desain_papan')->where('pesanan_id',$pesanan->id)->first(['judul','penerima','pengirim']),
             'riwayat' => \Illuminate\Support\Facades\DB::table('riwayat_status_pesanan')->where('pesanan_id', $pesanan->id)->orderBy('id')->get(['status_baru','dibuat_pada']),
             'pesanan' => $pesanan,

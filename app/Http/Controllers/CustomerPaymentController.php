@@ -54,7 +54,7 @@ final class CustomerPaymentController extends Controller
         }
         $data = ['nomor' => $nomor, 'status' => $order->status, 'saldo' => $order->saldo, 'tunai_saat_serah' => $order->tunai_saat_serah, 'cara_serah' => $order->cara_serah, 'tahan_hingga_pada' => $order->tahan_hingga_pada,
             'batas_pelunasan_pada' => $order->batas_pelunasan_pada, 'pembayaran' => $invoices, 'keputusan_selisih' => $decisions, 'tujuan' => $destinations, 'waktu_server' => $now->toIso8601String()];
-        return ($request->expectsJson() ? response()->json($data) : response()->view('pelanggan.tagihan', $data))->header('Cache-Control', 'private, no-store');
+        return ($request->expectsJson() ? response()->json($data) : response()->view('pelanggan.pembayaran.tagihan', $data))->header('Cache-Control', 'private, no-store');
     }
 
     public function confirm(Request $request, string $nomor)

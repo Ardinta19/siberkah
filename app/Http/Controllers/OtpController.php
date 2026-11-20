@@ -17,7 +17,7 @@ class OtpController extends Controller
 {
     public function showForm()
     {
-        return view('pelanggan.masuk');
+        return view('pelanggan.auth.masuk');
     }
 
     public function issue(Request $request, OtpQuota $quota)
@@ -64,7 +64,7 @@ class OtpController extends Controller
         $link = \App\Services\WhatsAppLinks::contact('Halo Admin, saya perlu bantuan masuk ke SIBERKAH.');
         return $request->expectsJson()
             ? response()->json(['message' => $message, 'bantuan' => $link], 503)->header('Cache-Control', 'no-store')
-            : response()->view('pelanggan.masuk', ['otpError' => $message, 'supportLink' => $link], 503)->header('Cache-Control', 'no-store');
+            : response()->view('pelanggan.auth.masuk', ['otpError' => $message, 'supportLink' => $link], 503)->header('Cache-Control', 'no-store');
     }
 
     public function verify(Request $request)

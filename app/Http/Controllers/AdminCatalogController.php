@@ -29,7 +29,7 @@ class AdminCatalogController extends BaseController
         $produk = Produk::with('kategori')->orderByDesc('id')->paginate(20);
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
 
-        return view('admin.katalog.index', [
+        return view('owner.katalog.index', [
             'produk' => $produk,
             'kategoris' => $kategoris,
         ]);
@@ -45,7 +45,7 @@ class AdminCatalogController extends BaseController
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
         $zonas = null; // ZonaAntar::where('aktif', true)->get();
 
-        return view('admin.katalog.create', [
+        return view('owner.katalog.create', [
             'kategoris' => $kategoris,
             'zonas' => $zonas,
         ]);
@@ -95,7 +95,7 @@ class AdminCatalogController extends BaseController
         $produk = Produk::with(['kategori', 'varianProduk', 'opsiProduk', 'gambarProduk'])->findOrFail($id);
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
 
-        return view('admin.katalog.edit', [
+        return view('owner.katalog.edit', [
             'produk' => $produk,
             'kategoris' => $kategoris,
         ]);

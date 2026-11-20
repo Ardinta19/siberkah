@@ -41,7 +41,7 @@ class StaffDeliveryController extends BaseController
                 ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($order->alamat_antar) : null;
         }
         $data = ['judul' => 'Agenda serah terima', 'tanggal' => $date, 'pesanan' => $orders];
-        return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda', $data))->header('Cache-Control','private, no-store');
+        return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda.index', $data))->header('Cache-Control','private, no-store');
     }
 
     public function handover(Request $request, \App\Actions\InspectRental $inspection)

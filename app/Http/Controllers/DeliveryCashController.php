@@ -36,7 +36,7 @@ final class DeliveryCashController extends Controller
             ->where('b.status', 'menunggu')->whereNotNull('b.dikonfirmasi_pelanggan_pada')->where('b.tunai_saat_serah', false)
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('mutasi_masuk as m')->whereColumn('m.pembayaran_id', 'b.id')->where('m.hasil', 'perlu_rekonsiliasi'))
             ->orderBy('b.dikonfirmasi_pelanggan_pada')->orderBy('b.id')->paginate(25, ['bt.pembayaran_id as bukti_id','p.nomor','b.id','b.pesanan_id','b.jenis','b.nominal_diharapkan','r.nama_bank','r.nomor_rekening','r.atas_nama'], 'antrean')->withQueryString();
-        return response()->view('admin.kas-antar', $data + ['tanggal' => $filters['tanggal'], 'queue' => $queue])->header('Cache-Control', 'private, no-store');
+        return response()->view('admin.keuangan.kas-antar', $data + ['tanggal' => $filters['tanggal'], 'queue' => $queue])->header('Cache-Control', 'private, no-store');
     }
 
     public function proof(int $id, int $bill)

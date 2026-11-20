@@ -26,7 +26,7 @@ final class ProductCheckoutController extends Controller
         }
         $product = $this->product($slug);
         $day = $request->validate(['tanggal' => 'nullable|date_format:Y-m-d'])['tanggal'] ?? null;
-        return response()->view('pelanggan.checkout-produk', [
+        return response()->view('pelanggan.checkout.produk', [
             'product' => $product, 'variants' => $product->varianProduk()->where('aktif', true)->orderBy('id')->get(),
             'needsVariant' => $product->jenis !== 'custom' || $product->varianProduk()->exists(),
             'options' => $product->opsiProduk()->with(['nilaiOpsi' => fn ($q) => $q->where('aktif', true)])->orderBy('urutan')->get(),

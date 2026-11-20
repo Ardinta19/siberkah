@@ -23,7 +23,7 @@ class StaffProductionController extends Controller
             $order->papan = $boards->get($order->id);
         }
         $data = ['judul' => 'Antrean produksi', 'produksi' => true, 'pesanan' => $orders];
-        return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda', $data))->header('Cache-Control','private, no-store');
+        return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda.index', $data))->header('Cache-Control','private, no-store');
     }
 
     public function startProduction(Request $request)

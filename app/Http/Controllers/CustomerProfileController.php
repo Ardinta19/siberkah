@@ -8,7 +8,7 @@ class CustomerProfileController extends Controller
 {
     public function edit(Request $request)
     {
-        return view('pelanggan.profil', ['pelanggan' => $request->user('customer')]);
+        return view('pelanggan.profil.edit', ['pelanggan' => $request->user('customer')]);
     }
 
     public function update(Request $request)

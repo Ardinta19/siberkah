@@ -55,7 +55,7 @@ class CatalogController extends BaseController
         $produk = $query->with(['kategori', 'varianProduk' => fn ($q) => $date ? $q->tersediaPada($date) : $q->where('aktif', true)])
             ->orderBy('urutan')->orderBy('id')->paginate(24)->withQueryString();
 
-        return view('katalog.index', [
+        return view('publik.katalog.index', [
             'produk' => $produk,
             'kategoris' => $kategoris,
             'filterKategori' => $request->get('kategori'),
@@ -91,7 +91,7 @@ class CatalogController extends BaseController
         $opsiProduk = $produk->opsiProduk()->orderBy('urutan')->get();
         $gambarProduk = $produk->gambarProduk()->orderBy('urutan')->get();
 
-        return view('katalog.show', [
+        return view('publik.katalog.show', [
             'produk' => $produk,
             'varian' => $varian,
             'opsiProduk' => $opsiProduk,

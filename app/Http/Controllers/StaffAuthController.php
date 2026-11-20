@@ -12,7 +12,7 @@ class StaffAuthController extends Controller
 {
     public function showLogin()
     {
-        return view('staf.login');
+        return view('staf.auth.login');
     }
 
     public function login(Request $request)

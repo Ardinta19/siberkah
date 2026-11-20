@@ -75,7 +75,7 @@ Route::middleware(['guest:staff'])->group(function () {
 
 Route::middleware(['auth:staff', 'auth.session'])->group(function () {
     Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->name('staff.logout');
-    Route::view('/staff/password-change', 'staf.ganti-sandi')->middleware('role:owner,admin,staf_produksi,staf_kurir')->name('staff.password.form');
+    Route::view('/staff/password-change', 'staf.auth.ganti-sandi')->middleware('role:owner,admin,staf_produksi,staf_kurir')->name('staff.password.form');
     Route::post('/staff/password-change', [StaffAuthController::class, 'changePassword'])->middleware(['role:owner,admin,staf_produksi,staf_kurir', 'throttle:5,1'])->name('staff.password.change');
 });
 

@@ -16,7 +16,7 @@ class LegalController extends \Illuminate\Routing\Controller
      */
     public function syaratSewa()
     {
-        return view('legal.syarat-sewa');
+        return view('publik.legal.syarat-sewa');
     }
 
     /**
@@ -26,7 +26,7 @@ class LegalController extends \Illuminate\Routing\Controller
      */
     public function kebijakanPrivasi()
     {
-        return view('legal.kebijakan-privasi');
+        return view('publik.legal.kebijakan-privasi');
     }
 
     /**
@@ -36,6 +36,6 @@ class LegalController extends \Illuminate\Routing\Controller
      */
     public function kontak()
     {
-        return view('legal.kontak');
+        return view('publik.legal.kontak');
     }
 }
