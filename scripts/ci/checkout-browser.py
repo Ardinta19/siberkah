@@ -86,7 +86,7 @@ with sync_playwright() as playwright:
         handover.locator(f'[name={field}]').check()
     handover.locator('[name=nominal_tunai]').fill('135000')
     handover.get_by_role('button').click()
-    expect(courier.get_by_text('sudah diserahkan', exact=False)).to_be_visible()
+    expect(courier.locator('form[data-ledger]').filter(has_text=number)).to_have_count(0)  # completed bouquet leaves the active work list
     cashier = login('owner')
     cashier.get_by_role('link', name='Periksa pembayaran dan setoran antar').click()
     row = cashier.locator('article').filter(has_text=number)

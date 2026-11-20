@@ -3,8 +3,18 @@
 <section class="p-6">
     <h1 class="mb-4 text-2xl font-bold">{{ $judul }}</h1>
     @if(session('status')) <p role="status">{{ session('status') }}</p> @endif
+    @isset($tanggal)<form><label>Tanggal WIB <input type="date" required name="tanggal" value="{{ $tanggal }}"></label><button>Tampilkan</button></form>@endisset
     @forelse($pesanan as $p)
         <p class="border-b py-3">{{ $p->nomor }} · {{ $p->tanggal_serah->format('d/m/Y') }} · {{ str_replace('_', ' ', $p->status) }}</p>
+        @if($produksi ?? false)
+            <ul>@foreach($p->rincian as $item)<li>{{ $item->jumlah }} × {{ $item->nama_produk }} {{ $item->nama_varian }} {{ $item->tulisan_kustom }}
+                @foreach($item->opsi as $opt)<span>{{ $opt->nama_opsi }}: {{ $opt->label_nilai }} {{ $opt->teks_bebas }}</span>@endforeach</li>@endforeach</ul>
+            @if($p->papan)<div>Papan {{ $p->papan->metode }}: {{ $p->papan->judul }} · {{ $p->papan->penerima }} · {{ $p->papan->pengirim }}</div>@endif
+            @if($p->catatan_pelanggan)<div>Catatan: {{ $p->catatan_pelanggan }}</div>@endif
+        @else
+            <div>{{ ucfirst($p->tugas) }} · {{ $p->jadwal ? substr($p->jadwal,11,5).' WIB' : 'Jam belum ditetapkan' }} · {{ $p->nomor_wa_pemesan }}
+            @if($p->peta) {{ $p->alamat_antar }} · <a href="{{ $p->peta }}" target="_blank" rel="noreferrer noopener">Buka peta</a>@endif</div>
+        @endif
         @if(!($produksi ?? false) && config('checkout.staging') && app()->environment('testing','staging','local') && $p->buket_online && $p->status === 'siap' && $p->tanggal_serah->isToday())
             <form method="post" action="{{ route('toko.serah', $p->id) }}" class="grid gap-3 p-3" data-ledger>
                 @csrf

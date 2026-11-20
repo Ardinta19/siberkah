@@ -11,6 +11,19 @@ class OwnerSettingsTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_only_owner_can_update_zone_fee_and_conflicting_old_value_is_rejected(): void
+    {
+        config(['checkout.staging' => true]);
+        $id = \Illuminate\Support\Facades\DB::table('zona_antar')->insertGetId(['nama'=>'Zona','jarak_maks_km'=>5,'ongkir'=>10000]);
+        $url = route('pengaturan.ongkir',$id);
+        $d = ['sebelum'=>10000,'ongkir'=>12000];
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']), 'staff')->patchJson($url,$d)->assertForbidden();
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'owner']), 'staff')->patchJson($url,$d)->assertNoContent();
+        $this->patchJson($url,$d)->assertNoContent();
+        $this->patchJson($url,array_replace($d,['ongkir'=>13000]))->assertConflict();
+        $this->getJson(route('admin.aktivitas.index'))->assertJsonPath('total',1)->assertJsonPath('data.0.sebelum.ongkir',10000)->assertJsonPath('data.0.sesudah.ongkir',12000);
+    }
+
     public function test_settings_and_audit_are_owner_only_with_bounded_effective_values(): void
     {
         $payload = ['kunci' => 'tahan_normal_menit', 'nilai' => 45];

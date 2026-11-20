@@ -31,7 +31,7 @@ class AdminSettingsController extends BaseController
         foreach (BusinessSettings::RULES as $key => [$default, $min, $max]) {
             $settings[$key] = ['nilai' => BusinessSettings::value($key), 'bawaan' => $default, 'min' => $min, 'maks' => $max];
         }
-        return response()->json(['pengaturan' => $settings])->header('Cache-Control', 'private, no-store');
+        return response()->json(['pengaturan' => $settings, 'zona' => DB::table('zona_antar')->orderBy('jarak_maks_km')->get(['id','nama','jarak_maks_km','aktif','ongkir'])])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $request)
@@ -53,6 +53,23 @@ class AdminSettingsController extends BaseController
 
         return back()
             ->with('success', 'Pengaturan "'.$request->kunci.'" berhasil diupdate.');
+    }
+
+    public function zoneRate(Request $request, int $id)
+    {
+        $data = $request->validate(['sebelum' => 'required|integer|min:0', 'ongkir' => 'required|integer|between:0,10000000']);
+        DB::transaction(function () use ($request, $data, $id) {
+            $zone = DB::table('zona_antar')->where('id', $id)->lockForUpdate()->first();
+            abort_unless($zone, 404);
+            $fee = (int) $data['ongkir'];
+            if ((int) $zone->ongkir === $fee) { return; }
+            abort_unless((int) $data['sebelum'] === (int) $zone->ongkir, 409, 'Tarif sudah berubah, muat ulang.');
+            DB::table('zona_antar')->where('id', $id)->update(['ongkir' => $fee, 'diubah_pada' => now()]);
+            DB::table('log_aktivitas')->insert(['aksi' => 'ubah_tarif_zona', 'pengguna_id' => $request->user('staff')->id,
+                'subjek_tabel' => 'zona_antar', 'subjek_id' => $id, 'dibuat_pada' => now(),
+                'sebelum' => json_encode(['ongkir' => (int) $zone->ongkir]), 'sesudah' => json_encode(['ongkir' => $fee])]);
+        }, 3);
+        return response()->noContent();
     }
 
     /**

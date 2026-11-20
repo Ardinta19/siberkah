@@ -24,6 +24,7 @@ class ProductionFlowTest extends TestCase
         DB::table('item_pesanan')->insert(['pesanan_id' => $order->id, 'produk_id' => $product, 'nama_produk' => 'Custom', 'harga_satuan' => 100000, 'subtotal' => 100000]);
         $data = ['pesanan_id' => $order->id];
         $this->actingAs($staff, 'staff');
+        $this->getJson(route('staf.produksi.index'))->assertOk()->assertJsonPath('pesanan.data.0.rincian.0.nama_produk','Custom')->assertJsonMissingPath('pesanan.data.0.nomor_wa_pemesan');
         $this->post(route('staf.produksi.mark-ready'), $data)->assertConflict();
         $this->post(route('staf.produksi.start'), $data)->assertRedirect();
         $this->post(route('staf.produksi.mark-ready'), $data)->assertRedirect();

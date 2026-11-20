@@ -11,6 +11,8 @@ final class BusinessSettings
         'tahan_normal_menit' => [60, 1, 1440],
         'tahan_puncak_menit' => [30, 1, 1440],
         'ambang_dp_rupiah' => [250000, 1000, 2147482000],
+        'jam_batas_pesan_wib' => [15, 0, 23],
+        'denda_sewa_per_jam' => [25000, 0, 1000000],
         'retensi_transaksi_tahun' => [3, 1, 10],
     ];
 

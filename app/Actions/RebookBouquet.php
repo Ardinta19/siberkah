@@ -11,6 +11,7 @@ final class RebookBouquet
 {
     public function reserve(Pesanan $order, object $receipt, Carbon $now): bool
     {
+        $cutoff = $now->copy()->setTime(\App\Support\BusinessSettings::value('jam_batas_pesan_wib'), 0);
         $day = $order->tanggal_serah->toDateString();
         if ($day < $now->toDateString()) {
             return false;
@@ -36,13 +37,13 @@ final class RebookBouquet
                 return false;
             }
             if ($p->jenis === 'custom') {
-                $min = $now->copy()->startOfDay()->addDays($p->lead_custom_hari + ($now->gt($now->copy()->setTime(15, 0)) ? 1 : 0));
+                $min = $now->copy()->startOfDay()->addDays($p->lead_custom_hari + ($now->gt($cutoff) ? 1 : 0));
                 if ($order->tanggal_serah->lt($min)) {
                     return false;
                 }
                 $custom += $item->jumlah;
             } elseif ($p->jenis === 'jual' && $v) {
-                if ($day === $now->toDateString() && (! $p->izin_hari_sama || $now->gt($now->copy()->setTime(15, 0)))) { return false; }
+                if ($day === $now->toDateString() && (! $p->izin_hari_sama || $now->gt($cutoff))) { return false; }
                 $stock[$v->id] = ($stock[$v->id] ?? 0) + $item->jumlah;
                 if ($stock[$v->id] > $v->stok) {
                     return false;

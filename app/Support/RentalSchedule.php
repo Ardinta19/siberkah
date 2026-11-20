@@ -13,7 +13,7 @@ final class RentalSchedule
             $slot = $now->setTimeFromTimeString($time);
             return $time >= '07:00' && $time <= '17:00' && $slot->gte($now->addHours(3));
         }
-        return $time === null && $day >= $now->startOfDay()->addDays($now->gt($now->setTime(15, 0)) ? 2 : 1)->toDateString();
+        return $time === null && $day >= $now->startOfDay()->addDays($now->gt($now->setTime(BusinessSettings::value('jam_batas_pesan_wib'), 0)) ? 2 : 1)->toDateString();
     }
 
     public static function searchable(string $day): bool

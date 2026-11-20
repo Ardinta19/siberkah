@@ -25,7 +25,7 @@ class RouteAccessMatrixTest extends TestCase
                     str_starts_with($uri, 'staf/kurir') => 'role:owner,admin,staf_kurir',
                     str_starts_with($uri, 'admin/katalog') && !str_ends_with($uri, '/manage-units'),
                     str_starts_with($uri, 'admin/laporan'), str_starts_with($uri, 'admin/aktivitas'),
-                    str_starts_with($uri, 'admin/pengaturan/tujuan-bayar'),
+                    str_starts_with($uri, 'admin/pengaturan/tujuan-bayar'), str_starts_with($uri, 'admin/pengaturan/zona/'),
                     in_array($uri, ['admin/pengaturan', 'admin/pengaturan/update'], true), str_ends_with($uri, '/potong-deposit') => 'role:owner',
                     default => 'role:owner,admin',
                 };

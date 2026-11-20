@@ -29,7 +29,8 @@ final class InspectRental
             // No automatic DB retry around filesystem side effects.
             return DB::transaction(function () use ($request, $return, $data, &$written) {
                 $order = Pesanan::lockForUpdate()->findOrFail($data['pesanan_id']);
-                abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $order->id)->exists(), 404);
+                $hourly = DB::table('checkout_sewa')->where('pesanan_id', $order->id)->value('denda_per_jam');
+                abort_if($hourly === null, 404);
                 $from = $return ? 'sudah_diserahkan' : 'siap';
                 abort_unless($order->status === $from, 409, 'Tahap inspeksi tidak sesuai status pesanan.');
                 $now = now('Asia/Jakarta');
@@ -58,7 +59,7 @@ final class InspectRental
                         }
                         $end = $order->tanggal_serah->copy()->setTime(18, 0)->addHours($extraHours);
                         $seconds = max(0, $now->getTimestamp() - $end->getTimestamp());
-                        $late += min($item->harga_satuan, intdiv($seconds + 3599, 3600) * 25000);
+                        $late += min($item->harga_satuan, intdiv($seconds + 3599, 3600) * $hourly);
                     } else {
                         abort_unless($unit->status === 'aktif' && ! $custody->exists() && DB::table('hari_reservasi')->where(['pesanan_id' => $order->id, 'item_pesanan_id' => $item->id, 'unit_sewa_id' => $unit->id, 'tanggal' => $now->toDateString()])->exists(), 409, 'Unit tidak dapat diserahkan.');
                         DB::table('penguasaan_unit')->insert(['unit_sewa_id' => $unit->id, 'pesanan_id' => $order->id]);

@@ -195,6 +195,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
             Route::post('/', 'store')->middleware('throttle:10,1')->name('tujuan.store');
             Route::patch('{id}', 'status')->whereNumber('id')->name('tujuan.status');
         });
+        Route::patch('zona/{id}/ongkir', [AdminSettingsController::class, 'zoneRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.ongkir');
         Route::post('manage-calendar-blocks', [AdminSettingsController::class, 'manageCalendarBlocks'])->name('admin.pengaturan.manage-calendar-blocks');
         Route::post('manage-production-capacity', [AdminSettingsController::class, 'manageProductionCapacity'])->name('admin.pengaturan.manage-production-capacity');
     });

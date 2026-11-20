@@ -107,7 +107,7 @@ final class CreateRentalOrder
             if ($cash) {
                 app(HandoverCash::class)->arrange($order, $dp);
             }
-            DB::table('checkout_sewa')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'],
+            DB::table('checkout_sewa')->insert(['denda_per_jam' => BusinessSettings::value('denda_sewa_per_jam'), 'pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'kunci' => $d['kunci'],
                 'sidik' => $fingerprint, 'versi_privasi' => $d['versi_privasi'], 'disetujui_pada' => $now]);
             return $order;
         }, 3);

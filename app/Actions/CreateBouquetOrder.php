@@ -47,6 +47,7 @@ final class CreateBouquetOrder
             abort_unless($staff || $customer->isOnboarded(), 403, 'Lengkapi nama dan persetujuan privasi pada profil.');
             abort_unless($d['versi_privasi'] === config('checkout.privacy_version'), 409);
             $now = now('Asia/Jakarta');
+            $cutoff = $now->copy()->setTime(\App\Support\BusinessSettings::value('jam_batas_pesan_wib'), 0);
             $date = Carbon::parse($d['tanggal'], 'Asia/Jakarta')->startOfDay();
             abort_if($date->lt($now->copy()->startOfDay()), 422);
             $number = app(OrderNumber::class)->next($period);
@@ -71,11 +72,11 @@ final class CreateBouquetOrder
                 abort_if(! $variant && DB::table('varian_produk')->where('produk_id', $p->id)->exists(), 422, 'Pilih varian aktif.');
                 $qty = (int) $line['jumlah'];
                 if ($p->jenis === 'jual') {
-                    abort_if($date->isSameDay($now) && (! $p->izin_hari_sama || $now->gt($now->copy()->setTime(15, 0))), 409, 'Produk atau jam pemesanan tidak mengizinkan hari yang sama.');
+                    abort_if($date->isSameDay($now) && (! $p->izin_hari_sama || $now->gt($cutoff)), 409, 'Produk atau jam pemesanan tidak mengizinkan hari yang sama.');
                     abort_unless($variant && $variant->stok >= $qty, 409, 'Stok siap jual tidak mencukupi.');
                     DB::table('varian_produk')->where('id', $variant->id)->decrement('stok', $qty);
                 } else {
-                    abort_if($date->lt($now->copy()->startOfDay()->addDays($p->lead_custom_hari + ($now->gt($now->copy()->setTime(15, 0)) ? 1 : 0))), 409, 'Waktu produksi tidak cukup.');
+                    abort_if($date->lt($now->copy()->startOfDay()->addDays($p->lead_custom_hari + ($now->gt($cutoff) ? 1 : 0))), 409, 'Waktu produksi tidak cukup.');
                     $custom += $qty;
                 }
                 $options = $this->options($p->id, $line['opsi'] ?? []);

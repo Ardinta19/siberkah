@@ -405,6 +405,7 @@ class RentalCheckoutTest extends TestCase
         $this->travelTo($order->tanggal_serah->copy()->setTime(9, 0));
         $this->post(route('staf.kurir.handover'), $handover())->assertOk();
         $this->post(route('staf.kurir.handover'), $handover())->assertConflict();
+        $this->getJson(route('staf.kurir.index', ['tugas' => 'jemput']))->assertOk()->assertJsonPath('pesanan.data.0.nomor', $order->nomor)->assertJsonPath('pesanan.data.0.tugas','jemput');
         $this->assertDatabaseCount('penguasaan_unit', 1);
         $delta = 0;
         if ($used === 40000) {
