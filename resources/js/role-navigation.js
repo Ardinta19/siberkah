@@ -56,6 +56,7 @@ if (command && sidebar && command.showModal) {
   function filter(){let count=0;for(const a of list.children){a.hidden=!a.textContent.toLocaleLowerCase('id').includes(input.value.trim().toLocaleLowerCase('id'));if(!a.hidden)count++;}empty.hidden=!!count;}
   let before;
   function open(){if(document.querySelector('dialog[open],#role-sidebar[aria-modal=true]'))return;before=document.activeElement;input.value='';filter();command.showModal();input.focus();}
+  command.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();command.close();}});
   trigger.hidden=false;trigger.onclick=open;input.oninput=filter;
   command.querySelector('[data-dismiss]').onclick=()=>command.close();command.onclose=()=>before?.focus();
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();command.open?command.close():open();}});
