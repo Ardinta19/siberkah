@@ -64,14 +64,25 @@
   .kc-search .kc-action {grid-column:auto}
   .kc-search #kc-extra:not([hidden]) {display:grid;gap:.6rem;grid-column:1/-1}
 }
-/* One quiet reveal; never move the reading target while someone is browsing. */
+/* Tactile feedback uses native interaction states, independent of the GSAP hero. */
+.koleksi .kc-card:focus-within { box-shadow:0 6px 18px #59263914 }
+.koleksi .kc-info summary:focus-visible { outline-offset:0 }
 @media (prefers-reduced-motion:no-preference) {
-  .kc-hero-reveal .kc-still img { animation:kc-bloom 1.25s ease-out both }
-  .kc-hero-reveal .kc-intro > :is(h1,p) { animation:kc-arrive .48s ease-out both }
-  .kc-hero-reveal .kc-intro h1 { animation-delay:.06s }
-  .kc-hero-reveal .kc-intro h1 + p { animation-delay:.12s }
-  .kc-filter-toggle,.bk-cart { transition:background-color .18s ease,box-shadow .18s ease }
-  .kc-filter-toggle:active,.bk-cart:active { background-color:#f4e5e8 }
-  @keyframes kc-bloom { from {transform:scale(1.055)} to {transform:scale(1)} }
-  @keyframes kc-arrive { from {opacity:.45;transform:translateY(.35rem)} to {opacity:1;transform:none} }
+  :is(.kc-filter-toggle,.bk-cart,.kc-dock a,.kc-info summary) {
+    transition:transform .16s ease-out,background-color .16s ease-out;
+  }
+  :is(.kc-action,.kc-filter-toggle,.kc-tags a,.bk-cart,.kc-dock a,.kc-info summary):active {
+    transform:translateY(1px) scale(.97);
+    box-shadow:inset 0 2px 4px #39182220;
+  }
+  .kc-grid .kc-card:focus-within { transform:translateY(-2px) }
+  .kc-info details[open] > p { animation:kc-unfold .2s ease-out }
+  @keyframes kc-unfold { from { opacity:.6;transform:translateY(-3px) } }
+}
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .kc-grid .kc-card:hover { transform:translateY(-5px);box-shadow:0 12px 24px #5926391c }
+  .bk-cart:hover,.kc-filter-toggle:hover { background:#f6ece6 }
+}
+@media (hover:none) and (prefers-reduced-motion:no-preference) {
+  .kc-grid .kc-card:active { transform:translateY(-2px);box-shadow:0 5px 14px #59263917 }
 }

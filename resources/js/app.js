@@ -1,5 +1,11 @@
 /* eslint-disable */
-// No custom JS dependencies needed - using Alpine.js from CDN
+// Load the editorial timeline only on the catalog, and only when motion is welcome.
+const motion = matchMedia('(prefers-reduced-motion: no-preference)');
+if (document.querySelector('.kc-hero-reveal')) {
+  const loadMotion = () => { if (motion.matches) import('./catalog-motion.js'); };
+  motion.addEventListener('change', loadMotion);
+  loadMotion();
+}
 
 // Utility functions for the project
 window.utils = {
