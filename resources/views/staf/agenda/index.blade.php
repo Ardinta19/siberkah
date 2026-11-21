@@ -1,11 +1,28 @@
 @extends('layouts.staff')
+@section('title', $judul.' · SIBERKAH')
+@section('page-title', 'Ruang kerja staf')
 @section('content')
-<section class="p-6">
-    <h1 class="mb-4 text-2xl font-bold">{{ $judul }}</h1>
-    @if(session('status')) <p role="status">{{ session('status') }}</p> @endif
-    @isset($tanggal)<form data-pending="Memuat agenda…"><label>Tanggal WIB <input type="date" required name="tanggal" value="{{ $tanggal }}"></label><button>Tampilkan</button></form>@endisset
+<section class="bk-agenda" aria-labelledby="agenda-title">
+    <p class="kc-kicker">Berkah Kreatif · Operasional</p><h2 id="agenda-title">{{ $judul }}</h2>
+    @if(session('status')) <p role="status" class="bk-notice">{{ session('status') }}</p> @endif
+    @if($errors->any())<p role="alert" class="bk-notice">{{ $errors->first() }}</p>@endif
+    @isset($tanggal)
+        <form method="get" action="{{ route('staf.kurir.index') }}" class="bk-agenda-tools" data-pending="Memuat agenda…">
+            @if(request()->filled('tugas'))<input type="hidden" name="tugas" value="{{ request('tugas') }}">@endif
+            <label>Tanggal WIB <input type="date" required name="tanggal" value="{{ $tanggal }}"></label>
+            <button class="bk-secondary">Tampilkan</button>
+            @if($tanggal !== today('Asia/Jakarta')->toDateString())<a class="bk-secondary" href="{{ route('staf.kurir.index',request()->only('tugas')) }}">Hari ini</a>@endif
+        </form>
+        <nav class="bk-history-filters" aria-label="Jenis tugas kurir">
+            @foreach([''=>'Semua tugas','antar'=>'Antar','ambil'=>'Ambil di toko','jemput'=>'Jemput'] as $key=>$label)
+                <a href="{{ route('staf.kurir.index',array_filter(['tanggal'=>$tanggal,'tugas'=>$key])) }}#daftar-tugas" @if((request('tugas') ?? '') === $key) aria-current="page" @endif>{{ $label }}</a>
+            @endforeach
+        </nav>
+    @endisset
+    <div id="daftar-tugas"><p class="bk-agenda-count">{{ $pesanan->total() }} {{ isset($tanggal) ? 'tugas' : 'pesanan' }}@isset($tanggal) · {{ \Illuminate\Support\Carbon::parse($tanggal)->locale('id')->translatedFormat('d F Y') }} WIB @endisset</p>
     @forelse($pesanan as $p)
-        <p class="border-b py-3">{{ $p->nomor }} · {{ $p->tanggal_serah->format('d/m/Y') }} · {{ str_replace('_', ' ', $p->status) }}</p>
+        <article class="bk-task" aria-labelledby="tugas-{{ $p->id }}"><header><h3 id="tugas-{{ $p->id }}">{{ $p->nomor }}</h3><span class="bk-order-status">{{ str_replace('_',' ',$p->status) }}</span></header>
+        <p>Tanggal serah · {{ $p->tanggal_serah->format('d/m/Y') }}</p>
         @if($produksi ?? false)
             <ul>@foreach($p->rincian as $item)<li>{{ $item->jumlah }} × {{ $item->nama_produk }} {{ $item->nama_varian }} {{ $item->tulisan_kustom }}
                 @foreach($item->opsi as $opt)<span>{{ $opt->nama_opsi }}: {{ $opt->label_nilai }} {{ $opt->teks_bebas }}</span>@endforeach</li>@endforeach</ul>
@@ -37,10 +54,13 @@
                 <button formaction="{{ route('staf.produksi.mark-ready') }}" class="btn-primary">Tandai siap</button>
             </form>
         @endif
+        </article>
     @empty
-        <p>Tidak ada pesanan dalam antrean.</p>
+        <div class="kc-empty"><p>Tidak ada pesanan dalam antrean.</p>
+            @if(isset($tanggal) && request()->filled('tugas'))<a class="bk-secondary" href="{{ route('staf.kurir.index',['tanggal'=>$tanggal]) }}#daftar-tugas">Lihat semua tugas pada tanggal ini</a>@endif
+        </div>
     @endforelse
-    {{ $pesanan->links('partials.pagination') }}
+    {{ $pesanan->fragment('daftar-tugas')->links('partials.pagination') }}</div>
     @include('partials.submit-ledger')
 </section>
 @endsection
