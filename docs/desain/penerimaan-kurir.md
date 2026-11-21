@@ -17,3 +17,5 @@ Jika beda hasil, catat tahap, waktu, jumlah unit/foto dan apakah transaksi terca
 **Bukti otomatis terpisah:** setelah tiap tahap Chrome dua unit, CI membaca kembali penyimpanan privat dan database uji. Pada jam 18.01 WIB dengan tarif Rp10.000/jam/unit dan tanpa perpanjangan, diharapkan satu denda Rp20.000; deposit Rp100.000 bukan pembayaran denda. Ini bukan hasil uji lapangan.
 
 **Luring sebelum Simpan:** jika browser sudah melaporkan luring, Simpan tidak memulai permintaan. Jangan tutup/muat ulang halaman; setelah tersambung kembali, periksa isian lalu tekan Simpan sendiri. Tidak ada antrean kirim otomatis. Jika permintaan sempat dimulai dan hasilnya tidak pasti, tetap gunakan pemeriksaan status, bukan kirim ulang.
+
+Pratinjau foto: buka “Lihat foto … sebelum kirim” pada daftar unit untuk mencocokkan barang dengan kode unit, lalu tutup. Pratinjau memakai berkas lokal, bukan unggahan atau draf tersimpan. Hapus atau ganti foto yang keliru sebelum menekan Simpan.

@@ -1,3 +1,11 @@
+const photoTypes = new Set(['image/jpeg','image/png','image/webp']);
+function photoIssue(file) {
+    if (!file.size) return 'Berkas foto kosong.';
+    if (file.size > 3*1024*1024) return 'Ukuran foto melebihi 3 MB.';
+    if (!photoTypes.has(file.type)) return 'Gunakan foto JPEG, PNG atau WebP.';
+    return '';
+}
+
 for (const form of document.querySelectorAll('[data-inspection]')) {
     const units = [...form.querySelectorAll('[data-inspection-unit]')];
     function refresh() {
@@ -10,7 +18,7 @@ for (const form of document.querySelectorAll('[data-inspection]')) {
             unit.querySelector('[data-note]').required = damaged;
             const photos = unit.querySelector('[data-photos]');
             photos.required = damaged || (index === 0 && count === 0);
-            photos.setCustomValidity(count > 6 ? 'Maksimal enam foto per tahap.' : [...photos.files].some(f => f.size > 3*1024*1024) ? 'Ukuran foto melebihi 3 MB.' : '');
+            photos.setCustomValidity(count > 6 ? 'Maksimal enam foto per tahap.' : ([...photos.files].map(photoIssue).find(Boolean) || ''));
         }
         const deposit = form.querySelector('[data-deposit-field]');
         if (deposit) {
@@ -45,7 +53,19 @@ for (const unit of document.querySelectorAll('[data-inspection-unit]')) {
         picker.files = transfer.files;
         picker.dispatchEvent(new Event('change', { bubbles: true }));
     }
+    const previews = new Set();
+    function closePreview(image) {
+        if (previews.delete(image)) URL.revokeObjectURL(image.src);
+        image.removeAttribute('src');
+    }
+    window.addEventListener('pagehide', () => {
+        for (const image of previews) {
+            image.closest('details').open = false;
+            closePreview(image);
+        }
+    });
     function render() {
+        for (const image of previews) closePreview(image);
         list.replaceChildren();
         [...picker.files].forEach((file, index) => {
             const row = document.createElement('li');
@@ -58,7 +78,28 @@ for (const unit of document.querySelectorAll('[data-inspection-unit]')) {
                 (list.querySelectorAll('button')[index] || picker).focus();
                 status.textContent = 'Foto dihapus dari pilihan. Belum ada berkas yang dikirim.';
             };
-            row.append(remove); list.append(row);
+            row.append(remove);
+            const issue = photoIssue(file);
+            if (issue) {
+                row.append(` ${issue}`);
+            } else {
+                const panel = document.createElement('details');
+                const toggle = document.createElement('summary');
+                toggle.textContent = `Lihat foto ${index+1} sebelum kirim`;
+                const image = document.createElement('img');
+                image.alt = `Pratinjau foto ${index+1}: ${file.name}`;
+                image.style.cssText = 'max-width:100%;max-height:15rem;object-fit:contain';
+                panel.append(toggle,image);
+                panel.addEventListener('toggle', () => {
+                    if (!panel.isConnected || !panel.open) { closePreview(image); return; }
+                    if (!previews.has(image)) {
+                        image.src = URL.createObjectURL(file);
+                        previews.add(image);
+                    }
+                });
+                row.append(panel);
+            }
+            list.append(row);
         });
     }
     picker.addEventListener('change', () => { status.textContent = ''; render(); });
@@ -66,7 +107,7 @@ for (const unit of document.querySelectorAll('[data-inspection-unit]')) {
         const file = camera.files[0];
         if (!file) return;
         const total = [...unit.closest('form').querySelectorAll('[data-photos]')].reduce((n,input)=>n+input.files.length,0);
-        if (total >= 6 || file.size > 3*1024*1024 || !['image/jpeg','image/png','image/webp'].includes(file.type)) {
+        if (total >= 6 || photoIssue(file)) {
             status.textContent = 'Foto tidak ditambahkan. Periksa format, batas 3 MB dan maksimal 6 foto per tahap.';
         } else {
             assign([...picker.files,file]);
