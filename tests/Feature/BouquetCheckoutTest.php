@@ -228,6 +228,7 @@ class BouquetCheckoutTest extends TestCase
         $input = array_diff_key($cart,['items'=>true]) + ['jumlah'=>2,'opsi'=>[$option['id']=>['nilai_id'=>$option['nilai_id'],'satuan'=>3]]];
         $this->from($url)->post($url,$input)->assertSessionHasErrors('persetujuan_pelanggan_diperiksa');
         $input['persetujuan_pelanggan_diperiksa'] = 1;
+        $input['pembayaran'] = 'penuh'; // The custom line alone is below the DP threshold.
         $this->post($url,$input)->assertSessionHas('manual_success');
         $order = Pesanan::sole();
         $this->post($url,$input)->assertRedirect(route('admin.pesanan.show',$order->id));
