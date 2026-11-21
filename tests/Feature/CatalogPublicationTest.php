@@ -37,8 +37,15 @@ class CatalogPublicationTest extends TestCase
         $this->get(route('admin.katalog.index',['tampil'=>'kategori']))->assertOk()->assertSee('Tersembunyi · kategori nonaktif');
         DB::table('kategori')->where('id',$d['kategori_id'])->update(['aktif'=>true]);
         unset($d['aktif']);
+        $editor = route('admin.katalog.edit',['id'=>$p->id,'tampil'=>'publik']);
+        $stamp = $this->get($editor)->viewData('editorStamp');
         $d['harga_dasar'] = 15000;
         $this->put(route('admin.katalog.update',$p->id),$d)->assertRedirect();
+        $stale = array_merge($d,['harga_dasar'=>12000,'versi_editor'=>$stamp]);
+        $target = route('admin.katalog.update',['id'=>$p->id,'tampil'=>'publik']);
+        $this->put($target,$stale)->assertRedirect($editor)->assertSessionHas('editor_conflict');
+        $this->assertEquals(15000,$p->fresh()->harga_dasar);
+        $this->put($target,$d+['versi_editor'=>$this->get($editor)->viewData('editorStamp')])->assertRedirect();
         $this->assertTrue($p->fresh()->aktif);
         $this->post(route('admin.katalog.archive',$p->id))->assertRedirect();
         $this->post(route('admin.katalog.archive',$p->id))->assertRedirect();

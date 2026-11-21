@@ -72,7 +72,7 @@ class AdminCatalogController extends BaseController
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kategori_id' => 'required|exists:kategori,id',
+            'kategori_id' => ['required', \Illuminate\Validation\Rule::exists('kategori','id')->where('aktif', true)],
             'nama' => 'required|string|max:150',
             'slug' => 'required|string|max:170|unique:produk,slug',
             'jenis' => 'required|in:sewa,jual,custom',
@@ -103,6 +103,13 @@ class AdminCatalogController extends BaseController
      * @param  int  $id
      * @return View
      */
+    private function editorStamp(Produk $product): string
+    {
+        // Ignore unrelated gallery edits; include visibility because a publish changes who sees the edit.
+        return hash('sha256', json_encode($product->only(['id','nama','slug','kategori_id','jenis','harga_dasar',
+            'deskripsi','lead_custom_hari','izin_hari_sama','kelompok_kapasitas','aktif']), JSON_THROW_ON_ERROR));
+    }
+
     public function edit(Request $request, $id)
     {
         $produk = Produk::with(['kategori', 'varianProduk', 'opsiProduk', 'gambarProduk'])->findOrFail($id);
@@ -110,6 +117,7 @@ class AdminCatalogController extends BaseController
 
         return view('owner.katalog.edit', [
             'produk' => $produk,
+            'editorStamp' => $this->editorStamp($produk),
             'jenisTerkunci' => DB::table('item_pesanan')->where('produk_id', $produk->id)->exists(),
             'context' => $this->listContext($request),
             'kategoris' => $kategoris,
@@ -141,17 +149,28 @@ class AdminCatalogController extends BaseController
         ]);
 
         unset($data['foto_utama'], $data['aktif']);
-        DB::transaction(function () use ($data, $id) {
+        $saved = DB::transaction(function () use ($data, $id, $request) {
             $product = Produk::lockForUpdate()->findOrFail($id);
+            if ($request->has('versi_editor') && $request->input('versi_editor') !== $this->editorStamp($product)) {
+                return false;
+            }
+            if ((int)$data['kategori_id'] !== (int)$product->kategori_id && !Kategori::whereKey($data['kategori_id'])->where('aktif',true)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['kategori_id'=>'Pilih kategori aktif untuk memindahkan produk.']);
+            }
             abort_if($product->jenis !== $data['jenis'] && DB::table('item_pesanan')->where('produk_id', $id)->exists(), 409, 'Jenis produk dalam riwayat pesanan tidak dapat diubah.');
             $before = $product->only(array_keys($data));
-            $product->update($data);
+            $product->fill($data);
+            if (!$product->isDirty()) { return true; }
+            $product->save();
             StaffAudit::record('ubah_produk', 'produk', $product->id, $before, $product->fresh()->only(array_keys($data)));
+            return true;
         });
-
-        return redirect()
-            ->route('admin.katalog.index')
-            ->with('success', 'Produk berhasil diperbarui.');
+        if (!$saved) {
+            abort_if($request->expectsJson(), 409, 'Produk sudah berubah.');
+            return redirect()->route('admin.katalog.edit',['id'=>$id]+$this->listContext($request))
+                ->with('editor_conflict', 'Produk berubah sejak editor dibuka. Isian lama tidak disimpan. Tinjau data terbaru di bawah sebelum menyunting kembali.');
+        }
+        return redirect()->route('admin.katalog.index', $this->listContext($request))->with('success', 'Produk berhasil diperbarui.');
     }
 
     /**
