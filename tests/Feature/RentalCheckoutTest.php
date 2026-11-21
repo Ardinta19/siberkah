@@ -496,10 +496,14 @@ class RentalCheckoutTest extends TestCase
             $this->postJson($url, $cut)->assertForbidden();
             $this->actingAs($owner, 'staff')->postJson($url, $cut)->assertConflict();
             $this->postJson(route('retur.setoran', $order->id), ['nominal' => 100000])->assertOk();
+            $this->get($evidence,$html)->assertOk()->assertSee('Simpan pemakaian deposit')->assertSee('Maksimum Rp100.000');
+            $this->actingAs($admin,'staff')->get($evidence,$html)->assertSee('Hanya Owner')->assertDontSee('Simpan pemakaian deposit');
+            $this->actingAs($owner,'staff');
             $this->postJson($url, array_replace($cut, ['nominal' => 100001]))->assertUnprocessable();
             $payment = $this->postJson($url, $cut)->assertOk()->json('pembayaran_id');
             $this->postJson($url, $cut)->assertOk()->assertJsonPath('pembayaran_id', $payment);
             $this->postJson($url, array_replace($cut, ['alasan' => 'Alasan berbeda']))->assertConflict();
+            $this->get($evidence,$html)->assertOk()->assertSee($cut['alasan'])->assertDontSee('Simpan pemakaian deposit');
             $this->assertDatabaseHas('pembayaran', ['id' => $invoice, 'status' => 'kedaluwarsa', 'nominal_tertunda' => null]);
             $invoice = DB::table('penutupan_sewa')->where('pesanan_id', $order->id)->value('tagihan_id');
             $this->assertSame(250000 + $delta - $used, $order->fresh()->saldo);

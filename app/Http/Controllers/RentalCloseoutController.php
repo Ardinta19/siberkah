@@ -27,9 +27,13 @@ class RentalCloseoutController extends Controller
             $damaged = $returns->contains(fn ($row) => $row->kondisi !== 'baik');
             $rates = !$review && $complete && $damaged && $request->user('staff')->isOwner()
                 ? DB::table('tarif_kerusakan')->orderBy('nama')->get(['kode','nama','satuan','tarif']) : collect();
-            $deposit = $review ? DB::table('pemakaian_deposit')->where('pesanan_id',$id)->first(['nominal','alasan']) : null;
+            $deposit = $review ? DB::table('pemakaian_deposit')->where('pesanan_id',$id)->first(['nominal','alasan','dicatat_pada','pengguna_id']) : null;
+            $cap = $review && !$deposit && $order->jenis_jaminan === 'deposit' && $review->setoran_pada
+                && $order->status === 'sudah_dikembalikan' ? min($review->biaya_kerusakan,$order->nominal_jaminan,$order->saldo) : 0;
+            $canApply = $cap > 0 && $order->jumlah_dibayar + $order->saldo === $order->total
+                && \App\Actions\ApplyDamageDeposit::eligibleBill($order,$review->tagihan_id)->exists();
             $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
-            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','review','deposit','complete','damaged','rates'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','review','deposit','complete','damaged','rates','cap','canApply'))->header('Cache-Control','private, no-store');
         }
         $rows = $query->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
         return response()->json($rows)->header('Cache-Control', 'private, no-store');

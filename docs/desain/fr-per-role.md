@@ -65,3 +65,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — setelah penilaian retur:** tampilkan tarif yang dibekukan, saldo dan posisi deposit. Pisahkan penerimaan setoran fisik dari pemakaian deposit oleh Owner. Formulir penutupan hanya setelah unit kembali, saldo nol dan konfirmasi setoran jika tunai; minta hasil aktual dan catatan, bukan mengisi bukti pengembalian secara otomatis.
 
 **Penilaian retur:** setelah semua inspeksi kembali lengkap, Admin dapat menetapkan Rp0 untuk kondisi baik. Kondisi selain baik memerlukan Owner. Estimasi jumlah × tarif membantu peninjauan; server menghitung tarif saat transaksi dan menolak nominal konfirmasi berbeda. Keputusan tidak memotong deposit.
+
+**Retur — pemakaian deposit oleh Owner:** pisahkan aksi finansial sekali pakai dari konfirmasi setoran oleh Admin. Tampilkan plafon, estimasi saldo dan sisa deposit sebelum konfirmasi; gunakan kriteria tagihan yang sama pada GET dan transaksi terkunci. Sesudah keputusan, hanya jejak nominal, alasan, waktu dan petugas yang tampil.
