@@ -620,6 +620,28 @@ class RentalCheckoutTest extends TestCase
         $this->assertStringNotContainsString($customer->nomor_wa, $csv);
     }
 
+    public function test_staff_unpaid_cancel_requires_clear_payment_and_releases_once(): void
+    {
+        config(['checkout.staging'=>true]);
+        $order = app(CreateRentalOrder::class)->create($this->customer('628111111111'),$this->fixture());
+        $staff = Pengguna::factory()->create(['peran'=>'admin']);
+        $url = route('admin.pesanan.cancel-unpaid',$order->id);
+        $input = ['konfirmasi'=>1,'alasan'=>'Pelanggan tidak jadi memesan'];
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'staf_produksi']),'staff')->postJson($url,$input)->assertForbidden();
+        $this->actingAs($staff,'staff');
+        $bill = DB::table('pembayaran')->where('pesanan_id',$order->id);
+        $bill->update(['dikonfirmasi_pelanggan_pada'=>now()]);
+        $this->postJson($url,$input)->assertConflict();
+        $this->assertDatabaseCount('hari_reservasi',1);
+        $bill->update(['dikonfirmasi_pelanggan_pada'=>null]);
+        $this->postJson($url,$input)->assertOk();
+        $this->postJson($url,$input)->assertOk();
+        $this->postJson($url,array_replace($input,['alasan'=>'Berbeda']))->assertConflict();
+        $this->assertDatabaseCount('hari_reservasi',0);
+        $this->assertSame(1,DB::table('riwayat_status_pesanan')->where(['kode_transisi'=>'T04','pengguna_id'=>$staff->id,'catatan'=>$input['alasan']])->count());
+        $this->assertDatabaseCount('keputusan_refund',0);
+    }
+
     public function test_manual_wa_order_uses_rental_rules_and_records_staff_identity(): void
     {
         config(['checkout.staging' => true]);
