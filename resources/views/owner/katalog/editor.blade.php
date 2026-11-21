@@ -1,6 +1,6 @@
 @if(session('editor_conflict'))<p class="bk-notice" role="alert">{{ session('editor_conflict') }}</p>@endif
 @if($errors->any())<div class="bk-notice" role="alert"><strong>Produk belum disimpan.</strong><ul>@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>@endif
-<form data-product-editor data-new="{{ isset($produk) ? 0 : 1 }}" data-pending="Menyimpan produk…" method="post" action="{{ isset($produk) ? route('admin.katalog.update',['id'=>$produk->id]+$context) : route('admin.katalog.store') }}" class="bk-product-editor grid max-w-lg gap-3 p-4">@csrf
+<form data-product-editor data-new="{{ isset($produk) ? 0 : 1 }}" data-pending="Menyimpan produk…" method="post" action="{{ isset($produk) ? route('admin.katalog.update',['id'=>$produk->id]+$context) : route('admin.katalog.store',$context) }}" class="bk-product-editor grid max-w-lg gap-3 p-4">@csrf
 @isset($produk) @method('put')<input type="hidden" name="versi_editor" value="{{ old('versi_editor',$editorStamp) }}"> @endisset
 <label>Nama <input required maxlength="150" name="nama" value="{{ old('nama',$produk->nama ?? '') }}"></label>
 <label>Slug (alamat produk) <input aria-describedby="slug-help" required maxlength="170" name="slug" value="{{ old('slug',$produk->slug ?? '') }}"></label>

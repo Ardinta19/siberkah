@@ -3,6 +3,7 @@
 @section('content')
 <section class="bk-owner-list bk-media-manager">
     <x-back-link href="{{ route('admin.katalog.index',$context) }}#kelola-{{ $product->id }}">Kembali ke kelola katalog</x-back-link>
+    @include('owner.katalog.sections',['productId'=>$product->id])
     <header><p class="kc-kicker">Owner · Galeri</p><h1>Foto {{ $product->nama }}</h1><p>{{ $photos->count() }} dari 50 foto galeri. Mengelola foto tidak mengubah status publikasi produk.</p></header>
     @if(session('galeri_konflik'))<p class="bk-notice" role="alert">{{ session('galeri_konflik') }}</p>@endif
     @if(session('success'))<p class="bk-notice" role="status">{{ session('success') }}</p>@endif

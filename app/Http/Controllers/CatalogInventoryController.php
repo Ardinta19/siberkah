@@ -3,17 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Database\UniqueConstraintViolationException;
+use App\Support\OwnerCatalogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 final class CatalogInventoryController extends Controller
 {
-    private function listContext(Request $request): array
-    {
-        return array_filter(['page'=>$request->integer('page') > 1 ? $request->integer('page') : null,
-            'tampil'=>in_array($request->query('tampil'), ['publik','nonaktif','kategori'], true) ? $request->query('tampil') : null]);
-    }
-
     private function variantStamp(object $row, string $kind): string
     {
         return hash('sha256', json_encode([$kind,$row->id,$row->nama,$row->harga,$row->stok,$row->aktif], JSON_THROW_ON_ERROR));
@@ -27,7 +22,7 @@ final class CatalogInventoryController extends Controller
         $selected = $request->has('edit') ? $variants->firstWhere('id',$request->integer('edit')) : null;
         abort_if($request->has('edit') && !$selected,404);
         return response()->view('owner.katalog.variants', ['product'=>$product,'variants'=>$variants,'selected'=>$selected,
-            'stamp'=>$selected ? $this->variantStamp($selected,$product->jenis) : null,'context'=>$this->listContext($request)])->header('Cache-Control','private, no-store');
+            'stamp'=>$selected ? $this->variantStamp($selected,$product->jenis) : null,'context'=>OwnerCatalogContext::from($request)])->header('Cache-Control','private, no-store');
     }
 
     public function variant(Request $request, int $id)
@@ -44,7 +39,7 @@ final class CatalogInventoryController extends Controller
             abort_if(isset($data['stok']) && $product->jenis !== 'jual', 422, 'Stok angka hanya untuk produk siap jual.');
             return $this->save($request, 'varian_produk', ['produk_id' => $id], $data);
         }, 3);
-        $url = route('admin.katalog.variants',['id'=>$id]+$this->listContext($request));
+        $url = route('admin.katalog.variants',['id'=>$id]+OwnerCatalogContext::from($request));
         if ($result === null) {
             abort_if($request->expectsJson(),409,'Data varian sudah berubah.');
             return redirect($url)->with('variant_warning','Varian atau stok telah berubah. Isian lama tidak diterapkan. Periksa data terbaru sebelum mengedit kembali.');

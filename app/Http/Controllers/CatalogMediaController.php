@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Support\OwnerCatalogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -17,12 +18,6 @@ final class CatalogMediaController extends Controller
         return DB::table('gambar_produk')->where('produk_id', $id)->orderBy('urutan')->orderBy('id');
     }
 
-    private function context(Request $request): array
-    {
-        return array_filter(['page'=>$request->integer('page') > 1 ? $request->integer('page') : null,
-            'tampil'=>in_array($request->query('tampil'), ['publik','nonaktif','kategori'], true) ? $request->query('tampil') : null]);
-    }
-
     private function orderStamp($photos): string
     {
         return hash('sha256', $photos->pluck('id')->implode(','));
@@ -34,7 +29,7 @@ final class CatalogMediaController extends Controller
         if ($request->expectsJson() || $request->input('asal') !== 'galeri') {
             abort(409, $message);
         }
-        return redirect()->route('admin.katalog.gallery', ['id'=>$id]+$this->context($request))->with('galeri_konflik',$message);
+        return redirect()->route('admin.katalog.gallery', ['id'=>$id]+OwnerCatalogContext::from($request))->with('galeri_konflik',$message);
     }
 
     public function manage(Request $request, int $id)
@@ -43,13 +38,13 @@ final class CatalogMediaController extends Controller
         $photos = $this->images($id)->get();
         foreach ($photos as $photo) { $photo->detail_stamp = $this->detailStamp($photo); }
         return response()->view('owner.katalog.gallery', ['product'=>$product, 'photos'=>$photos, 'stamp'=>$this->orderStamp($photos),
-            'context'=>$this->context($request)])->header('Cache-Control','private, no-store');
+            'context'=>OwnerCatalogContext::from($request)])->header('Cache-Control','private, no-store');
     }
 
     private function finished(Request $request, int $id, string $message, $apiResponse)
     {
         return !$request->expectsJson() && $request->input('asal') === 'galeri'
-            ? redirect()->route('admin.katalog.gallery', ['id'=>$id]+$this->context($request))->with('success',$message)
+            ? redirect()->route('admin.katalog.gallery', ['id'=>$id]+OwnerCatalogContext::from($request))->with('success',$message)
             : $apiResponse;
     }
 

@@ -13,6 +13,24 @@ class CatalogPublicationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_owner_name_search_is_literal_and_context_survives_navigation(): void
+    {
+        $owner = Pengguna::factory()->create(['peran'=>'owner']);
+        $category = DB::table('kategori')->insertGetId(['nama'=>'Kategori sama','slug'=>'kategori-sama']);
+        $a = Produk::create(['nama'=>'Diskon 0%','slug'=>'diskon','jenis'=>'jual','kategori_id'=>$category,'harga_dasar'=>100,'aktif'=>false]);
+        Produk::create(['nama'=>'Diskon 01','slug'=>'diskon-01','jenis'=>'jual','kategori_id'=>$category,'harga_dasar'=>100,'aktif'=>false]);
+        $context = ['q'=>'0%','tampil'=>'nonaktif'];
+        $this->actingAs($owner,'staff')->get(route('admin.katalog.index',$context))->assertOk()
+            ->assertSee('Diskon 0%')->assertDontSee('Diskon 01')->assertSee('Hapus pencarian')->assertSee('Reset filter');
+        foreach (['edit','variants','gallery'] as $section) {
+            $this->get(route('admin.katalog.'.$section,['id'=>$a->id]+$context))->assertOk()
+                ->assertSee(route('admin.katalog.index',$context).'#kelola-'.$a->id);
+        }
+        $this->get(route('admin.katalog.index',['q'=>'Kategori sama']))->assertDontSee('Diskon 01');
+        $this->post(route('admin.katalog.publish',['id'=>$a->id]+$context))->assertRedirect(route('admin.katalog.index',$context));
+        $this->get(route('admin.katalog.index',$context))->assertDontSee('Diskon 0%');
+    }
+
     public function test_draft_publish_archive_and_price_have_atomic_history(): void
     {
         config(['checkout.staging'=>true, 'checkout.privacy_version'=>'v1']);

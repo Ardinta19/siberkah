@@ -7,6 +7,7 @@ use App\Support\StaffAudit;
 use Illuminate\Support\Facades\DB;
 use App\Models\Produk;
 use Illuminate\Http\RedirectResponse;
+use App\Support\OwnerCatalogContext;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\View\View;
@@ -24,26 +25,24 @@ class AdminCatalogController extends BaseController
      *
      * @return View
      */
-    private function listContext(Request $request): array
-    {
-        $state = $request->query('tampil');
-        return array_filter([
-            'tampil' => in_array($state, ['publik','nonaktif','kategori'], true) ? $state : null,
-            'page' => $request->integer('page') > 1 ? $request->integer('page') : null,
-        ]);
-    }
-
     public function index(Request $request)
     {
-        $context = $this->listContext($request);
+        $context = OwnerCatalogContext::from($request);
         $state = $context['tampil'] ?? null;
         $query = Produk::with('kategori');
+        if (isset($context['q'])) {
+            $term = strtr($context['q'], ['!' => '!!', '%' => '!%', '_' => '!_']);
+            $query->whereRaw("produk.nama LIKE ? ESCAPE '!'", ['%'.$term.'%']);
+        }
         if ($state === 'nonaktif') {
             $query->where('aktif', false);
         } elseif ($state) {
             $query->where('aktif', true)->whereHas('kategori', fn ($q) => $q->where('aktif', $state === 'publik'));
         }
-        $produk = $query->orderByDesc('id')->paginate(20)->appends(array_filter(['tampil'=>$state]))->fragment('daftar-kelola');
+        $produk = $query->orderByDesc('id')->paginate(20)->appends(array_diff_key($context, ['page'=>true]))->fragment('daftar-kelola');
+        if ($produk->currentPage() > $produk->lastPage()) {
+            return redirect($produk->url($produk->lastPage()));
+        }
         return view('owner.katalog.index', compact('produk','state','context'));
     }
 
@@ -60,7 +59,7 @@ class AdminCatalogController extends BaseController
         return view('owner.katalog.create', [
             'kategoris' => $kategoris,
             'zonas' => $zonas,
-            'context' => $this->listContext($request),
+            'context' => OwnerCatalogContext::from($request),
         ]);
     }
 
@@ -93,7 +92,7 @@ class AdminCatalogController extends BaseController
         });
 
         return redirect()
-            ->route('admin.katalog.index')
+            ->route('admin.katalog.index', OwnerCatalogContext::from($request))
             ->with('success', 'Produk berhasil ditambahkan.');
     }
 
@@ -119,7 +118,7 @@ class AdminCatalogController extends BaseController
             'produk' => $produk,
             'editorStamp' => $this->editorStamp($produk),
             'jenisTerkunci' => DB::table('item_pesanan')->where('produk_id', $produk->id)->exists(),
-            'context' => $this->listContext($request),
+            'context' => OwnerCatalogContext::from($request),
             'kategoris' => $kategoris,
         ]);
     }
@@ -167,10 +166,10 @@ class AdminCatalogController extends BaseController
         });
         if (!$saved) {
             abort_if($request->expectsJson(), 409, 'Produk sudah berubah.');
-            return redirect()->route('admin.katalog.edit',['id'=>$id]+$this->listContext($request))
+            return redirect()->route('admin.katalog.edit',['id'=>$id]+OwnerCatalogContext::from($request))
                 ->with('editor_conflict', 'Produk berubah sejak editor dibuka. Isian lama tidak disimpan. Tinjau data terbaru di bawah sebelum menyunting kembali.');
         }
-        return redirect()->route('admin.katalog.index', $this->listContext($request))->with('success', 'Produk berhasil diperbarui.');
+        return redirect()->route('admin.katalog.index', OwnerCatalogContext::from($request))->with('success', 'Produk berhasil diperbarui.');
     }
 
     /**
@@ -179,12 +178,12 @@ class AdminCatalogController extends BaseController
      * @param  int  $id
      * @return RedirectResponse
      */
-    public function archive($id)
+    public function archive(Request $request, $id)
     {
         $this->visibility($id, false);
 
         return redirect()
-            ->route('admin.katalog.index')
+            ->route('admin.katalog.index', OwnerCatalogContext::from($request))
             ->with('success', 'Produk diarsipkan.');
     }
 
@@ -194,12 +193,12 @@ class AdminCatalogController extends BaseController
      * @param  int  $id
      * @return RedirectResponse
      */
-    public function publish($id)
+    public function publish(Request $request, $id)
     {
         $this->visibility($id, true);
 
         return redirect()
-            ->route('admin.katalog.index')
+            ->route('admin.katalog.index', OwnerCatalogContext::from($request))
             ->with('success', 'Produk dipublikasikan.');
     }
 

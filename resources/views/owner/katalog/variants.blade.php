@@ -3,6 +3,7 @@
 @section('content')
 <section class="bk-owner-list">
     <x-back-link href="{{ route('admin.katalog.index',$context) }}#kelola-{{ $product->id }}">Kembali ke kelola katalog</x-back-link>
+    @include('owner.katalog.sections',['productId'=>$product->id])
     <header><p class="kc-kicker">Owner · Varian</p><h1>Varian {{ $product->nama }}</h1><p>Harga dan status varian dikelola terpisah dari status terbit produk.</p></header>
     @if(session('success'))<p role="status" class="bk-notice">{{ session('success') }}</p>@endif
     @if(session('variant_warning'))<p role="alert" class="bk-notice">{{ session('variant_warning') }}</p>@endif
