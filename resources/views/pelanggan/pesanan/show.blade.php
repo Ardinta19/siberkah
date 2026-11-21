@@ -2,7 +2,7 @@
 @section('title', 'Pesanan '.$pesanan->nomor)
 @section('content')
 <section class="container-siberkah py-8 bk-order-detail" @if(!$papan || !in_array($pesanan->status,['menunggu_pembayaran','dikonfirmasi'])) data-order-refresh @endif>
-    <a href="{{ route('pesanan.index') }}" class="bk-order-back">← Riwayat pesanan</a>
+    <a href="{{ route('pesanan.index',array_filter(['kelompok'=>in_array(request('kelompok'),['aktif','arsip'],true)?request('kelompok'):null,'page'=>request()->integer('page') > 1 ? request()->integer('page') : null])) }}#pesanan-{{ $pesanan->id }}" class="bk-order-back">← Riwayat pesanan</a>
     @if($errors->any())<div class="bk-notice" role="alert"><strong>Perubahan belum tersimpan.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @if($notice=session('status') ?? session('success'))<p role="status" class="bk-notice">{{ $notice }}</p>@endif
     <h1 class="text-2xl font-bold">Pesanan {{ $pesanan->nomor }}</h1>

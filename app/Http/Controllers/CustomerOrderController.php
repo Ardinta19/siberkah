@@ -22,13 +22,22 @@ class CustomerOrderController extends BaseController
      *
      * @return View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pesanan = auth('customer')->user()->pesanan()->latest('dibuat_pada')->paginate(10);
+        $group = $request->query('kelompok');
+        $group = in_array($group, ['aktif', 'arsip'], true) ? $group : null;
+        $closed = ['selesai', 'dibatalkan', 'kedaluwarsa'];
+        $query = $request->user('customer')->pesanan();
+        if ($group === 'arsip') {
+            $query->whereIn('status', $closed);
+        } elseif ($group === 'aktif') {
+            $query->whereNotIn('status', $closed);
+        }
+        $pesanan = $query->latest('dibuat_pada')->orderByDesc('id')->paginate(10)
+            ->appends(array_filter(['kelompok' => $group]))->fragment('daftar-pesanan');
 
-        return view('pelanggan.pesanan.index', [
-            'pesanan' => $pesanan,
-        ]);
+        return response()->view('pelanggan.pesanan.index', compact('pesanan', 'group'))
+            ->header('Cache-Control', 'private, no-store');
     }
 
     /**
