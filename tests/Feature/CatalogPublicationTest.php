@@ -33,6 +33,7 @@ class CatalogPublicationTest extends TestCase
         $this->get(route('admin.katalog.index',['tampil'=>'publik']))->assertOk()->assertSee('Uji Draf');
         DB::table('kategori')->where('id',$d['kategori_id'])->update(['aktif'=>false]);
         $this->get(route('admin.katalog.index',['tampil'=>'publik']))->assertOk()->assertDontSee('Uji Draf');
+        $this->get(route('admin.katalog.edit',$p->id))->assertOk()->assertSee('Kategori (nonaktif)');
         $this->get(route('admin.katalog.index',['tampil'=>'kategori']))->assertOk()->assertSee('Tersembunyi · kategori nonaktif');
         DB::table('kategori')->where('id',$d['kategori_id'])->update(['aktif'=>true]);
         unset($d['aktif']);

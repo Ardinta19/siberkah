@@ -3,7 +3,7 @@
 @isset($produk) @method('put') @endisset
 <label>Nama <input required maxlength="150" name="nama" value="{{ old('nama',$produk->nama ?? '') }}"></label>
 <label>Slug <input required maxlength="170" name="slug" value="{{ old('slug',$produk->slug ?? '') }}"></label>
-<label>Kategori <select required name="kategori_id">@foreach($kategoris as $k)<option value="{{ $k->id }}" @selected(old('kategori_id',$produk->kategori_id ?? null)==$k->id)>{{ $k->nama }}</option>@endforeach</select></label>
+<label>Kategori <select required name="kategori_id">@foreach($kategoris as $k)<option value="{{ $k->id }}" @selected(old('kategori_id',$produk->kategori_id ?? null)==$k->id)>{{ $k->nama }}{{ $k->aktif ? '' : ' (nonaktif)' }}</option>@endforeach</select></label>
 <label>Jenis <select name="jenis">@foreach(['jual','sewa','custom'] as $j)<option @selected(old('jenis',$produk->jenis ?? '')===$j)>{{ $j }}</option>@endforeach</select></label>
 <label>Harga dasar <input type="number" required min="0" name="harga_dasar" value="{{ old('harga_dasar',$produk->harga_dasar ?? 0) }}"></label>
 <label>Deskripsi <textarea name="deskripsi">{{ old('deskripsi',$produk->deskripsi ?? '') }}</textarea></label>

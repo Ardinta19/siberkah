@@ -106,7 +106,7 @@ class AdminCatalogController extends BaseController
     public function edit(Request $request, $id)
     {
         $produk = Produk::with(['kategori', 'varianProduk', 'opsiProduk', 'gambarProduk'])->findOrFail($id);
-        $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
+        $kategoris = Kategori::where('aktif', true)->orWhere('id', $produk->kategori_id)->orderBy('urutan')->get();
 
         return view('owner.katalog.edit', [
             'produk' => $produk,
