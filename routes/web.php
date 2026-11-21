@@ -188,6 +188,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
             Route::patch('{foto}/detail', [CatalogMediaController::class, 'updateDetails'])->whereNumber('foto')->name('admin.katalog.images.details');
             Route::delete('{foto}', [CatalogMediaController::class, 'remove'])->whereNumber('foto')->name('admin.katalog.images.delete');
         });
+        Route::get('{id}/unit-sewa', [CatalogInventoryController::class, 'units'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.units');
         Route::post('{id}/manage-units', [CatalogInventoryController::class, 'unit'])->whereNumber('id')->name('admin.katalog.manage-units');
     });
 

@@ -26,6 +26,7 @@
             <a class="bk-secondary" href="{{ route('admin.katalog.edit',['id'=>$p->id]+$context) }}">Edit {{ $p->nama }}</a>
             <a class="bk-secondary" href="{{ route('admin.katalog.gallery',['id'=>$p->id]+$context) }}">Kelola foto {{ $p->nama }}</a>
             <a class="bk-secondary" href="{{ route('admin.katalog.variants',['id'=>$p->id]+$context) }}">Kelola varian {{ $p->nama }}</a>
+            @if($p->jenis==='sewa')<a class="bk-secondary" href="{{ route('admin.katalog.units',['id'=>$p->id]+$context) }}">Kelola unit {{ $p->nama }}</a>@endif
             @if($p->aktif && $p->kategori?->aktif)<a class="bk-secondary" href="{{ route('catalog.show',$p->slug) }}">Lihat {{ $p->nama }} di katalog publik</a>@endif
             @if($p->aktif || $p->kategori?->aktif)
                 <details class="bk-confirm"><summary>{{ $p->aktif ? 'Arsipkan' : 'Terbitkan' }}</summary>

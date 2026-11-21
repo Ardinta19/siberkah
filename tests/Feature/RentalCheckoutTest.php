@@ -35,6 +35,20 @@ class RentalCheckoutTest extends TestCase
             'jumlah' => 1, 'pembayaran' => 'dp', 'setuju_privasi' => true, 'versi_privasi' => 'test-v1', 'alamat_antar' => 'Alamat uji', 'zona_antar_id' => $zone];
     }
 
+    public function test_owner_unit_editor_keeps_identity_and_rejects_stale_status(): void
+    {
+        $fixture = $this->fixture();
+        $unit = DB::table('unit_sewa')->first();
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'owner']), 'staff');
+        $url = route('admin.katalog.units',['id'=>$fixture['produk_id'],'edit'=>$unit->id]);
+        $stamp = $this->get($url)->assertOk()->assertSee('A-01')->viewData('stamp');
+        $post = route('admin.katalog.manage-units',$fixture['produk_id']);
+        $data = ['id'=>$unit->id,'kode'=>'A-01','varian_produk_id'=>$fixture['varian_id'],'status'=>'perawatan','asal'=>'unit','versi_unit'=>$stamp];
+        $this->post($post,$data)->assertRedirect($url)->assertSessionHas('success');
+        $this->post($post,array_merge($data,['status'=>'aktif']))->assertRedirect($url)->assertSessionHas('unit_warning');
+        $this->assertDatabaseHas('unit_sewa',['id'=>$unit->id,'status'=>'perawatan']);
+    }
+
     public function test_create_replay_release_and_rebook(): void
     {
         $data = $this->fixture();

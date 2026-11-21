@@ -85,3 +85,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Varian Owner:** pisahkan harga varian dan harga dasar. Stok tersedia adalah nilai akhir siap jual, bukan tambahan dan bukan jumlah unit sewa. Simpan dari editor lama tidak boleh memulihkan stok yang sudah berkurang karena pesanan. Batalkan penyuntingan dan Kembali ke kelola katalog adalah tautan baca-saja.
 
 **Daftar kelola katalog Owner:** cari hanya nama produk (termasuk draf). Hapus pencarian mempertahankan filter visibilitas; Reset filter mempertahankan nama. Keduanya memulai ulang halaman daftar. Data produk, varian dan galeri menyediakan navigasi langsung antarbagiannya dan membawa konteks daftar. Tautan publik hanya untuk produk terbit dalam kategori aktif.
+
+**Inventaris sewa Owner:** kelola unit hanya dari produk sewa. Identitas unit (kode dan varian) tetap setelah dibuat; status fisik dibedakan dari ketersediaan tanggal. Buka suntingan terbaru saat terjadi konflik, tanpa menerapkan status atau catatan dari tab lama. Daftar unit memiliki paginasi tersendiri, terpisah dari halaman daftar produk.

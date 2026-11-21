@@ -66,30 +66,62 @@ final class CatalogInventoryController extends Controller
         }, 3);
     }
 
+    private function unitStamp(object $unit): string
+    {
+        return hash('sha256', json_encode([$unit->id, $unit->varian_produk_id, $unit->kode, $unit->status, $unit->catatan], JSON_THROW_ON_ERROR));
+    }
+
+    public function units(Request $request, int $id)
+    {
+        $product = DB::table('produk')->where('id', $id)->where('jenis', 'sewa')->first();
+        abort_unless($product, 404);
+        $variants = DB::table('varian_produk')->where('produk_id', $id)->orderBy('nama')->get();
+        $query = DB::table('unit_sewa as u')->join('varian_produk as v','v.id','=','u.varian_produk_id')
+            ->where('v.produk_id',$id)->select('u.*','v.nama as varian');
+        $selected = $request->has('edit') ? (clone $query)->where('u.id',$request->integer('edit'))->first() : null;
+        abort_if($request->has('edit') && !$selected,404);
+        $context = OwnerCatalogContext::from($request);
+        $units = $query->orderBy('u.kode')->paginate(20,['*'],'unit_page')->appends($context)->fragment('daftar-unit');
+        $unitContext = $context + ($units->currentPage()>1 ? ['unit_page'=>$units->currentPage()] : []);
+        return response()->view('owner.katalog.units', compact('product','variants','selected','units','context','unitContext') +
+            ['stamp'=>$selected ? $this->unitStamp($selected) : null])->header('Cache-Control','private, no-store');
+    }
+
     public function unit(Request $request, int $id)
     {
         $data = $request->validate(['id' => 'sometimes|integer|min:1', 'varian_produk_id' => 'required|integer|min:1', 'kode' => 'required|string|max:20',
             'status' => 'required|in:aktif,perawatan,rusak,pensiun', 'catatan' => 'nullable|string|max:200']);
         try {
-            return DB::transaction(function () use ($request, $data, $id) {
+            $result = DB::transaction(function () use ($request, $data, $id) {
                 abort_unless($this->product($id)->jenis === 'sewa', 422);
                 $variant = DB::table('varian_produk')->where('produk_id', $id)->where('id', $data['varian_produk_id'])->lockForUpdate()->first();
                 abort_unless($variant, 404);
                 if (isset($data['id'])) {
                     $unit = DB::table('unit_sewa')->where('id', $data['id'])->where('varian_produk_id', $variant->id)->lockForUpdate()->first();
                     abort_unless($unit, 404);
+                    if (($request->input('asal') === 'unit' || $request->has('versi_unit')) && $request->input('versi_unit') !== $this->unitStamp($unit)) {
+                        return ['conflict'=>'Unit telah berubah. Periksa status dan catatan terbaru sebelum menyunting kembali.'];
+                    }
                     abort_if($unit->kode !== $data['kode'], 409, 'Kode fisik tidak dapat diganti.');
                     if ($unit->status !== $data['status']) {
-                        abort_if(DB::table('penguasaan_unit')->where('unit_sewa_id', $unit->id)->exists() || DB::table('hari_reservasi as h')
+                        if (DB::table('penguasaan_unit')->where('unit_sewa_id', $unit->id)->exists() || DB::table('hari_reservasi as h')
                             ->join('pesanan as p', 'p.id', '=', 'h.pesanan_id')->where('h.unit_sewa_id', $unit->id)
-                            ->whereIn('p.status', ['menunggu_pembayaran','dikonfirmasi','sedang_diproduksi','siap','sudah_diserahkan'])->exists(), 409, 'Unit masih terikat pada pesanan.');
+                            ->whereIn('p.status', ['menunggu_pembayaran','dikonfirmasi','sedang_diproduksi','siap','sudah_diserahkan'])->exists()) { return ['conflict'=>'Unit masih terikat pada pesanan. Status tidak diubah.']; }
                     }
                 }
                 return $this->save($request, 'unit_sewa', ['varian_produk_id' => $variant->id], $data);
             }, 3);
         } catch (UniqueConstraintViolationException) {
-            abort(409, 'Kode unit sudah digunakan.');
+            $result = ['conflict'=>'Kode unit sudah digunakan. Pilih kode fisik lain.'];
         }
+        $html = !$request->expectsJson() && $request->input('asal') === 'unit';
+        $context = OwnerCatalogContext::from($request);
+        if ($request->integer('unit_page') > 1) { $context['unit_page'] = $request->integer('unit_page'); }
+        if (isset($result['conflict'])) {
+            abort_unless($html,409,$result['conflict']);
+            return redirect()->route('admin.katalog.units',['id'=>$id]+$context+(isset($data['id']) ? ['edit'=>$data['id']] : []))->with('unit_warning',$result['conflict']);
+        }
+        return $html ? redirect()->route('admin.katalog.units',['id'=>$id,'edit'=>$result['id']]+$context)->with('success','Unit sewa berhasil disimpan.') : $result;
     }
 
     private function product(int $id): object
