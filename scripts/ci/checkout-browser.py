@@ -980,6 +980,14 @@ with sync_playwright() as playwright:
                 courier.context.set_offline(False)
             expect(inspect.locator('output')).to_contain_text('Inspeksi belum dikirim')
             expect(inspect.locator('output')).to_contain_text('Jaringan terdeteksi kembali')
+            dialogs=[]
+            def stay_on_inspection(dialog):
+                dialogs.append(dialog.type)
+                dialog.dismiss()
+            courier.once('dialog',stay_on_inspection)
+            with courier.expect_event('dialog'):
+                courier.evaluate('setTimeout(()=>location.reload(),0)')
+            assert dialogs==['beforeunload'], 'Keluar dari inspeksi yang belum terkirim perlu konfirmasi'
             assert courier.evaluate('window.inspectionAttempts')==0
             expect(second.locator('[data-photo-list]')).to_contain_text('katalog-editorial.webp')
             # Hold a synthetic rejection so the in-flight UI can be checked without a timer.

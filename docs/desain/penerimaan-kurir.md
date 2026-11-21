@@ -19,3 +19,5 @@ Jika beda hasil, catat tahap, waktu, jumlah unit/foto dan apakah transaksi terca
 **Luring sebelum Simpan:** jika browser sudah melaporkan luring, Simpan tidak memulai permintaan. Jangan tutup/muat ulang halaman; setelah tersambung kembali, periksa isian lalu tekan Simpan sendiri. Tidak ada antrean kirim otomatis. Jika permintaan sempat dimulai dan hasilnya tidak pasti, tetap gunakan pemeriksaan status, bukan kirim ulang.
 
 Pratinjau foto: buka “Lihat foto … sebelum kirim” pada daftar unit untuk mencocokkan barang dengan kode unit, lalu tutup. Pratinjau memakai berkas lokal, bukan unggahan atau draf tersimpan. Hapus atau ganti foto yang keliru sebelum menekan Simpan.
+
+Jika inspeksi sudah diedit, coba muat ulang lalu pilih tetap di halaman pada konfirmasi browser. Pastikan foto dan catatan masih ada. Setelah respons tidak pasti, tautan pemeriksaan status harus tetap berfungsi. Peringatan navigasi bergantung dukungan browser, bukan pemulihan draf bila aplikasi ditutup perangkat.

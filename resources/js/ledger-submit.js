@@ -13,7 +13,14 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
     for(const control of frozen)control.disabled=false;
     frozen=[];locked=false;button.disabled=false;
   }
+  // Each edited inspection owns a separate guard: finishing one task must
+  // not discard an unfinished inspection in another card on the same page.
+  const guardLeave=event=>{event.preventDefault();event.returnValue='';};
+  const releaseGuard=()=>window.removeEventListener('beforeunload',guardLeave);
   if(form.hasAttribute('data-inspection')){
+    const protect=()=>window.addEventListener('beforeunload',guardLeave);
+    form.addEventListener('input',protect);
+    form.addEventListener('change',protect);
     window.addEventListener('online',()=>{
       if(!waitingForNetwork || locked)return;
       waitingForNetwork=false;
@@ -21,7 +28,7 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
     });
   }
   function requireReview(message){
-    output.textContent=message;review.hidden=false;review.focus({preventScroll:true});
+    releaseGuard();output.textContent=message;review.hidden=false;review.focus({preventScroll:true});
   }
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(locked)return;
@@ -58,6 +65,10 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
       }else if(response.status===202 && data){
         requireReview('Mutasi perlu rekonsiliasi. Jangan catat ulang.');
       }else if(response.ok && data && !response.redirected){
+        releaseGuard();
+        // A different dirty inspection may cause the user to cancel reload.
+        output.textContent='Pencatatan berhasil. Muat ulang untuk melihat status terbaru.';
+        review.hidden=false;
         location.reload();
       }else if(response.status===409){
         requireReview('Pencatatan ditolak karena konflik. Periksa status terbaru sebelum melanjutkan.');
