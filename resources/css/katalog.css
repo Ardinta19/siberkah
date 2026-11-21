@@ -166,3 +166,4 @@
 
 /* Keep the tap target aligned with the entire photo rather than an inline text line. */
 .bk-gallery [data-photo] > a{display:block;line-height:0;touch-action:pan-y pinch-zoom}
+.bk-filmstrip{position:relative}.bk-filmstrip-marker{position:absolute;bottom:.26rem;height:3px;border-radius:1rem;background:#8a052b;pointer-events:none}

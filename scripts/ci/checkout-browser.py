@@ -213,6 +213,7 @@ with sync_playwright() as playwright:
     thumbs.last.press('Home')
     expect(thumbs.first).to_be_focused()
     expect(thumbs.first).to_have_attribute('aria-current','true')
+    assert gallery.locator('.bk-filmstrip-marker').evaluate("el=>parseFloat(el.style.left)===el.parentElement.querySelector('[aria-current]').offsetLeft")
     thumbs.first.press('End')
     expect(thumbs.last).to_be_focused()
     thumbs.last.press('ArrowLeft')

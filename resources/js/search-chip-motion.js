@@ -1,7 +1,4 @@
-import { gsap } from 'gsap';
-import { Flip } from 'gsap/Flip';
-
-gsap.registerPlugin(Flip);
+import { gsap, Flip } from './flip-runtime.js';
 
 // Read the old layout before React commits; animate only surviving/new chips after it.
 export function before(nodes) {

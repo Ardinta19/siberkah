@@ -1,7 +1,4 @@
-import { gsap } from 'gsap';
-import { Flip } from 'gsap/Flip';
-
-gsap.registerPlugin(Flip);
+import { Flip } from './flip-runtime.js';
 
 // Capture only geometry. DOM order, submitted values and focus belong to media-order.
 export function capture(rows) {

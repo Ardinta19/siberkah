@@ -6,6 +6,20 @@ for (const gallery of document.querySelectorAll('[data-gallery]')) {
   const large=dialog.querySelector('[data-large]');
   const strip=gallery.querySelector('[data-filmstrip]');
   const thumbs=[...gallery.querySelectorAll('[data-photo-index]')];
+  // The visible rail owns the marker; it never intercepts taps or enters the tab order.
+  const motion=matchMedia('(prefers-reduced-motion: no-preference)');
+  let marker, flip, flight, marked;
+  if(strip){
+    marker=document.createElement('span');marker.className='bk-filmstrip-marker';
+    marker.setAttribute('aria-hidden','true');strip.append(marker);
+    const prepare=()=>{
+      if(!motion.matches){flight?.progress(1);return;}
+      import('./flip-runtime.js').then(module=>{flip=module.Flip;}).catch(()=>{});
+    };
+    motion.addEventListener('change',prepare);
+    // Static placement works immediately; load motion only when a visitor uses the rail/gallery.
+    for(const event of ['pointerdown','focusin'])gallery.addEventListener(event,prepare,{once:true});
+  }
   function markThumb(){
     if(!strip)return;
     thumbs.forEach((button,i)=>{
@@ -15,6 +29,13 @@ for (const gallery of document.querySelectorAll('[data-gallery]')) {
     // Scroll only the thumbnail rail, never the product page beneath the modal.
     const item=thumbs[index].getBoundingClientRect(), rail=strip.getBoundingClientRect();
     const delta=item.left<rail.left ? item.left-rail.left-6 : item.right>rail.right ? item.right-rail.right+6 : 0;
+    if(marked!==index){
+      flight?.progress(1);
+      const state=marked!==undefined && motion.matches && flip && !dialog.open && !delta ? flip.getState(marker) : null;
+      marker.style.left=thumbs[index].offsetLeft+'px';marker.style.width=thumbs[index].offsetWidth+'px';
+      marked=index;
+      if(state)flight=flip.from(state,{duration:.26,ease:'power2.out',prune:true});
+    }
     if(delta)strip.scrollLeft+=delta;
   }
   let index=0, invoker;
