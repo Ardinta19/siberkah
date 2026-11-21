@@ -663,6 +663,16 @@ with sync_playwright() as playwright:
     receipt=page.get_by_role('region',name='Rincian biaya pesanan')
     for text in ('Pita: Perak','2 satuan per produk','Rp7.000 per produk','Terima kasih','Rp137.000'):
         expect(receipt).to_contain_text(text)
+    custom_number = page.locator('main h1').inner_text().removeprefix('Pesanan ').strip()
+    inspector = cashier.context.new_page()
+    inspector.goto(base+'/admin/pesanan')
+    inspector.get_by_label('Nomor atau nama pemesan').fill(custom_number)
+    inspector.get_by_role('button',name='Tampilkan pesanan').click()
+    inspector.get_by_role('link',name='Periksa '+custom_number,exact=True).click()
+    saved_cost = inspector.get_by_role('region',name='Rincian biaya pesanan')
+    for text in ('Pita: Perak','2 satuan per produk','Rp7.000 per produk','Terima kasih','Rp137.000'):
+        expect(saved_cost).to_contain_text(text)
+    inspector.close()
     # Resolve product-specific URLs from the Owner catalog; do not assume fixture IDs.
     audit_tab=cashier.context.new_page()
     owner_urls=[base+p for p in ('/admin/katalog','/admin/pengaturan','/admin/pengaturan/kalender','/admin/pengaturan/tujuan-bayar','/admin/aktivitas','/admin/laporan')]+[report_url]

@@ -67,7 +67,8 @@ class AdminOrderController extends BaseController
                     ->where('k.pesanan_id',$id)->first(['k.nominal_final','k.nominal_sistem','k.alasan_override','k.diputuskan_pada',
                         'p.status','p.diverifikasi_pada','r.referensi_keluar']);
             }
-            return response()->view('admin.pesanan.show',compact('order','context','refund'))->header('Cache-Control','private, no-store');
+            $opsiPerItem = $order->snapshotOpsiPerItem();
+            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem'))->header('Cache-Control','private, no-store');
         }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }

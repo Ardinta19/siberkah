@@ -104,6 +104,13 @@ class Pesanan extends Model
     /**
      * Get the items for the pesanan.
      */
+    public function snapshotOpsiPerItem(): \Illuminate\Support\Collection
+    {
+        return \Illuminate\Support\Facades\DB::table('opsi_item_pesanan')
+            ->whereIn('item_pesanan_id', $this->items->modelKeys())->orderBy('id')->get()
+            ->groupBy('item_pesanan_id');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(ItemPesanan::class, 'pesanan_id');

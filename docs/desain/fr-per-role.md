@@ -51,3 +51,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — meja pemeriksaan:** navigasi langsung ke konfirmasi bank lintas tanggal atau setoran per tanggal WIB. Dari ringkasan, batasi setoran ke satu petugas; melepas filter mempertahankan tanggal dan halaman antrean bank. Chrome menelusuri filter → hitung fisik → riwayat → kembali → semua petugas.
 
 **Admin — refund pembatalan:** rincian pesanan membedakan keputusan bernilai nol, kewajiban menunggu pencatatan dan transfer keluar terverifikasi. Hanya kewajiban menunggu yang membuka formulir ledger; keputusan tidak mengirim uang. Setelah tercatat, tampilkan referensi dan waktu verifikasi tanpa tombol kirim ulang.
+
+**Admin — rincian personalisasi:** Admin dan pelanggan membaca snapshot item/opsi dan komponen biaya yang sama; jangan hitung ulang memakai katalog terkini. Chrome melacak pesanan Pita/Perak dan Kartu pesan dari checkout hingga pemeriksaan operasional.

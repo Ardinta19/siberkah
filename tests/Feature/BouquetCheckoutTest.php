@@ -179,6 +179,11 @@ class BouquetCheckoutTest extends TestCase
             ->assertSee('Bunga: Mawar')->assertSee('3 satuan per produk')->assertSee('+Rp15.000 per produk')
             ->assertSee('Rp115.000 per produk × 2')->assertSee('Rp230.000')->assertSee('Rp270.000')
             ->assertDontSee('Label baru')->assertDontSee('Varian baru');
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']), 'staff');
+        $this->get(route('admin.pesanan.show',Pesanan::sole()->id), ['Accept'=>'text/html'])->assertOk()
+            ->assertSee('Varian: Putih')->assertSee('Bunga: Mawar')->assertSee('3 satuan per produk')
+            ->assertSee('+Rp15.000 per produk')->assertSee('Rp115.000 per produk × 2')->assertSee('Rp270.000')
+            ->assertDontSee('Label baru')->assertDontSee('Varian baru');
     }
 
     public function test_mixed_cart_from_checkout_through_payment_production_and_handover(): void
