@@ -24,13 +24,17 @@
 <button class="btn-primary">Catat deposit yang sudah diterima</button>@include('partials.ledger-feedback')</form></details>@endif
 @include('admin.pesanan.pemakaian-deposit')
 @else<p>Jenis jaminan: {{ $order->jenis_jaminan ?? 'Tidak tercatat' }}</p>@endif
-@if($selesai)<h3>Penutupan tercatat</h3><p>{{ $review->catatan_penutupan }}</p>
+@if($selesai)<h3>Penutupan tercatat</h3>
+@if($closure)<p>Ditutup {{ $closure->dibuat_pada }} WIB · Petugas #{{ $closure->pengguna_id }}</p>@else<p>Riwayat petugas penutup tidak tercatat.</p>@endif
+@if($order->jaminan_kembali_pada)<p>Pengembalian jaminan tercatat {{ $order->jaminan_kembali_pada->format('d/m/Y H:i') }} WIB.</p>
+@elseif($tunai && $sisa === 0)<p>Deposit habis diperhitungkan; tidak ada uang yang dikembalikan.</p>@else<p>Waktu pengembalian jaminan tidak tercatat.</p>@endif
+<p>{{ $review->catatan_penutupan }}</p>
 @elseif($order->status === 'sudah_dikembalikan' && $order->saldo === 0 && (!$tunai || $review->setoran_pada))
 <details class="bk-confirm"><summary>Selesaikan pengembalian sewa</summary>
 <form data-ledger class="bk-product-editor grid gap-3 p-4" method="post" action="{{ route('retur.selesai',$order->id) }}">@csrf
 <p>Periksa jaminan sebelum menutup pesanan {{ $order->nomor }}. Tindakan ini tidak mentransfer uang.</p>
-<label>Nominal aktual yang dikembalikan (Rp)<input name="nominal_kembali" type="number" min="0" required step="1"></label>
-<label>Hasil pemeriksaan jaminan<select name="jaminan_dikembalikan" required><option value="">Pilih hasil aktual</option><option value="1">Jaminan atau sisa deposit telah dikembalikan</option><option value="0">Deposit habis diperhitungkan; tidak ada sisa</option></select></label>
+<label>Nominal aktual yang dikembalikan (Rp)<input name="nominal_kembali" type="number" min="{{ $sisa }}" max="{{ $sisa }}" required step="1"></label>
+<label>Hasil pemeriksaan jaminan<select name="jaminan_dikembalikan" required><option value="">Pilih hasil aktual</option>@if(!$tunai || $sisa > 0)<option value="1">{{ $tunai ? 'Sisa deposit telah dikembalikan' : 'Dokumen jaminan telah dikembalikan' }}</option>@else<option value="0">Deposit habis diperhitungkan; tidak ada sisa</option>@endif</select></label>
 <label>Catatan penutupan<textarea required name="catatan" maxlength="300"></textarea></label><button class="btn-primary">Catat penutupan pesanan</button>@include('partials.ledger-feedback')</form></details>
 @else<p>Penutupan belum tersedia. Pastikan unit sudah kembali, saldo nol, dan setoran deposit tunai sudah tercatat.</p>@endif
 @endif</section>

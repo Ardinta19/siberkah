@@ -33,8 +33,9 @@ class RentalCloseoutController extends Controller
                 && $order->status === 'sudah_dikembalikan' ? min($review->biaya_kerusakan,$order->nominal_jaminan,$order->saldo) : 0;
             $canApply = $cap > 0 && $order->jumlah_dibayar + $order->saldo === $order->total
                 && \App\Actions\ApplyDamageDeposit::eligibleBill($order,$review->tagihan_id)->exists();
+            $closure = $order->status === 'selesai' ? DB::table('riwayat_status_pesanan')->where(['pesanan_id'=>$id,'kode_transisi'=>'T11'])->latest('id')->first(['pengguna_id','dibuat_pada']) : null;
             $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
-            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','lateFee','review','deposit','complete','damaged','rates','cap','canApply'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','closure','lateFee','review','deposit','complete','damaged','rates','cap','canApply'))->header('Cache-Control','private, no-store');
         }
         $rows = $query->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
         return response()->json($rows)->header('Cache-Control', 'private, no-store');

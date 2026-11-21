@@ -536,8 +536,10 @@ class RentalCheckoutTest extends TestCase
             $this->postJson(route('retur.selesai', $order->id), array_replace($complete, ['nominal_kembali' => 100000]))->assertConflict();
         }
         $this->get($evidence,$html)->assertOk()->assertSee('Setoran deposit tercatat')->assertSee('Catat penutupan pesanan')->assertSee('Rp'.number_format(100000-$used,0,',','.'));
+        $this->get($evidence,$html)->assertSee('min="'.(100000-$used).'" max="'.(100000-$used).'"',false)->assertSee($used === 100000 ? 'Deposit habis diperhitungkan; tidak ada sisa' : 'Sisa deposit telah dikembalikan');
+        $this->postJson(route('retur.selesai', $order->id), array_replace($complete,['jaminan_dikembalikan'=>!$complete['jaminan_dikembalikan']]))->assertConflict();
         $this->postJson(route('retur.selesai', $order->id), $complete)->assertOk();
-        $this->get($evidence,$html)->assertOk()->assertSee('Penutupan tercatat')->assertSee($complete['catatan'])->assertDontSee('Catat penutupan pesanan');
+        $this->get($evidence,$html)->assertOk()->assertSee('Penutupan tercatat')->assertSee('Ditutup ')->assertSee($used === 100000 ? 'tidak ada uang yang dikembalikan' : 'Pengembalian jaminan tercatat')->assertSee($complete['catatan'])->assertDontSee('Catat penutupan pesanan');
         $this->postJson(route('retur.selesai', $order->id), $complete)->assertOk();
         $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'status' => 'selesai', 'saldo' => 0, 'jumlah_dibayar' => 511000 + $delta]);
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi','T11')->count());
