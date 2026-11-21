@@ -52,12 +52,20 @@ class CustomerProfileController extends Controller
         $request->validate(['konfirmasi' => 'required|in:HAPUS AKUN SAYA']);
         $id = $request->user('customer')->id;
         $proof = $request->session()->get('otp.verified');
-        abort_unless(is_array($proof) && ($proof['id'] ?? null) === $id && ($proof['at'] ?? 0) >= now()->subMinutes(5)->timestamp,
-            403, 'Masuk kembali dengan OTP sebelum menghapus akun.');
-        $action->handle($id);
+        if (!is_array($proof) || ($proof['id'] ?? null) !== $id || ($proof['at'] ?? 0) < now()->subMinutes(5)->timestamp) {
+            $message = 'Masuk kembali dengan OTP sebelum menghapus akun.';
+            abort_if($request->expectsJson(),403,$message);
+            return back()->withErrors(['konfirmasi'=>$message]);
+        }
+        try {
+            $action->handle($id);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            if ($e->getStatusCode() !== 409 || $request->expectsJson()) { throw $e; }
+            return back()->withErrors(['konfirmasi'=>$e->getMessage()]);
+        }
         \Illuminate\Support\Facades\Auth::guard('customer')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return response()->noContent();
+        return $request->expectsJson() ? response()->noContent() : redirect()->route('catalog.index')->with('status','Akun pelanggan telah dianonimkan.');
     }
 }

@@ -1,7 +1,7 @@
 @extends('layouts.customer')
 @section('title', 'Tagihan '.$nomor)
 @section('content')
-<section class="container-siberkah py-8">
+<section class="bk-customer-panel bk-invoice">
     <x-back-link :href="route('pesanan.show',['nomor'=>$nomor]+array_filter(['kelompok'=>in_array(request('kelompok'),['aktif','arsip'],true)?request('kelompok'):null,'page'=>request()->integer('page') > 1 ? request()->integer('page') : null]))">Kembali ke rincian pesanan</x-back-link>
     <h1 class="text-2xl font-bold">Tagihan {{ $nomor }}</h1>
     <p>Status pesanan: {{ str_replace('_', ' ', $status) }} · Saldo Rp{{ number_format($saldo, 0, ',', '.') }}</p>
@@ -41,6 +41,6 @@
             @endif
         </article>
     @endforeach
-
+    @if(!count($pembayaran))<p class="bk-notice">Belum ada tagihan bank untuk pesanan ini. Periksa rincian pesanan sebelum melakukan pembayaran.</p>@endif
 </section>
 @endsection

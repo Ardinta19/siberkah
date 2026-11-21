@@ -27,7 +27,7 @@
                 <form data-pending="Menghapus…" method="post" action="{{ route('cart.remove',$p->id) }}">@csrf @method('delete')<button class="bk-secondary">Ya, hapus</button></form>
             </details></div>
         </article>
-    @empty<p class="kc-empty">Keranjang masih kosong.</p>@endforelse
+    @empty<div class="kc-empty"><p>Keranjang masih kosong.</p><a class="bk-secondary" href="{{ route('catalog.index') }}">Jelajahi katalog</a></div>@endforelse
 
 </div></section>
 @endsection

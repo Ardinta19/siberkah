@@ -314,6 +314,22 @@ with sync_playwright() as playwright:
     expect(page.locator('.kc-dock [aria-current]')).to_have_text('Lacak')
     page.get_by_role('link', name='Lihat tagihan dan petunjuk pembayaran').click()
     expect(page.locator('.kc-dock [aria-current]')).to_have_text('Lacak')
+    # All customer GET screens. Check the actual rendered page, never send an extra order or OTP.
+    audit=context.new_page()
+    anonymous=browser.new_context(locale='id-ID',reduced_motion='reduce')
+    visitor=anonymous.new_page()
+    order_url=base+'/pelanggan/pesanan/'+page.url.split('/')[-2]
+    screens=[(audit,base+path) for path in ('/','/katalog','/katalog/buket-browser','/keranjang','/pelanggan/checkout/buket-browser','/pelanggan/profil','/pelanggan/pesanan','/syarat-sewa','/privasi','/kontak')]
+    screens += [(audit,order_url),(audit,page.url),(visitor,base+'/masuk')]
+    for screen,url in screens:
+        response=screen.goto(url)
+        assert response.ok and screen.url.rstrip('/')==url.rstrip('/'), f'Unexpected customer destination: {url}'
+        expect(screen.locator('main h1')).to_have_count(1)
+        for width in (320,768,1440):
+            screen.set_viewport_size({'width':width,'height':850})
+            assert screen.evaluate('document.documentElement.scrollWidth <= innerWidth+1'), f'Customer page overflow: {url}, {width}'
+        expect(screen.locator('main')).to_be_visible()
+    audit.close();anonymous.close()
     bill=page.locator('[data-payment-window]')
     expect(bill.locator('[data-principal]')).to_have_text('Rp135.000')
     code=int(bill.locator('[data-code]').inner_text().split('Rp')[1])

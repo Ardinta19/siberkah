@@ -19,3 +19,9 @@ Sebelum menutup satu alur, terapkan [standar interaksi lintas layout](pola-inter
 - Desktop: pill lengkap berubah menjadi satu logo yang dapat dibuka lagi, palet dengan keyboard, popover untuk pilihan lokal, pencarian produk di upper sheet. Palet ruang kerja hanya menawarkan tujuan sesuai peran.
 - Ponsel: tab bawah untuk tujuan rutin, hamburger untuk navigasi radial, bottom sheet untuk pencarian. Jangan menduplikasi tindakan transaksi di dock. Tablet mengikuti ruang tersedia, bukan sekadar memperkecil desktop.
 - Daftar panjang: jump page di kedua ukuran. Pada tindakan berisiko atau informasi tagihan, utamakan teks opak dan konfirmasi yang jelas; glass untuk lapisan navigasi. React untuk kontrol yang memiliki state, bukan untuk mengganti tautan biasa. Escape, pengembalian fokus, safe area dan preferensi gerak merupakan bagian dari kriteria fungsional.
+
+## Gerbang penerimaan antarmuka pelanggan
+
+Matriks `scripts/ci/checkout-browser.py` memuat 13 halaman GET: beranda, katalog, detail, keranjang, checkout, profil, riwayat, detail pesanan, tagihan, syarat sewa, privasi, kontak, dan masuk. Pada setiap URL periksa tujuan tidak dialihkan, satu judul utama, dan lebar dokumen pada 320/768/1440 px. Jalankan masuk sebagai tamu; jangan kirim OTP atau transaksi ekstra untuk menguji layout. Partial biaya, status pembatalan, tujuan bayar, dialog dan kondisi kosong adalah bagian halaman induk, bukan halaman fiktif.
+
+Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan staging yang diizinkan, minta frasa konfirmasi dan tetap periksa OTP baru, transaksi terbuka serta rekonsiliasi pada server. Kegagalan HTML harus kembali ke profil; API mempertahankan kontraknya. Pengujian visual manual perangkat fisik, tujuan pembayaran riil, integrasi OTP akhir dan penerimaan operator tetap di luar sign-off UI otomatis ini.

@@ -36,5 +36,17 @@
             <button hidden type="button" data-undo-profile class="bk-secondary">Batalkan perubahan</button></div>
         <p role="status" data-profile-state></p>
     </form>
+    @if(config('checkout.staging') && app()->environment('local','testing','staging'))
+        <details class="bk-confirm bk-account-danger" @if($errors->has('konfirmasi')) open @endif>
+            <summary>Hapus akun pelanggan</summary>
+            <p>Data pengenal akun akan dianonimkan dan Anda akan keluar. Catatan transaksi tetap disimpan. Tindakan ini tidak dapat dibatalkan.</p>
+            <p>Selesaikan pesanan, tagihan, dan permohonan yang masih berjalan. Untuk keamanan, masuk kembali dengan OTP jika verifikasi terakhir lebih dari lima menit lalu.</p>
+            <form method="post" action="{{ route('profile.destroy') }}" data-pending="Memproses penghapusan…">@csrf @method('delete')
+                <label>Ketik HAPUS AKUN SAYA untuk mengonfirmasi <input name="konfirmasi" required autocomplete="off" pattern="HAPUS AKUN SAYA"></label>
+                @error('konfirmasi')<p role="alert">{{ $message }}</p>@enderror
+                <button type="submit" class="bk-secondary">Hapus akun secara permanen</button>
+            </form>
+        </details>
+    @endif
 </section>
 @endsection

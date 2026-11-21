@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="py-12">
-    <div class="container-siberkah">
+    <div class="bk-customer-panel bk-legal">
         <x-back-link :href="route('home')">Kembali ke beranda</x-back-link>
 
-        <h1 class="text-3xl font-bold text-primary-900 dark:text-primary-50 mb-6">Syarat Sewa</h1>
+        <p class="kc-kicker">Berkah Kreatif · Informasi pelanggan</p>
+        <h1 class="text-3xl font-bold text-primary-900 mb-6">Syarat Sewa</h1>
 
-        <div class="prose prose-lg prose-inDark:prose-inDarkDark max-w-xl">
+        <div class="prose prose-lg max-w-xl">
             <p>Silakan baca syarat dan ketentuan sewa di bawah ini sebelum melakukan pemesanan.</p>
 
             <h2 class="text-xl font-bold text-primary-600 mb-4">Syarat Umum</h2>
@@ -22,8 +23,8 @@
 
             <h2 class="text-xl font-bold text-primary-600 mb-4">Syarat Pembayaran</h2>
             <ul>
-                <li>Di bawah Rp{{ number_format(\App\Support\BusinessSettings::value('ambang_dp_rupiah'), 0, ',', '.') }}, pembayaran harus lunas. Mulai ambang tersebut, bila tenggat pelunasan belum lewat, Anda dapat membayar lunas atau DP 50%.</li>
-                <li>Batas pelunasan DP adalah pukul 18.00 WIB sehari sebelum tanggal serah.</li>
+                <li>Opsi tunai penuh saat serah tidak memerlukan transfer atau QRIS. Di bawah Rp{{ number_format(\App\Support\BusinessSettings::value('ambang_dp_rupiah'), 0, ',', '.') }}, pembayaran harus lunas. Mulai ambang tersebut, bila tenggat pelunasan belum lewat, Anda dapat membayar lunas atau DP 50%.</li>
+                <li>Untuk skema DP, perhatikan tenggat pada tagihan. Jika memilih sisa tunai, bayar sisanya saat serah; jangan mentransfer bagian tunai.</li>
                 <li>Transfer yang terlambat diperiksa oleh Admin; transfer tidak otomatis mengaktifkan kembali reservasi.</li>
             </ul>
 
