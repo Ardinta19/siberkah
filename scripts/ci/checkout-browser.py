@@ -373,16 +373,24 @@ with sync_playwright() as playwright:
     cashier = login('owner')
     cashier.get_by_role('link', name='Periksa pembayaran dan setoran antar').click()
     row = cashier.locator('article').filter(has_text=number)
-    expect(row).to_contain_text('belum_disetor')
+    expect(row).to_contain_text('Belum disetor')
     report_url = f'{base}/admin/laporan/penerimaan?mulai={booking_day}&akhir={delivery_day}'
     before = cashier.request.get(report_url).json()
     audit = ['php','artisan','uji:operator','--pesanan='+number]
     pending = subprocess.run(audit, capture_output=True, text=True)
     assert pending.returncode == 1 and 'GAGAL Riwayat setoran' in pending.stdout
+    row.locator('[name=sesudah]').fill('130000')
+    expect(row.locator('[data-count-preview]')).to_contain_text('kurang Rp5.000')
+    expect(row.locator('[name=catatan]')).to_have_js_property('required',True)
+    row.locator('[name=sesudah]').fill('140000')
+    expect(row.locator('[data-count-preview]')).to_contain_text('lebih Rp5.000')
     row.locator('[name=sesudah]').fill('135000')
+    expect(row.locator('[name=catatan]')).to_have_js_property('required',False)
     row.locator('[name=diperiksa_fisik]').check()
     row.get_by_role('button').click()
-    expect(row).to_contain_text('cocok')
+    expect(row).to_contain_text('Cocok')
+    row.locator('[name=sesudah]').fill('135000')
+    expect(row.locator('[data-count-preview]')).to_contain_text('Tidak ada koreksi')
     after = cashier.request.get(report_url).json()
     assert before == after and after['neto'] == 270000
     assert {r['kanal']: r['pokok'] for r in after['rincian']} == {'bank':135000, 'tunai':135000}

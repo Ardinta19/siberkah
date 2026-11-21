@@ -59,3 +59,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Agenda staf:** filter jenis tugas dan tanggal WIB adalah navigasi GET, bukan pencatatan serah terima. Ganti tanggal mempertahankan jenis tugas; ganti jenis mempertahankan tanggal dan memulai halaman pertama. Pada hasil kosong sediakan jalan kembali ke semua tugas pada tanggal tersebut. Tampilkan tindakan dan saldo tunai dalam kartu pesanan terkait, bukan sebagai tindakan global.
 
 **Antrean produksi:** bedakan filter tahap (GET) dari perubahan status (POST). Satu kartu hanya menawarkan langkah yang dapat dijalankan saat data dibaca. Untuk papan yang teksnya belum lengkap, jelaskan hambatan alih-alih menampilkan tombol yang pasti ditolak. Periksa kembali kelayakan di server di dalam transaksi agar tab lama tidak menggandakan riwayat.
+
+**Hitung kas antar:** bedakan tagihan setor, kumulatif tercatat, dan hitungan fisik baru. Jangan mengisi otomatis atau mencentang pemeriksaan. Tampilkan kurang/lebih sebagai nominal, bukan warna saja. Selisih dan koreksi membutuhkan catatan. Ringkasan lintas pembayaran tidak boleh menutup kekurangan dengan kelebihan dari transaksi lain.

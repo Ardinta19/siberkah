@@ -1,3 +1,4 @@
+import "./cash-count.js";
 import "./profile-editor.js";
 import "./order-refresh.js";
 import "./payment-window.js";
