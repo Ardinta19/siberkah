@@ -4,7 +4,7 @@ Acuan: `ui-ux/`. Terapkan menurut fungsi, bukan menyalin satu layout ke semua pe
 
 | Situasi | Pola standar |
 |---|---|
-| Navigasi etalase | Navbar floating pill; ketika bergulir melewati intro, sisakan logo. Logo dapat membuka kembali navigasi. Jangan sembunyikan kontrol yang sedang difokuskan. |
+| Navigasi etalase | Navbar floating pill; ketika bergulir melewati intro, sisakan logo. Aktivasi logo menggulir ke atas dan memulihkan navigasi. Jangan sembunyikan kontrol yang sedang difokuskan. |
 | HP | Empat bottom tabs: Beranda, Katalog, Lacak, Akun. Hamburger membuka panel radial dengan label terbaca. Hormati safe area dan layar pendek. |
 | Desktop | Navbar lengkap, Ctrl/Cmd+K untuk palet pencarian produk. Bukan pencarian halaman. |
 | Cari dan saring | Satu formulir: nama produk saja, kategori aktif, jenis, tanggal sewa dan urutan. Bottom sheet di HP, dialog atas pada desktop. Simpan kondisi lewat query string; katalog hanya menampilkan hasil, ringkasan dan reset. Tanpa JS sediakan formulir native. |
@@ -21,7 +21,7 @@ Periksa 320–1440 px, keyboard, Escape, fokus kembali, ketukan berulang, mode k
 React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade. Ringkasan pencarian membaca keadaan form asli dan baru dimuat saat panel dibuka. Chip menghapus satu kriteria tanpa mengirim pesanan atau mengubah filter lain. Desktop menggunakan pantulan cahaya pada CTA saat hover; sentuhan merespons tekanan dan aktivasi, bukan sekadar pointer masuk. Jangan menganimasikan ulang setiap karakter pencarian atau memblokir navigasi demi memainkan efek.
 
 ### Default lintas layout: kaca, navigasi, dan tindakan independen
-- Keempat layout (guest, customer, staff, admin termasuk owner) memakai shell pill yang merapat menuju logo, di desktop maupun ponsel. Area kerja dengan scroll internal mengamati penanda dalam konten, bukan posisi window. Logo membuka kembali kontrol.
+- Keempat layout (guest, customer, staff, admin termasuk owner) memakai shell pill yang merapat menuju logo, di desktop maupun ponsel. Area kerja dengan scroll internal mengamati penanda dalam konten, bukan posisi window. Logo menggulir area aktif ke atas; kontrol muncul kembali saat mencapai bagian awal.
 - Gunakan liquid glass pada permukaan navigasi tetap: tepi cahaya, warna dasar pekat dan blur bila didukung. Form, tabel keuangan, dan konfirmasi tetap opak agar nilai mudah diperiksa.
 - Desktop pelanggan mencari produk; ruang kerja mencari menu yang benar-benar dirender untuk perannya. Mobile memakai sheet; tab publik/pelanggan mengikuti empat tujuan belanja; tab kerja mengambil maksimal tiga tautan kerja, bukan tindakan logout. Sidebar kerja mempertahankan label dan fokus modal dengan susunan radial ringan.
 - Hapus pencarian berdampingan dengan nama: hanya menghapus q. Reset filter berada di kelompok tindakan filter: pertahankan q. Di panel, keduanya menyunting draf sampai Cari produk ditekan. Di hasil katalog, tautan langsung menerapkan perubahan dan kembali ke halaman pertama.
@@ -34,7 +34,7 @@ React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade
 
 **Logo saat scroll:** satu permukaan kaca untuk satu kontrol. Saat pill merapat, latar dan area tekan bertemu pada lingkaran 52 × 52 px di pusat header. Tombol tidak menggambar oval atau bayangan kedua. Monogram 140:76 dipusatkan tanpa dipotong atau direntangkan; ring fokus hanya muncul untuk navigasi keyboard.
 
-Saat logo ringkas dibuka jauh di bawah halaman, fokus masuk ke kontrol navigasi yang terlihat. Escape mengembalikan fokus ke logo; berpindah fokus ke konten merapatkan navbar tanpa mengambil fokus kembali. Jika pengguna sedang memilih menu atau tanggal, panel terdalam menangani Escape lebih dulu.
+Logo ringkas adalah tombol **Kembali ke atas halaman**, bukan tautan Beranda atau pemicu menu. Klik, Enter, dan Spasi menggulir dokumen (etalase) atau main (ruang kerja), tanpa mengubah URL atau isian. Gunakan scroll halus bawaan, instan jika kurangi gerakan aktif. Fokus dari tombol yang menghilang berpindah ke header tanpa memicu scroll kedua.
 
 **Memperbaiki hasil:** sediakan pemicu Cari & filter di kepala daftar; ini membuka sheet yang sama, bukan filter kedua. Escape mengembalikan fokus ke pemicu asal. Paginasi, hapus kata, dan reset filter mengarah ke daftar, bukan hero editorial. Bedakan katalog kosong dari pencarian tanpa kecocokan.
 

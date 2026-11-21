@@ -85,18 +85,15 @@ with sync_playwright() as playwright:
             && b.width===b.height && b.width>=44 && Math.abs(img.x+img.width/2-b.x-b.width/2)<1
             && Math.abs(img.y+img.height/2-b.y-b.height/2)<1 && Math.abs(img.width/img.height-140/76)<.02;
         }""")
-    pill.click()
-    expect(pill).to_be_hidden()
-    expect(pill).to_have_attribute('aria-expanded','true')
-    page.keyboard.press('Escape')
-    expect(pill).to_be_focused()
-    expect(pill).to_have_attribute('aria-expanded','false')
-    pill.press('Enter')
-    expect(pill).to_be_hidden()
-    page.locator('#main-content').evaluate("el=>{el.tabIndex=-1;el.focus({preventScroll:true});}")
-    expect(pill).to_be_visible()
-    expect(page.locator('#main-content')).to_be_focused()
-    page.evaluate('window.scrollTo(0,0)')
+    expect(pill).to_have_accessible_name('Kembali ke atas halaman')
+    for activate in ('click','Enter','Space'):
+        page.evaluate('window.scrollTo(0,400)')
+        expect(pill).to_be_visible()
+        if activate=='click': pill.click()
+        else: pill.press(activate)
+        page.wait_for_function('window.scrollY === 0')
+        expect(pill).to_be_hidden()
+        expect(pill).to_have_attribute('aria-expanded','true')
     for width in (320,375,430,768,1024,1440):
         page.set_viewport_size({'width':width,'height':900})
         panel = page.locator('.koleksi')
