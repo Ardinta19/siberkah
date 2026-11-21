@@ -13,6 +13,11 @@ final class StoreSaleController extends Controller
 {
     public function store(Request $request, OrderNumber $numbers)
     {
+        $form = $request->input('asal_form') === 'toko';
+        if ($form) {
+            $request->validate(['varian_id'=>'required|integer|min:1','tunai_diperiksa'=>'accepted']);
+            $request->merge(['produk_id'=>DB::table('varian_produk')->where('id',$request->integer('varian_id'))->value('produk_id')]);
+        }
         $data = $request->validate(['kunci' => 'required|uuid', 'pelanggan_id' => 'required|integer|min:1', 'produk_id' => 'required|integer|min:1',
             'varian_id' => 'required|integer|min:1', 'jumlah' => 'required|integer|between:1,100', 'nominal' => 'required|integer|between:1,2147482648',
             'setuju_privasi' => 'accepted', 'versi_privasi' => 'required|string|max:40']);
@@ -20,7 +25,7 @@ final class StoreSaleController extends Controller
         $key = strtolower($data['kunci']);
         $fingerprint = hash('sha256', json_encode([$staff, (int) $data['pelanggan_id'], (int) $data['produk_id'], (int) $data['varian_id'],
             (int) $data['jumlah'], (int) $data['nominal'], $data['versi_privasi']], JSON_THROW_ON_ERROR));
-        return DB::transaction(function () use ($data, $numbers, $staff, $key, $fingerprint) {
+        $result = DB::transaction(function () use ($data, $numbers, $staff, $key, $fingerprint) {
             $customer = Pelanggan::lockForUpdate()->findOrFail($data['pelanggan_id']);
             $receipt = DB::table('penjualan_toko')->where('kunci', $key)->lockForUpdate()->first();
             if ($receipt) {
@@ -53,6 +58,7 @@ final class StoreSaleController extends Controller
             $this->history($order->id, $staff, 'menunggu_pembayaran', 'dikonfirmasi', 'T02');
             return response()->json(['pesanan_id' => $order->id], 201);
         }, 3);
+        return $form && !$request->expectsJson() ? redirect()->route('admin.pesanan.show',$result->getData()->pesanan_id)->with('manual_success','Penjualan tunai toko tercatat.') : $result;
     }
 
     public function handover(Request $request, int $id)

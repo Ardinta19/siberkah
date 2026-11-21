@@ -90,8 +90,24 @@ class AdminOrderController extends BaseController
         $phone = $request->validate(['nomor_wa'=>['required','string','regex:/^(?:0|\+?62)[0-9]{8,13}$/D']])['nomor_wa'];
         $phone = preg_replace('/^0/','62',ltrim($phone,'+'));
         $id = $this->manualCustomers()->where('nomor_wa',$phone)->value('id');
-        return $id ? redirect()->route('admin.pesanan.manual-sewa',['pelanggan'=>$id])
-            : redirect()->route('admin.pesanan.manual-sewa')->withErrors(['nomor_wa'=>'Tidak ditemukan pelanggan aktif terverifikasi dengan nomor tersebut.']);
+        $route = $request->input('tujuan') === 'toko' ? 'toko.form' : 'admin.pesanan.manual-sewa';
+        return $id ? redirect()->route($route,['pelanggan'=>$id])
+            : redirect()->route($route)->withErrors(['nomor_wa'=>'Tidak ditemukan pelanggan aktif terverifikasi dengan nomor tersebut.']);
+    }
+
+    public function counterForm(Request $request)
+    {
+        $customer = null;
+        $variants = collect();
+        if ($request->filled('pelanggan')) {
+            $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            $variants = DB::table('varian_produk as v')->join('produk as p','p.id','=','v.produk_id')->join('kategori as k','k.id','=','p.kategori_id')
+                ->where('v.aktif',true)->where('p.aktif',true)->where('k.aktif',true)->where('p.jenis','jual')->where('v.harga','>',0)->where('v.stok','>',0)
+                ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('opsi_produk as o')->whereColumn('o.produk_id','p.id'))
+                ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('blokir_kalender as b')->where('b.tanggal',today('Asia/Jakarta')->toDateString())->where(fn($w)=>$w->whereNull('b.produk_id')->orWhereColumn('b.produk_id','p.id')))
+                ->orderBy('p.nama')->orderBy('v.nama')->get(['v.id','v.nama','v.harga','v.stok','p.nama as produk']);
+        }
+        return response()->view('admin.pesanan.toko',compact('customer','variants'))->header('Cache-Control','private, no-store');
     }
 
     public function manualRentalForm(Request $request)

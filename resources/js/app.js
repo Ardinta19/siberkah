@@ -151,3 +151,5 @@ for(const form of document.querySelectorAll('[data-bag-form]')) {
 import './return-estimate';
 
 import './deposit-preview';
+
+import './counter-sale';

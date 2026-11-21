@@ -134,6 +134,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
             Route::get('{id}', 'history')->whereNumber('id')->name('kas-antar.history');
             Route::post('{id}', 'record')->whereNumber('id')->middleware('throttle:60,1')->name('kas-antar.record');
         });
+        Route::get('penjualan-toko', [AdminOrderController::class, 'counterForm'])->middleware(RentalStaging::class)->name('toko.form');
         Route::post('penjualan-toko', [StoreSaleController::class, 'store'])->middleware(RentalStaging::class)->name('toko.store');
         Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');

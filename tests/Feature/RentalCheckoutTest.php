@@ -585,7 +585,11 @@ class RentalCheckoutTest extends TestCase
         $data = ['pelanggan_id' => $customer->id, 'produk_id' => $product, 'varian_id' => $vid, 'kunci' => (string) Str::uuid(), 'nominal' => 26000,
             'jumlah' => 1, 'versi_privasi' => 'test-v1', 'setuju_privasi' => true];
         $this->actingAs($admin, 'staff')->postJson(route('toko.store'), array_replace($data, ['nominal' => 1]))->assertConflict();
+        $this->get(route('toko.form',['pelanggan'=>$customer->id]))->assertOk()->assertSee('Varian siap jual')->assertSee('Rp25.500');
         $id = $this->postJson(route('toko.store'), $data)->assertCreated()->json('pesanan_id');
+        $form = $data + ['asal_form'=>'toko','tunai_diperiksa'=>1];
+        unset($form['produk_id']);
+        $this->post(route('toko.store'),$form)->assertRedirect(route('admin.pesanan.show',$id))->assertSessionHas('manual_success');
         $this->postJson(route('toko.store'), $data)->assertOk()->assertJsonPath('pesanan_id', $id);
         $this->postJson(route('toko.store'), array_replace($data, ['kunci' => (string) Str::uuid()]))->assertConflict();
         $this->assertDatabaseCount('pembayaran', 1);
