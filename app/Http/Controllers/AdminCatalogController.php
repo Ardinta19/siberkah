@@ -24,15 +24,27 @@ class AdminCatalogController extends BaseController
      *
      * @return View
      */
-    public function index()
+    private function listContext(Request $request): array
     {
-        $produk = Produk::with('kategori')->orderByDesc('id')->paginate(20);
-        $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
-
-        return view('owner.katalog.index', [
-            'produk' => $produk,
-            'kategoris' => $kategoris,
+        $state = $request->query('tampil');
+        return array_filter([
+            'tampil' => in_array($state, ['publik','nonaktif','kategori'], true) ? $state : null,
+            'page' => $request->integer('page') > 1 ? $request->integer('page') : null,
         ]);
+    }
+
+    public function index(Request $request)
+    {
+        $context = $this->listContext($request);
+        $state = $context['tampil'] ?? null;
+        $query = Produk::with('kategori');
+        if ($state === 'nonaktif') {
+            $query->where('aktif', false);
+        } elseif ($state) {
+            $query->where('aktif', true)->whereHas('kategori', fn ($q) => $q->where('aktif', $state === 'publik'));
+        }
+        $produk = $query->orderByDesc('id')->paginate(20)->appends(array_filter(['tampil'=>$state]))->fragment('daftar-kelola');
+        return view('owner.katalog.index', compact('produk','state','context'));
     }
 
     /**
@@ -40,7 +52,7 @@ class AdminCatalogController extends BaseController
      *
      * @return View
      */
-    public function create()
+    public function create(Request $request)
     {
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
         $zonas = null; // ZonaAntar::where('aktif', true)->get();
@@ -48,6 +60,7 @@ class AdminCatalogController extends BaseController
         return view('owner.katalog.create', [
             'kategoris' => $kategoris,
             'zonas' => $zonas,
+            'context' => $this->listContext($request),
         ]);
     }
 
@@ -90,13 +103,14 @@ class AdminCatalogController extends BaseController
      * @param  int  $id
      * @return View
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $produk = Produk::with(['kategori', 'varianProduk', 'opsiProduk', 'gambarProduk'])->findOrFail($id);
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
 
         return view('owner.katalog.edit', [
             'produk' => $produk,
+            'context' => $this->listContext($request),
             'kategoris' => $kategoris,
         ]);
     }

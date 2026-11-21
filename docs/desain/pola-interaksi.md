@@ -65,3 +65,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Respons pencatatan operasional:** jika validasi ditolak (422), pertahankan isian dan arahkan fokus ke kesalahannya. Jika koneksi terputus, respons tidak dapat dibaca, atau status bentrok, jangan menganggap transaksi gagal: kunci pengiriman ulang dan berikan tautan GET untuk memeriksa keadaan server. Tautan ini tidak boleh mengulangi POST. Konfirmasi yang perlu rekonsiliasi bukan pembayaran terverifikasi.
 
 **Dasbor operasional:** sebutkan cakupan tanggal setiap angka. Ringkasan jumlah pesanan bukan jumlah rupiah atau instruksi pencatatan. Pisahkan indikator baca-saja, peringatan unit yang benar-benar terdeteksi, dan tautan menuju antrean. Berikan jalan kembali ke dasbor pada agenda bagi Owner/Admin saja, bukan staf yang tidak memiliki akses dasbor.
+
+**Kelola katalog:** bedakan flag produk dari visibilitas aktual. Produk aktif dengan kategori nonaktif tersembunyi dari publik. Jangan tawarkan Terbitkan bila kategori masih nonaktif. Draf dan arsip sama-sama nonaktif; jangan menyimpulkan riwayat penerbitan dari flag itu saja.

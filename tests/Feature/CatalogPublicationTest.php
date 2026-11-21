@@ -30,6 +30,11 @@ class CatalogPublicationTest extends TestCase
         $this->actingAs($customer,'customer')->post(route('checkout.submit',$p->slug),[])->assertNotFound();
         $this->actingAs($owner,'staff')->post(route('admin.katalog.publish',$p->id))->assertRedirect();
         $this->get(route('catalog.show',$p->slug))->assertOk();
+        $this->get(route('admin.katalog.index',['tampil'=>'publik']))->assertOk()->assertSee('Uji Draf');
+        DB::table('kategori')->where('id',$d['kategori_id'])->update(['aktif'=>false]);
+        $this->get(route('admin.katalog.index',['tampil'=>'publik']))->assertOk()->assertDontSee('Uji Draf');
+        $this->get(route('admin.katalog.index',['tampil'=>'kategori']))->assertOk()->assertSee('Tersembunyi · kategori nonaktif');
+        DB::table('kategori')->where('id',$d['kategori_id'])->update(['aktif'=>true]);
         unset($d['aktif']);
         $d['harga_dasar'] = 15000;
         $this->put(route('admin.katalog.update',$p->id),$d)->assertRedirect();
