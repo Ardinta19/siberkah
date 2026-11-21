@@ -21,3 +21,5 @@ Jika beda hasil, catat tahap, waktu, jumlah unit/foto dan apakah transaksi terca
 Pratinjau foto: buka “Lihat foto … sebelum kirim” pada daftar unit untuk mencocokkan barang dengan kode unit, lalu tutup. Pratinjau memakai berkas lokal, bukan unggahan atau draf tersimpan. Hapus atau ganti foto yang keliru sebelum menekan Simpan.
 
 Jika inspeksi sudah diedit, coba muat ulang lalu pilih tetap di halaman pada konfirmasi browser. Pastikan foto dan catatan masih ada. Setelah respons tidak pasti, tautan pemeriksaan status harus tetap berfungsi. Peringatan navigasi bergantung dukungan browser, bukan pemulihan draf bila aplikasi ditutup perangkat.
+
+Saat jemput, cocokkan kondisi awal setiap komponen pada kode unit yang sama. “Tidak ada” berarti komponen dilaporkan tidak ada saat serah; “tidak tercatat” berarti tidak ada hasil yang dapat dipakai. Hasil jemput harus diisi dari pemeriksaan baru, tidak disalin dari serah.

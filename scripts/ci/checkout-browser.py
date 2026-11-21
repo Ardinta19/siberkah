@@ -925,10 +925,15 @@ with sync_playwright() as playwright:
         if stage=='kembali':
             expect(first.locator('[data-handover-baseline]')).to_contain_text('saat diserahkan: baik')
             expect(second.locator('[data-handover-baseline]')).to_contain_text('cacat ringan · Goresan lama CI')
+            expect(first.locator('[data-baseline-part=permukaan]')).to_contain_text('saat serah: baik')
+            expect(second.locator('[data-baseline-part=permukaan]')).to_contain_text('saat serah: cacat')
+            expect(second.locator('[data-baseline-part=led]')).to_contain_text('saat serah: tidak ada')
+            for field in second.locator('[data-part]').all():
+                expect(field).to_have_value('')
         for control in first.locator('[data-part],[data-condition]').all():
             control.select_option('baik')
         for part in ('Permukaan akrilik','Kaki atau easel','Rangkaian bunga','Lampu LED'):
-            second.get_by_label(part).select_option('cacat' if stage=='kembali' and part=='Permukaan akrilik' else 'baik')
+            second.get_by_label(part).select_option('cacat' if part=='Permukaan akrilik' else ('tidak_ada' if part=='Lampu LED' else 'baik'))
         second.get_by_label('Kondisi unit',exact=True).select_option('baik')
         if stage=='kembali':
             assert not second.get_by_label('Kondisi unit',exact=True).evaluate('el=>el.checkValidity()')
