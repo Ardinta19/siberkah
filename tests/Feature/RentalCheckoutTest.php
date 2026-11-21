@@ -265,15 +265,20 @@ class RentalCheckoutTest extends TestCase
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi', 'T12')->count());
         $pay = route('admin.pesanan.record-refund', $order->id);
         $receipt = ['referensi_keluar' => 'BANK:OUT', 'nominal' => max(1, $expected)];
+        $detail = route('admin.pesanan.show',$order->id);
+        $html = ['Accept'=>'text/html'];
         if ($expected === 0) {
+            $this->get($detail,$html)->assertOk()->assertSee('Tidak ada dana yang harus dikembalikan')->assertDontSee('Simpan pencatatan refund');
             $this->assertDatabaseMissing('pembayaran', ['pesanan_id' => $order->id, 'jenis' => 'refund']);
             $this->postJson($pay, $receipt)->assertConflict();
             return;
         }
+        $this->get($detail,$html)->assertOk()->assertSee('Menunggu pencatatan mutasi keluar')->assertSee('Simpan pencatatan refund');
         $this->postJson($pay, array_replace($receipt, ['nominal' => 1]))->assertConflict();
         $this->postJson($pay, $receipt)->assertCreated();
         $this->postJson($pay, $receipt)->assertOk();
         $this->postJson($pay, array_replace($receipt, ['referensi_keluar' => 'BANK:OTHER']))->assertConflict();
+        $this->get($detail,$html)->assertOk()->assertSee('BANK:OUT')->assertDontSee('Simpan pencatatan refund');
         $this->assertDatabaseCount('referensi_mutasi_keluar', 1);
         $this->assertDatabaseHas('pembayaran', ['pesanan_id' => $order->id, 'jenis' => 'refund', 'status' => 'terverifikasi', 'nominal_diterima' => $expected]);
     }

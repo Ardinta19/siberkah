@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Admin Order Controller - Order management for owner/admin
@@ -58,7 +59,15 @@ class AdminOrderController extends BaseController
         $order->setAttribute('tautan_whatsapp', \App\Services\WhatsAppLinks::order($order, true));
         if ($this->browser($request)) {
             $context = $this->filters($request) + ($request->integer('page')>1 ? ['page'=>$request->integer('page')] : []);
-            return response()->view('admin.pesanan.show',compact('order','context'))->header('Cache-Control','private, no-store');
+            $refund = null;
+            if ($order->status === 'dibatalkan' && config('checkout.staging') && app()->environment('local','testing','staging')) {
+                $refund = DB::table('keputusan_refund as k')
+                    ->leftJoin('pembayaran as p','p.id','=','k.pembayaran_refund_id')
+                    ->leftJoin('referensi_mutasi_keluar as r','r.pembayaran_refund_id','=','p.id')
+                    ->where('k.pesanan_id',$id)->first(['k.nominal_final','k.nominal_sistem','k.alasan_override','k.diputuskan_pada',
+                        'p.status','p.diverifikasi_pada','r.referensi_keluar']);
+            }
+            return response()->view('admin.pesanan.show',compact('order','context','refund'))->header('Cache-Control','private, no-store');
         }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
