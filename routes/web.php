@@ -184,6 +184,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
             Route::get('/', [CatalogMediaController::class, 'index'])->name('admin.katalog.images');
             Route::post('/', [CatalogMediaController::class, 'store'])->middleware('throttle:30,1')->name('admin.katalog.manage-images');
             Route::put('urutan', [CatalogMediaController::class, 'reorder'])->name('admin.katalog.images.order');
+            Route::patch('{foto}/detail', [CatalogMediaController::class, 'updateDetails'])->whereNumber('foto')->name('admin.katalog.images.details');
             Route::delete('{foto}', [CatalogMediaController::class, 'remove'])->whereNumber('foto')->name('admin.katalog.images.delete');
         });
         Route::post('{id}/manage-units', [CatalogInventoryController::class, 'unit'])->whereNumber('id')->name('admin.katalog.manage-units');

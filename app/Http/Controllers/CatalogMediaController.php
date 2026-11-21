@@ -41,6 +41,7 @@ final class CatalogMediaController extends Controller
     {
         $product = Produk::with('varianProduk')->findOrFail($id);
         $photos = $this->images($id)->get();
+        foreach ($photos as $photo) { $photo->detail_stamp = $this->detailStamp($photo); }
         return response()->view('owner.katalog.gallery', ['product'=>$product, 'photos'=>$photos, 'stamp'=>$this->orderStamp($photos),
             'context'=>$this->context($request)])->header('Cache-Control','private, no-store');
     }
@@ -110,6 +111,32 @@ final class CatalogMediaController extends Controller
             throw $error;
         }
         return $this->finished($request,$id,'Foto berhasil ditambahkan.', response()->json(['id' => $result, 'jalur_berkas' => $path], 201));
+    }
+
+    private function detailStamp(object $photo): string
+    {
+        return hash('sha256', json_encode([$photo->id, $photo->teks_alternatif, $photo->varian_produk_id], JSON_THROW_ON_ERROR));
+    }
+
+    public function updateDetails(Request $request, int $id, int $foto)
+    {
+        $data = $request->validate(['detail.teks'=>'required|string|max:255', 'detail.varian'=>'nullable|integer|min:1',
+            'versi_detail'=>'required|string|size:64']);
+        $saved = DB::transaction(function () use ($request, $id, $foto, $data) {
+            $product = Produk::lockForUpdate()->findOrFail($id);
+            $row = $this->images($id)->where('id',$foto)->first();
+            if (!$row || $this->detailStamp($row) !== $data['versi_detail']) { return false; }
+            $variant = $data['detail']['varian'] ?? null;
+            if ($variant !== null && !$product->varianProduk()->whereKey($variant)->exists()) {
+                throw ValidationException::withMessages(['detail.varian'=>'Pilih varian milik produk ini.']);
+            }
+            if ($row->teks_alternatif === $data['detail']['teks'] && (string)$row->varian_produk_id === (string)$variant) { return true; }
+            DB::table('gambar_produk')->where('id',$foto)->update(['teks_alternatif'=>$data['detail']['teks'],'varian_produk_id'=>$variant]);
+            $this->audit($request,$id,'ubah_detail_gambar',['gambar_id'=>$foto,'varian_produk_id'=>$variant]);
+            return true;
+        }, 3);
+        if (!$saved) { return $this->staleGallery($request,$id); }
+        return $this->finished($request,$id,'Detail foto telah disimpan.',response()->noContent());
     }
 
     public function reorder(Request $request, int $id)

@@ -33,6 +33,13 @@ class CatalogMediaTest extends TestCase
         $a = $this->postJson($url, $upload())->assertCreated()->json();
         $b = $this->postJson($url, $upload())->assertCreated()->json();
         $this->get(route('admin.katalog.gallery',$id))->assertOk()->assertSee('Buket merah dengan pita putih')->assertSee('Foto utama tersimpan');
+        $stamp = $this->get(route('admin.katalog.gallery',$id))->viewData('photos')->first()->detail_stamp;
+        $detail = route('admin.katalog.images.details',[$id,$a['id']]);
+        $this->patchJson($detail,['versi_detail'=>$stamp,'detail'=>['teks'=>'Mawar putih','varian'=>$variant]])->assertUnprocessable();
+        $change = ['versi_detail'=>$stamp,'detail'=>['teks'=>'Mawar putih']];
+        $this->patchJson($detail,$change)->assertNoContent();
+        $this->patchJson($detail,$change)->assertConflict();
+        $this->assertDatabaseHas('gambar_produk',['id'=>$a['id'],'teks_alternatif'=>'Mawar putih','jalur_berkas'=>$a['jalur_berkas'],'urutan'=>1]);
         $bytes = Storage::disk('public')->get($a['jalur_berkas']);
         $this->assertSame(IMAGETYPE_WEBP, getimagesizefromstring($bytes)[2]);
         $this->assertStringNotContainsString('lokasi', $a['jalur_berkas']);
@@ -53,6 +60,6 @@ class CatalogMediaTest extends TestCase
         Storage::disk('public')->assertMissing($b['jalur_berkas']);
         $this->assertDatabaseHas('produk', ['id' => $id, 'foto_utama' => $a['jalur_berkas']]);
         $this->assertDatabaseHas('gambar_produk', ['id' => $a['id'], 'urutan' => 1]);
-        $this->assertDatabaseCount('log_aktivitas', 4);
+        $this->assertDatabaseCount('log_aktivitas', 5);
     }
 }

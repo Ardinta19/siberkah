@@ -29,6 +29,16 @@
             <strong>{{ $photo->teks_alternatif ?: $product->nama }}</strong>
             @if($product->foto_utama===$photo->jalur_berkas)<small>Foto utama tersimpan</small>@endif
             <div hidden data-move-tools><button type="button" data-move="-1">Naik</button> <button type="button" data-move="1">Turun</button></div>
+            @php($retry = (string)old('foto_form') === (string)$photo->id)
+            <details class="bk-confirm" @if($retry) open @endif><summary>Edit detail foto</summary>
+                <form class="grid gap-2" data-pending="Menyimpan detail…" method="post" action="{{ route('admin.katalog.images.details',['id'=>$product->id,'foto'=>$photo->id]+$context) }}">@csrf @method('patch')
+                    <input type="hidden" name="asal" value="galeri"><input type="hidden" name="foto_form" value="{{ $photo->id }}">
+                    <input type="hidden" name="versi_detail" value="{{ $retry ? old('versi_detail') : $photo->detail_stamp }}">
+                    <label>Teks alternatif <input name="detail[teks]" required maxlength="255" value="{{ $retry ? old('detail.teks') : $photo->teks_alternatif }}"></label>
+                    <label>Varian terkait <select name="detail[varian]"><option value="">Foto umum produk</option>@foreach($product->varianProduk as $v)<option value="{{ $v->id }}" @selected(($retry ? old('detail.varian') : $photo->varian_produk_id)==$v->id)>{{ $v->nama }}</option>@endforeach</select></label>
+                    <button class="bk-secondary">Simpan detail foto</button>
+                </form>
+            </details>
             <details class="bk-confirm"><summary>Hapus foto</summary><p>Hapus foto “{{ $photo->teks_alternatif ?: $product->nama }}” dari produk ini?</p><form data-pending="Menghapus foto…" method="post" action="{{ route('admin.katalog.images.delete',['id'=>$product->id,'foto'=>$photo->id]+$context) }}">@csrf @method('delete')<input type="hidden" name="versi_galeri" value="{{ $stamp }}"><input type="hidden" name="asal" value="galeri"><button>Ya, hapus foto ini</button></form></details>
         </li>@empty<li>Belum ada foto galeri.</li>@endforelse
     </ol>
