@@ -617,6 +617,9 @@ with sync_playwright() as playwright:
     expect(cashier.get_by_role('link',name='Tampil di katalog')).to_have_attribute('aria-current','page')
     cashier.get_by_role('link',name='Kembali ke dasbor').click()
     cashier.get_by_role('link', name='Periksa pembayaran dan setoran antar').click()
+    cashier.get_by_text('Ringkasan per petugas',exact=False).first.click()
+    cashier.get_by_role('link',name='Periksa setoran petugas #').first.click()
+    expect(cashier.get_by_role('link',name='Tampilkan semua petugas')).to_be_visible()
     row = cashier.locator('article').filter(has_text=number)
     expect(row).to_contain_text('Belum disetor')
     report_url = f'{base}/admin/laporan/penerimaan?mulai={booking_day}&akhir={delivery_day}'
@@ -636,6 +639,14 @@ with sync_playwright() as playwright:
     expect(row).to_contain_text('Cocok')
     row.locator('[name=sesudah]').fill('135000')
     expect(row.locator('[data-count-preview]')).to_contain_text('Tidak ada koreksi')
+    row.get_by_role('link',name='Riwayat hitung dan koreksi').click()
+    expect(cashier.get_by_role('heading',name='Hitung #1',exact=True)).to_be_visible()
+    expect(cashier.locator('main')).to_contain_text('+Rp135.000')
+    cashier.get_by_role('link',name='Kembali ke setoran ini').click()
+    assert 'petugas_id=' in cashier.url and '#setoran-' in cashier.url
+    cashier.get_by_role('link',name='Tampilkan semua petugas').click()
+    assert 'petugas_id=' not in cashier.url
+    expect(row).to_contain_text('Cocok')
     after = cashier.request.get(report_url).json()
     assert before == after and after['neto'] == 270000
     assert {r['kanal']: r['pokok'] for r in after['rincian']} == {'bank':135000, 'tunai':135000}

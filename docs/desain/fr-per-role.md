@@ -47,3 +47,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — rekonsiliasi bank:** pisahkan mutasi belum dikreditkan dari pengembalian yang sudah dicatat. Verifikasi nominal masuk penuh dan referensi keluar aktual; jangan memulai transfer dan jangan menyebut pengembalian mutasi sebagai pelunasan atau refund pembatalan. Setelah respons jaringan tidak pasti, periksa antrean/riwayat melalui GET, bukan kirim POST ulang otomatis.
 
 **Admin — audit kas antar:** dari baris setoran, buka riwayat baca-saja untuk melihat kasir, waktu, perubahan dan alasan koreksi. Kembali ke tanggal, filter petugas, halaman dan baris asal. Saldo setoran tidak menambah pembayaran pelanggan.
+
+**Admin — meja pemeriksaan:** navigasi langsung ke konfirmasi bank lintas tanggal atau setoran per tanggal WIB. Dari ringkasan, batasi setoran ke satu petugas; melepas filter mempertahankan tanggal dan halaman antrean bank. Chrome menelusuri filter → hitung fisik → riwayat → kembali → semua petugas.
