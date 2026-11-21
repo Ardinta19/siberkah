@@ -249,7 +249,7 @@ with sync_playwright() as playwright:
         page.get_by_role('link', name='Pesan produk ini').click()
         expect(page.get_by_role('heading', name='Pesan Buket Browser')).to_be_visible()
         expect(page.locator('.kc-dock [aria-current]')).to_have_text('Katalog')
-        expect(page.locator('.bk-full-nav a[aria-label="SIBERKAH - Beranda"]')).to_have_attribute('href',base+'/')
+        expect(page.locator('.bk-full-nav a[aria-label="SIBERKAH - Beranda"]')).to_have_js_property('href',base+'/')
         page.locator('main [name=tanggal]').fill(str(delivery_day))
         page.locator('[name=metode_pelunasan]').select_option('tunai_saat_serah')
         page.locator('[name=setuju_privasi]').check()
