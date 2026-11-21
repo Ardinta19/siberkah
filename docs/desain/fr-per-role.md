@@ -67,3 +67,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Penilaian retur:** setelah semua inspeksi kembali lengkap, Admin dapat menetapkan Rp0 untuk kondisi baik. Kondisi selain baik memerlukan Owner. Estimasi jumlah × tarif membantu peninjauan; server menghitung tarif saat transaksi dan menolak nominal konfirmasi berbeda. Keputusan tidak memotong deposit.
 
 **Retur — pemakaian deposit oleh Owner:** pisahkan aksi finansial sekali pakai dari konfirmasi setoran oleh Admin. Tampilkan plafon, estimasi saldo dan sisa deposit sebelum konfirmasi; gunakan kriteria tagihan yang sama pada GET dan transaksi terkunci. Sesudah keputusan, hanya jejak nominal, alasan, waktu dan petugas yang tampil.
+
+**Regresi Chrome retur:** mulai dari fixture inspeksi kembali sintetis. Periksa izin Admin/Owner, estimasi dan konfirmasi tarif, setoran fisik, proyeksi deposit/saldo dan hasil sesudah simpan. Nominal konfirmasi tidak cocok dicegah di browser serta divalidasi kembali di server.
