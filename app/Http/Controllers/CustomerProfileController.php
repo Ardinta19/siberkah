@@ -6,9 +6,16 @@ use Illuminate\Http\Request;
 
 class CustomerProfileController extends Controller
 {
+    private function pendingCheckout(Request $request): ?array
+    {
+        $pending = $request->session()->get('checkout.onboarding');
+        return $pending && $pending['customer'] === $request->user('customer')->id && $pending['expires'] > now()->timestamp
+            && $pending['token'] === $request->input('lanjut') ? $pending : null;
+    }
+
     public function edit(Request $request)
     {
-        return view('pelanggan.profil', ['pelanggan' => $request->user('customer')]);
+        return response()->view('pelanggan.profil.edit', ['pelanggan' => $request->user('customer'), 'pending'=>$this->pendingCheckout($request)])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $request)
@@ -28,6 +35,15 @@ class CustomerProfileController extends Controller
             $customer->fill($data)->save();
             return $first;
         });
+        if ($pending = $this->pendingCheckout($request)) {
+            $request->session()->forget('checkout.onboarding');
+            $product = \App\Models\Produk::whereKey($pending['product'])->where('aktif',true)
+                ->whereHas('kategori',fn ($q) => $q->where('aktif',true))->first();
+            if ($product) {
+                return redirect()->route('checkout.product',['slug'=>$product->slug]+$pending['params']);
+            }
+            return redirect()->route('catalog.index')->with('status','Profil tersimpan. Produk tidak lagi tersedia.');
+        }
         return ($onboarding ? redirect()->route('catalog.index') : back())->with('status', 'Profil berhasil diperbarui.');
     }
 
@@ -36,12 +52,20 @@ class CustomerProfileController extends Controller
         $request->validate(['konfirmasi' => 'required|in:HAPUS AKUN SAYA']);
         $id = $request->user('customer')->id;
         $proof = $request->session()->get('otp.verified');
-        abort_unless(is_array($proof) && ($proof['id'] ?? null) === $id && ($proof['at'] ?? 0) >= now()->subMinutes(5)->timestamp,
-            403, 'Masuk kembali dengan OTP sebelum menghapus akun.');
-        $action->handle($id);
+        if (!is_array($proof) || ($proof['id'] ?? null) !== $id || ($proof['at'] ?? 0) < now()->subMinutes(5)->timestamp) {
+            $message = 'Masuk kembali dengan OTP sebelum menghapus akun.';
+            abort_if($request->expectsJson(),403,$message);
+            return back()->withErrors(['konfirmasi'=>$message]);
+        }
+        try {
+            $action->handle($id);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            if ($e->getStatusCode() !== 409 || $request->expectsJson()) { throw $e; }
+            return back()->withErrors(['konfirmasi'=>$e->getMessage()]);
+        }
         \Illuminate\Support\Facades\Auth::guard('customer')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return response()->noContent();
+        return $request->expectsJson() ? response()->noContent() : redirect()->route('catalog.index')->with('status','Akun pelanggan telah dianonimkan.');
     }
 }

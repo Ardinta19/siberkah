@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\DB;
 /** Apply confirmed physical cash once; a deposit is not a second incoming bank transfer. */
 final class ApplyDamageDeposit
 {
+    public static function eligibleBill(Pesanan $order, ?int $billId)
+    {
+        return DB::table('pembayaran')->where('id',$billId)->where('pesanan_id',$order->id)
+            ->where('jenis','pelunasan')->where('status','menunggu')->where('tagihan',$order->saldo)
+            ->whereNull('dikonfirmasi_pelanggan_pada')->whereNotExists(fn ($q) => $q->selectRaw('1')
+                ->from('mutasi_masuk')->whereColumn('mutasi_masuk.pembayaran_id','pembayaran.id'));
+    }
+
     public function handle(Pengguna $owner, int $id, int $amount, string $reason): int
     {
         abort_unless($owner->aktif && $owner->isOwner(), 403);
@@ -25,10 +33,8 @@ final class ApplyDamageDeposit
                 'Penilaian kerusakan dan setoran tunai harus sudah dikonfirmasi.');
             abort_unless($amount > 0 && $amount <= min($review->biaya_kerusakan, $order->nominal_jaminan, $order->saldo), 422,
                 'Potongan tidak boleh melebihi biaya kerusakan, deposit atau saldo.');
-            $bill = DB::table('pembayaran')->where('id', $review->tagihan_id)->where('pesanan_id', $id)->lockForUpdate()->first();
-            abort_unless($bill && $bill->jenis === 'pelunasan' && $bill->status === 'menunggu' && $bill->tagihan == $order->saldo
-                && ! $bill->dikonfirmasi_pelanggan_pada && $order->jumlah_dibayar + $order->saldo === $order->total
-                && ! DB::table('mutasi_masuk')->where('pembayaran_id', $bill->id)->exists(), 409, 'Tagihan sudah diproses. Jangan memotong deposit lagi.');
+            $bill = self::eligibleBill($order,$review->tagihan_id)->lockForUpdate()->first();
+            abort_unless($bill && $order->jumlah_dibayar + $order->saldo === $order->total, 409, 'Tagihan sudah diproses. Jangan memotong deposit lagi.');
             $now = now();
             DB::table('pembayaran')->where('id', $bill->id)->update(['status' => 'kedaluwarsa', 'nominal_tertunda' => null, 'diubah_pada' => $now,
                 'catatan_verifikasi' => 'Diganti setelah pemakaian deposit.']);

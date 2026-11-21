@@ -22,13 +22,22 @@ class CustomerOrderController extends BaseController
      *
      * @return View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pesanan = auth('customer')->user()->pesanan()->latest('dibuat_pada')->paginate(10);
+        $group = $request->query('kelompok');
+        $group = in_array($group, ['aktif', 'arsip'], true) ? $group : null;
+        $closed = ['selesai', 'dibatalkan', 'kedaluwarsa'];
+        $query = $request->user('customer')->pesanan();
+        if ($group === 'arsip') {
+            $query->whereIn('status', $closed);
+        } elseif ($group === 'aktif') {
+            $query->whereNotIn('status', $closed);
+        }
+        $pesanan = $query->latest('dibuat_pada')->orderByDesc('id')->paginate(10)
+            ->appends(array_filter(['kelompok' => $group]))->fragment('daftar-pesanan');
 
-        return view('pelanggan.riwayat', [
-            'pesanan' => $pesanan,
-        ]);
+        return response()->view('pelanggan.pesanan.index', compact('pesanan', 'group'))
+            ->header('Cache-Control', 'private, no-store');
     }
 
     /**
@@ -70,7 +79,11 @@ class CustomerOrderController extends BaseController
             ->where('nomor', $nomor)
             ->firstOrFail();
 
-        return response()->view('pelanggan.rincian', [
+        return response()->view('pelanggan.pesanan.show', [
+            'depositDipakai' => $pesanan->jenis_jaminan === 'deposit' ? (int) \Illuminate\Support\Facades\DB::table('pemakaian_deposit')->where('pesanan_id',$pesanan->id)->value('nominal') : 0,
+            'rincianPenyesuaian' => $pesanan->rincianPenyesuaian(),
+            'opsiPerItem' => $pesanan->snapshotOpsiPerItem(),
+            'permohonan' => \Illuminate\Support\Facades\DB::table('permohonan_batal')->where('pesanan_id', $pesanan->id)->first(['status','alasan','diajukan_pada','diputuskan_pada','catatan_keputusan']),
             'papan' => \Illuminate\Support\Facades\DB::table('desain_papan')->where('pesanan_id',$pesanan->id)->first(['judul','penerima','pengirim']),
             'riwayat' => \Illuminate\Support\Facades\DB::table('riwayat_status_pesanan')->where('pesanan_id', $pesanan->id)->orderBy('id')->get(['status_baru','dibuat_pada']),
             'pesanan' => $pesanan,

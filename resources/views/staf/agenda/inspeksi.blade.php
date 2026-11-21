@@ -1,0 +1,22 @@
+@php($returning = $p->tugas === 'jemput')
+@if(!$returning && (!$p->tanggal_serah->isToday() || ($p->jadwal && now('Asia/Jakarta')->lt($p->jadwal))))<p>Inspeksi serah tersedia pada hari dan jam serah.</p>
+@elseif(!$returning && $pending->contains($p->id))<p>Tunggu keputusan pembatalan sebelum serah.</p>
+@elseif(!$returning && !$p->tunai_saat_serah && $p->saldo!==0)<p>Saldo belum lunas. Minta Admin memeriksa pembayaran sebelum serah.</p>
+@else<details class="bk-confirm"><summary>Inspeksi {{ $returning?'kembali':'serah' }} · {{ $p->nomor }}</summary>
+<form data-ledger data-inspection enctype="multipart/form-data" method="post" class="bk-product-editor grid gap-3 p-4" action="{{ route($returning?'staf.kurir.receive-return':'staf.kurir.handover') }}">@csrf
+<input type="hidden" name="pesanan_id" value="{{ $p->id }}"><p>Periksa setiap unit fisik. Sertakan total 1–6 foto kondisi barang untuk tahap ini. Jangan unggah foto identitas pelanggan.</p>
+@foreach($units as $i=>$unit)<fieldset data-inspection-unit><legend>{{ $unit->kode }} · {{ $unit->nama_produk }} {{ $unit->nama_varian }}</legend><input type="hidden" name="inspeksi[{{ $i }}][item_id]" value="{{ $unit->id }}">
+<input type="hidden" name="inspeksi[{{ $i }}][unit_sewa_id]" value="{{ $unit->unit_sewa_id }}">
+@if($returning)<p data-handover-baseline>Kondisi saat diserahkan: {{ $unit->kondisi_serah ? str_replace('_',' ',$unit->kondisi_serah) : 'tidak tercatat' }}@if(filled($unit->catatan_serah)) · {{ $unit->catatan_serah }}@endif. Periksa kembali unit ini sebelum mengisi hasil jemput.</p>@endif
+@php($awal = $returning ? json_decode($unit->cek_serah ?? '{}',true) : [])
+@foreach(['permukaan'=>'Permukaan akrilik','easel'=>'Kaki atau easel','bunga'=>'Rangkaian bunga','led'=>'Lampu LED'] as $key=>$label)<label>{{ $label }}<select data-part @if($returning) aria-describedby="awal-{{ $unit->id }}-{{ $key }}" @endif required name="inspeksi[{{ $i }}][cek][{{ $key }}]"><option value="">Pilih hasil pemeriksaan</option><option value="baik">Baik</option><option value="cacat">Cacat</option><option value="tidak_ada">Tidak ada</option></select></label>
+@if($returning)<small id="awal-{{ $unit->id }}-{{ $key }}" data-baseline-part="{{ $key }}">{{ $label }} saat serah: {{ ['baik'=>'baik','cacat'=>'cacat','tidak_ada'=>'tidak ada'][$awal[$key] ?? ''] ?? 'tidak tercatat' }}.</small>@endif
+@endforeach
+<label for="kondisi-{{ $unit->id }}">Kondisi unit</label><select id="kondisi-{{ $unit->id }}" data-condition name="inspeksi[{{ $i }}][kondisi]" required><option value="">Pilih kondisi</option><option value="baik">Baik</option><option value="cacat_ringan">Cacat ringan</option>@if($returning)<option value="rusak">Rusak</option>@endif</select>
+<label>Catatan kondisi<textarea data-note maxlength="300" name="inspeksi[{{ $i }}][catatan]"></textarea></label><label>Foto kondisi unit (JPEG, PNG atau WebP; maks. 3 MB per foto)<input data-photos type="file" accept="image/jpeg,image/png,image/webp" multiple name="inspeksi[{{ $i }}][foto][]"></label>
+<div hidden data-camera-tools><label>Tambah satu foto dari kamera<input type="file" data-camera accept="image/jpeg,image/png,image/webp" capture="environment"></label><small>Jika kamera tidak tersedia, pilih berkas di atas. Pilihan berkas mengganti daftar foto unit ini.</small>
+<ul data-photo-list aria-label="Foto terpilih unit {{ $unit->kode }}"></ul><p role="status" data-camera-status></p></div></fieldset>@endforeach
+<p data-photo-count role="status"></p>
+@unless($returning)<label>Jaminan yang diterima<select name="jenis_jaminan" required><option value="">Pilih jaminan</option><option value="ktp">KTP diperiksa</option><option value="ktm">KTM diperiksa</option><option value="deposit">Deposit tunai</option></select></label><label data-deposit-field>Nominal deposit (Rp100.000–Rp150.000)<input type="number" name="nominal_jaminan" min="100000" max="150000"></label>
+@if($p->tunai_saat_serah)<label>Pembayaran tunai aktual, tanpa deposit (harus tepat Rp{{ number_format($p->saldo,0,',','.') }})<input required type="number" min="{{ $p->saldo }}" max="{{ $p->saldo }}" step="1" name="nominal_tunai"></label><label><input type="checkbox" name="tunai_diterima" required value="1"> Pembayaran pelanggan sudah diterima, terpisah dari deposit.</label>@endif @endunless
+<button class="btn-primary">Simpan inspeksi {{ $returning?'kembali':'serah' }}</button>@include('partials.ledger-feedback')</form></details>@endif

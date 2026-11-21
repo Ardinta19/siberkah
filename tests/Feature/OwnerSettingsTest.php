@@ -11,6 +11,25 @@ class OwnerSettingsTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_releasing_one_calendar_block_requires_owner_and_preserves_other_blocks(): void
+    {
+        $owner = Pengguna::factory()->create(['peran'=>'owner']);
+        $day = today()->addDays(2)->toDateString();
+        $table = \Illuminate\Support\Facades\DB::table('blokir_kalender');
+        $row = ['tanggal'=>$day,'pengguna_id'=>$owner->id,'alasan'=>'Tutup'];
+        $id = $table->insertGetId($row);
+        $other = $table->insertGetId($row);
+        $url = route('admin.pengaturan.kalender.buka',$id);
+        $data = ['tanggal'=>$day,'alasan_buka'=>'Buka kembali','konfirmasi'=>true];
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']),'staff')->delete($url,$data)->assertForbidden();
+        $this->actingAs($owner,'staff')->delete($url,array_replace($data,['konfirmasi'=>false]))->assertSessionHasErrors('konfirmasi');
+        $this->delete($url,$data)->assertRedirect(route('admin.pengaturan.kalender',['tanggal'=>$day]));
+        $this->delete($url,$data)->assertRedirect();
+        $this->assertDatabaseMissing('blokir_kalender',['id'=>$id]);
+        $this->assertDatabaseHas('blokir_kalender',['id'=>$other]);
+        $this->assertDatabaseCount('log_aktivitas',1);
+    }
+
     public function test_only_owner_can_update_zone_fee_and_conflicting_old_value_is_rejected(): void
     {
         config(['checkout.staging' => true]);

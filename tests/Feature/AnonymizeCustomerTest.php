@@ -22,6 +22,7 @@ class AnonymizeCustomerTest extends TestCase
             'status' => 'siap', 'total' => 50000, 'jumlah_dibayar' => 50000]);
         $url = route('profile.destroy');
         $data = ['konfirmasi' => 'HAPUS AKUN SAYA', 'pelanggan_id' => $other->id];
+        $this->actingAs($customer,'customer')->from(route('profile.edit'))->delete($url,$data)->assertRedirect(route('profile.edit'))->assertSessionHasErrors('konfirmasi');
         $this->actingAs($customer, 'customer')->deleteJson($url, $data)->assertForbidden();
         $this->withSession(['otp.verified' => ['id' => $customer->id, 'at' => now()->timestamp]])->deleteJson($url, $data)->assertConflict();
         $order->update(['status' => 'selesai']);

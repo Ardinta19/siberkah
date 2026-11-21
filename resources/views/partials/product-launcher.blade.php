@@ -1,0 +1,1 @@
+<button hidden type="button" data-open-palette class="bk-palette-key" aria-haspopup="dialog" aria-controls="bk-palette" aria-label="Cari nama produk"><span aria-hidden="true">⌕</span><kbd>Ctrl K</kbd></button>

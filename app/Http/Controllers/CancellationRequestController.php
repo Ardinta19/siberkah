@@ -32,6 +32,9 @@ final class CancellationRequestController extends Controller
             DB::table('permohonan_batal')->insert(['pesanan_id' => $order->id, 'pelanggan_id' => $customer->id, 'alasan' => $reason, 'diajukan_pada' => now()]);
             return ['menunggu', true];
         }, 3);
+        if (! $request->expectsJson()) {
+            return redirect()->route('pesanan.show', $nomor)->with('status', 'Status permohonan pembatalan: '.$status.'.');
+        }
         return response()->json(['status_permohonan' => $status], $created ? 201 : 200);
     }
 
@@ -44,12 +47,16 @@ final class CancellationRequestController extends Controller
         return response()->json($row)->header('Cache-Control', 'private, no-store');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->requireStaging();
-        return response()->json(DB::table('permohonan_batal as b')->join('pesanan as p', 'p.id', '=', 'b.pesanan_id')
+        $rows = DB::table('permohonan_batal as b')->join('pesanan as p', 'p.id', '=', 'b.pesanan_id')
             ->where('b.status', 'menunggu')->orderBy('b.diajukan_pada')->orderBy('b.pesanan_id')
-            ->paginate(25, ['b.pesanan_id', 'p.nomor', 'p.status as status_pesanan', 'b.alasan', 'b.diajukan_pada']))->header('Cache-Control', 'private, no-store');
+            ->paginate(25, ['b.pesanan_id', 'p.nomor', 'p.status as status_pesanan', 'b.alasan', 'b.diajukan_pada']);
+        if ($request->getPreferredFormat()==='html' && !$request->acceptsAnyContentType() && !$request->expectsJson()) {
+            return response()->view('admin.pesanan.pembatalan',compact('rows'))->header('Cache-Control','private, no-store');
+        }
+        return response()->json($rows)->header('Cache-Control', 'private, no-store');
     }
 
     public function reject(Request $request, int $id)
@@ -67,6 +74,9 @@ final class CancellationRequestController extends Controller
             abort_unless($row->status === 'menunggu', 409, 'Permohonan sudah diputuskan.');
             $query->update(['status' => 'ditolak', 'peninjau_id' => $request->user('staff')->id, 'catatan_keputusan' => $note, 'diputuskan_pada' => now()]);
         }, 3);
+        if ($request->input('asal')==='antrean' && !$request->expectsJson()) {
+            return redirect()->route('admin.permohonan-batal.index')->with('success','Permohonan ditolak. Status pesanan tidak diubah.');
+        }
         return response()->json(['status_permohonan' => 'ditolak']);
     }
 }

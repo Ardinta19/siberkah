@@ -20,10 +20,13 @@ class AdminActivityLogController extends BaseController
      *
      * @return View
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(LogAktivitas::orderByDesc('id')->paginate(25,
-            ['id','pengguna_id','pelanggan_id','aksi','subjek_tabel','subjek_id','sebelum','sesudah','dibuat_pada']))
+        $rates = $request->query('kelompok') === 'tarif';
+        $rows = LogAktivitas::orderByDesc('id')->when($rates,fn ($q) => $q->whereIn('aksi',['ubah_tarif_zona','ubah_tarif_kerusakan']))->paginate(25,
+            ['id','pengguna_id','pelanggan_id','aksi','subjek_tabel','subjek_id','sebelum','sesudah','dibuat_pada'])->appends($rates ? ['kelompok'=>'tarif'] : []);
+        return ($request->getPreferredFormat() === 'html' && !$request->acceptsAnyContentType() && !$request->expectsJson()
+            ? response()->view('owner.aktivitas',compact('rows','rates')) : response()->json($rows))
             ->header('Cache-Control', 'private, no-store');
     }
 }

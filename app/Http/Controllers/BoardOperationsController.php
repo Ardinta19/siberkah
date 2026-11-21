@@ -21,12 +21,21 @@ final class BoardOperationsController extends Controller
         DB::transaction(function () use ($request, $id, $data) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             $design = DB::table('desain_papan')->where('pesanan_id', $id);
-            abort_unless($design->exists(), 404);
+            $current = $design->first();
+            abort_unless($current, 404);
             abort_unless(in_array($order->status, ['menunggu_pembayaran','dikonfirmasi'], true), 409, 'Teks sudah terkunci.');
+            if ($request->has('versi')) {
+                abort_unless($request->input('versi') === \App\Support\BoardTextVersion::of($current), 409, 'Teks papan sudah berubah. Muat ulang rincian sebelum menyunting.');
+            }
             $design->update($data + ['editor_id' => $request->user('staff')->id, 'diubah_pada' => now()]);
             DB::table('log_aktivitas')->insert(['aksi' => 'ubah_teks_papan', 'pengguna_id' => $request->user('staff')->id,
                 'subjek_tabel' => 'pesanan', 'subjek_id' => $id, 'dibuat_pada' => now()]);
         }, 3);
+        if (!$request->expectsJson() && in_array($request->input('asal'),['rincian-admin','antrean-produksi'],true)) {
+            return $request->input('asal') === 'antrean-produksi'
+                ? back()->withFragment('tugas-'.$id)->with('status','Teks papan tersimpan.')
+                : back()->withFragment('teks-papan')->with('status_papan','Teks papan tersimpan.');
+        }
         return response()->noContent();
     }
 
@@ -42,12 +51,12 @@ final class BoardOperationsController extends Controller
             $design->update($data + ['editor_id'=>null,'diubah_pada'=>now()]);
             DB::table('log_aktivitas')->insert(['aksi'=>'ubah_teks_papan','pelanggan_id'=>$customer->id,'subjek_tabel'=>'pesanan','subjek_id'=>$order->id,'dibuat_pada'=>now()]);
         },3);
-        return $request->expectsJson() ? response()->noContent() : redirect()->route('pesanan.show',$nomor);
+        return $request->expectsJson() ? response()->noContent() : redirect()->route('pesanan.show',$nomor)->with('status','Teks papan berhasil disimpan.');
     }
 
     public function extend(Request $request, int $id)
     {
-        $d = $request->validate(['kunci' => 'required|uuid', 'jam' => 'required|integer|between:1,5', 'alasan' => 'required|string|max:200']);
+        $d = $request->validate(['kunci' => 'required|uuid', 'jam' => 'required|integer|between:1,5', 'jam_sebelum' => 'sometimes|required|integer|between:0,5', 'alasan' => 'required|string|max:200']);
         return DB::transaction(function () use ($request, $id, $d) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $id)->exists(), 404);
@@ -57,15 +66,14 @@ final class BoardOperationsController extends Controller
                 abort_unless($old->jam == $d['jam'] && $old->alasan === $d['alasan'], 409, 'Kunci sudah digunakan.');
                 return response()->json(['nominal' => (int) $old->nominal, 'batas_baru' => $old->batas_baru]);
             }
-            abort_unless($order->status === 'sudah_diserahkan' && $order->total === $order->jumlah_dibayar + $order->saldo, 409);
             $used = (int) DB::table('perpanjangan_sewa')->where('pesanan_id', $id)->sum('jam');
-            $end = $order->tanggal_serah->copy()->setTime(18, 0)->addHours($used);
+            abort_if(isset($d['jam_sebelum']) && (int)$d['jam_sebelum'] !== $used, 409, 'Batas kembali sudah berubah. Periksa rincian terbaru.');
+            $terms = \App\Support\RentalExtension::terms($order,$used);
+            abort_if($terms['reason'] !== null,409,$terms['reason'] ?? '');
             $hours = (int) $d['jam'];
-            abort_if(now('Asia/Jakarta')->gt($end) || $used + $hours > 5, 409, 'Tidak boleh berlaku surut atau melampaui hari sewa.');
-            $items = $order->items()->get();
-            $held = DB::table('penguasaan_unit')->where('pesanan_id', $id)->pluck('unit_sewa_id');
-            abort_unless($items->isNotEmpty() && $held->count() === $items->count() && $items->every(fn ($i) => $held->contains($i->unit_sewa_id) && $i->jumlah == 1), 409);
-            $amount = $items->sum(fn ($i) => intdiv($i->harga_satuan + 1999, 2000) * 1000 * $hours);
+            abort_if($used + $hours > 5,409,'Durasi melebihi lima jam tambahan.');
+            $end = $terms['end'];
+            $amount = $terms['rate'] * $hours;
             abort_if($amount < 1 || $order->total + $amount > 2147482648, 422);
             $adjust = DB::table('penyesuaian_pesanan')->insertGetId(['pesanan_id' => $id, 'jenis' => 'perpanjangan', 'nominal' => $amount,
                 'keterangan' => $d['alasan'], 'pengguna_id' => $request->user('staff')->id, 'dibuat_pada' => now()]);
@@ -80,7 +88,9 @@ final class BoardOperationsController extends Controller
     public function block(Request $request, int $unit)
     {
         $d = $request->validate(['tanggal' => 'required|date_format:Y-m-d|after_or_equal:today', 'alasan' => 'required|string|max:160']);
-        return DB::transaction(function () use ($request, $unit, $d) {
+        $form = $request->input('asal') === 'kalender-unit';
+        if ($form) { $request->validate(['konfirmasi'=>'accepted']); }
+        $result = DB::transaction(function () use ($request, $unit, $d) {
             abort_unless(DB::table('unit_sewa')->where('id', $unit)->lockForUpdate()->first(), 404);
             $key = ['unit_sewa_id' => $unit, 'tanggal' => $d['tanggal']];
             $old = DB::table('blokir_unit_harian')->where($key)->first();
@@ -95,19 +105,31 @@ final class BoardOperationsController extends Controller
                 ->whereIn('p.status', ['menunggu_pembayaran','dikonfirmasi','sedang_diproduksi','siap','sudah_diserahkan'])->pluck('p.nomor');
             return response()->json(['blokir_id' => $id, 'peringatan_pesanan_aktif' => $conflicts], $old ? 200 : 201);
         }, 3);
+        if ($form && !$request->expectsJson()) {
+            return $this->calendarReturn($unit,$d['tanggal'],'Blokir unit tercatat.')->with('peringatan_pesanan_aktif',$result->getData(true)['peringatan_pesanan_aktif']);
+        }
+        return $result;
     }
 
     public function unblock(Request $request, int $unit, int $blokir)
     {
-        DB::transaction(function () use ($request, $unit, $blokir) {
+        $form = $request->input('asal') === 'kalender-unit';
+        if ($form) { $request->validate(['konfirmasi'=>'accepted','tanggal'=>'required|date_format:Y-m-d|after_or_equal:today']); }
+        DB::transaction(function () use ($request, $unit, $blokir, $form) {
             abort_unless(DB::table('unit_sewa')->where('id', $unit)->lockForUpdate()->first(), 404);
             $query = DB::table('blokir_unit_harian')->where(['id' => $blokir, 'unit_sewa_id' => $unit]);
             $old = $query->first();
-            abort_unless($old, 404);
+            abort_unless($old && (!$form || $old->tanggal === $request->input('tanggal')), 404);
             $query->delete();
             $this->auditBlock($request, $blokir, 'buka_blokir_unit', ['unit_sewa_id' => $unit, 'tanggal' => $old->tanggal]);
         }, 3);
+        if ($form && !$request->expectsJson()) { return $this->calendarReturn($unit,$request->input('tanggal'),'Blokir unit dibuka.'); }
         return response()->noContent();
+    }
+
+    private function calendarReturn(int $unit,string $day,string $message)
+    {
+        return redirect()->route('admin.kalender',['tanggal'=>$day,'unit'=>DB::table('unit_sewa')->where('id',$unit)->value('kode')])->withFragment('unit-harian')->with('success',$message);
     }
 
     private function auditBlock(Request $request, int $id, string $action, array $key): void

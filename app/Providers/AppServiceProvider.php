@@ -20,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\View::composer('partials.product-search-fields', function ($view) {
+            $view->with('searchCategories', $view->getData()['kategoris'] ?? \App\Models\Kategori::aktif()->terurut()->get(['id','nama']));
+        });
         Blueprint::macro('catatWaktu', function () {
             $this->timestamp('dibuat_pada')->nullable();
             $this->timestamp('diubah_pada')->nullable();

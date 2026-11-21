@@ -26,6 +26,6 @@ final class DashboardController extends Controller
             ->whereRaw("COALESCE((SELECT MAX(x.batas_baru) FROM perpanjangan_sewa x WHERE x.pesanan_id=p.id), TIMESTAMP(p.tanggal_serah,'18:00:00')) < ?", [$now])
             ->orderBy('h.tanggal')->orderBy('u.kode')->get(['u.kode','p.nomor as pesanan_sekarang','n.nomor as pesanan_berikut','h.tanggal','n.jam_serah_mulai']);
         $data = ['tanggal' => $day, 'ringkasan' => $summary, 'peringatan' => $alerts];
-        return ($request->expectsJson() ? response()->json($data) : response()->view('owner.index', $data))->header('Cache-Control', 'private, no-store');
+        return ($request->expectsJson() ? response()->json($data) : response()->view('admin.dashboard.index', $data))->header('Cache-Control', 'private, no-store');
     }
 }

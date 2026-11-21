@@ -24,7 +24,7 @@ final class DeliveryCashController extends Controller
             ->where('b.diterima_pada', '>=', $start)->where('b.diterima_pada', '<', $start->addDay())
             ->when(isset($filters['petugas_id']), fn ($q) => $q->where('b.pengguna_id',  $filters['petugas_id']));
         $summary = (clone $base)->groupBy('b.pengguna_id')->orderBy('b.pengguna_id')->selectRaw('b.pengguna_id AS petugas_id, COUNT(*) AS pembayaran, SUM(b.nominal_diterima) AS tagihan_setor, SUM(COALESCE(s.sesudah,0)) AS disetor, SUM(GREATEST(CAST(b.nominal_diterima AS SIGNED)-CAST(COALESCE(s.sesudah,0) AS SIGNED),0)) AS kurang, SUM(GREATEST(CAST(COALESCE(s.sesudah,0) AS SIGNED)-CAST(b.nominal_diterima AS SIGNED),0)) AS lebih')->get();
-        $rows = $base->orderBy('b.id')->paginate(50, ['b.id as pembayaran_id','p.nomor','b.pengguna_id as petugas_id','b.diterima_pada','b.nominal_diterima as tagihan_setor',
+        $rows = $base->orderBy('b.id')->paginate(50, ['b.id as pembayaran_id','p.nomor','p.id as pesanan_id','p.jenis_jaminan','p.nominal_jaminan','b.pengguna_id as petugas_id','b.diterima_pada','b.nominal_diterima as tagihan_setor',
                 DB::raw('COALESCE(s.sesudah,0) AS sudah_disetor'), DB::raw("CASE WHEN s.id IS NULL THEN 'belum_disetor' WHEN s.sesudah = b.nominal_diterima THEN 'cocok' WHEN s.sesudah < b.nominal_diterima THEN 'kurang' ELSE 'lebih' END AS status_setoran")])->withQueryString();
         $data = ['ringkasan' => $summary, 'rincian' => $rows];
         if ($request->expectsJson()) {
@@ -36,7 +36,7 @@ final class DeliveryCashController extends Controller
             ->where('b.status', 'menunggu')->whereNotNull('b.dikonfirmasi_pelanggan_pada')->where('b.tunai_saat_serah', false)
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('mutasi_masuk as m')->whereColumn('m.pembayaran_id', 'b.id')->where('m.hasil', 'perlu_rekonsiliasi'))
             ->orderBy('b.dikonfirmasi_pelanggan_pada')->orderBy('b.id')->paginate(25, ['bt.pembayaran_id as bukti_id','p.nomor','b.id','b.pesanan_id','b.jenis','b.nominal_diharapkan','r.nama_bank','r.nomor_rekening','r.atas_nama'], 'antrean')->withQueryString();
-        return response()->view('admin.kas-antar', $data + ['tanggal' => $filters['tanggal'], 'queue' => $queue])->header('Cache-Control', 'private, no-store');
+        return response()->view('admin.keuangan.kas-antar', $data + ['tanggal' => $filters['tanggal'], 'queue' => $queue])->header('Cache-Control', 'private, no-store');
     }
 
     public function proof(int $id, int $bill)
@@ -49,10 +49,18 @@ final class DeliveryCashController extends Controller
         return response($bytes)->withHeaders(['Content-Type'=>'image/webp','Cache-Control'=>'private, no-store','X-Content-Type-Options'=>'nosniff']);
     }
 
-    public function history(int $id)
+    public function history(Request $request, int $id)
     {
-        abort_unless($this->receipts()->where('b.id', $id)->exists(), 404);
-        return response()->json(DB::table('setoran_kas_antar')->where('pembayaran_id', $id)->orderBy('id')->paginate(50))->header('Cache-Control', 'private, no-store');
+        $receipt = $this->receipts()->where('b.id', $id)->first(['p.nomor', 'b.pengguna_id', 'b.diterima_pada', 'b.nominal_diterima']);
+        abort_unless($receipt, 404);
+        $ledger = DB::table('setoran_kas_antar')->where('pembayaran_id', $id);
+        if ($request->expectsJson() || $request->acceptsAnyContentType() || $request->getPreferredFormat() !== 'html') {
+            return response()->json($ledger->orderBy('id')->paginate(50))->header('Cache-Control', 'private, no-store');
+        }
+        $context = $request->validate(['petugas_id'=>'sometimes|integer|min:1','halaman_setoran'=>'sometimes|integer|min:1','antrean'=>'sometimes|integer|min:1']);
+        $entries = $ledger->orderByDesc('id')->paginate(50, ['kasir_id','sebelum','sesudah','dicatat_pada','catatan'])->appends($context);
+        $back = ['tanggal'=>substr($receipt->diterima_pada,0,10),'page'=>$context['halaman_setoran'] ?? 1] + array_intersect_key($context,array_flip(['antrean','petugas_id']));
+        return response()->view('admin.keuangan.riwayat-setoran', compact('receipt','entries','back','id'))->header('Cache-Control', 'private, no-store');
     }
 
     public function record(Request $request, int $id)

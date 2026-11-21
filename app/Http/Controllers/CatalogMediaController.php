@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Support\OwnerCatalogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,36 @@ final class CatalogMediaController extends Controller
     private function images(int $id)
     {
         return DB::table('gambar_produk')->where('produk_id', $id)->orderBy('urutan')->orderBy('id');
+    }
+
+    private function orderStamp($photos): string
+    {
+        return hash('sha256', $photos->pluck('id')->implode(','));
+    }
+
+    private function staleGallery(Request $request, int $id)
+    {
+        $message = 'Galeri berubah sejak halaman ini dibuka. Perubahan Anda tidak diterapkan. Periksa susunan terbaru sebelum melanjutkan.';
+        if ($request->expectsJson() || $request->input('asal') !== 'galeri') {
+            abort(409, $message);
+        }
+        return redirect()->route('admin.katalog.gallery', ['id'=>$id]+OwnerCatalogContext::from($request))->with('galeri_konflik',$message);
+    }
+
+    public function manage(Request $request, int $id)
+    {
+        $product = Produk::with('varianProduk')->findOrFail($id);
+        $photos = $this->images($id)->get();
+        foreach ($photos as $photo) { $photo->detail_stamp = $this->detailStamp($photo); }
+        return response()->view('owner.katalog.gallery', ['product'=>$product, 'photos'=>$photos, 'stamp'=>$this->orderStamp($photos),
+            'context'=>OwnerCatalogContext::from($request)])->header('Cache-Control','private, no-store');
+    }
+
+    private function finished(Request $request, int $id, string $message, $apiResponse)
+    {
+        return !$request->expectsJson() && $request->input('asal') === 'galeri'
+            ? redirect()->route('admin.katalog.gallery', ['id'=>$id]+OwnerCatalogContext::from($request))->with('success',$message)
+            : $apiResponse;
     }
 
     public function index(int $id)
@@ -74,29 +105,63 @@ final class CatalogMediaController extends Controller
             Storage::disk('public')->delete($path);
             throw $error;
         }
-        return response()->json(['id' => $result, 'jalur_berkas' => $path], 201);
+        return $this->finished($request,$id,'Foto berhasil ditambahkan.', response()->json(['id' => $result, 'jalur_berkas' => $path], 201));
+    }
+
+    private function detailStamp(object $photo): string
+    {
+        return hash('sha256', json_encode([$photo->id, $photo->teks_alternatif, $photo->varian_produk_id], JSON_THROW_ON_ERROR));
+    }
+
+    public function updateDetails(Request $request, int $id, int $foto)
+    {
+        $data = $request->validate(['detail.teks'=>'required|string|max:255', 'detail.varian'=>'nullable|integer|min:1',
+            'versi_detail'=>'required|string|size:64']);
+        $saved = DB::transaction(function () use ($request, $id, $foto, $data) {
+            $product = Produk::lockForUpdate()->findOrFail($id);
+            $row = $this->images($id)->where('id',$foto)->first();
+            if (!$row || $this->detailStamp($row) !== $data['versi_detail']) { return false; }
+            $variant = $data['detail']['varian'] ?? null;
+            if ($variant !== null && !$product->varianProduk()->whereKey($variant)->exists()) {
+                throw ValidationException::withMessages(['detail.varian'=>'Pilih varian milik produk ini.']);
+            }
+            if ($row->teks_alternatif === $data['detail']['teks'] && (string)$row->varian_produk_id === (string)$variant) { return true; }
+            DB::table('gambar_produk')->where('id',$foto)->update(['teks_alternatif'=>$data['detail']['teks'],'varian_produk_id'=>$variant]);
+            $this->audit($request,$id,'ubah_detail_gambar',['gambar_id'=>$foto,'varian_produk_id'=>$variant]);
+            return true;
+        }, 3);
+        if (!$saved) { return $this->staleGallery($request,$id); }
+        return $this->finished($request,$id,'Detail foto telah disimpan.',response()->noContent());
     }
 
     public function reorder(Request $request, int $id)
     {
         $ids = $request->validate(['urutan' => 'required|array|list|min:1|max:50', 'urutan.*' => 'required|integer|distinct|min:1'])['urutan'];
-        return DB::transaction(function () use ($request, $id, $ids) {
+        $saved = DB::transaction(function () use ($request, $id, $ids) {
             $product = Produk::lockForUpdate()->findOrFail($id);
             $rows = $this->images($id)->get()->keyBy('id');
+            if (($request->has('versi_galeri') || $request->input('asal') === 'galeri') && $request->input('versi_galeri') !== $this->orderStamp($rows)) {
+                return false;
+            }
             abort_unless($rows->count() === count($ids) && $rows->has($ids), 409, 'Kirim daftar lengkap foto produk ini.');
             foreach ($ids as $index => $image) {
                 DB::table('gambar_produk')->where('id', $image)->update(['urutan' => $index + 1]);
             }
             $product->update(['foto_utama' => $rows[$ids[0]]->jalur_berkas]);
             $this->audit($request, $id, 'urut_gambar', ['urutan' => $ids]);
-            return response()->noContent();
+            return true;
         }, 3);
+        if (!$saved) { return $this->staleGallery($request, $id); }
+        return $this->finished($request,$id,'Urutan dan foto utama telah disimpan.',response()->noContent());
     }
 
     public function remove(Request $request, int $id, int $foto)
     {
         $path = DB::transaction(function () use ($request, $id, $foto) {
             $product = Produk::lockForUpdate()->findOrFail($id);
+            if (($request->has('versi_galeri') || $request->input('asal') === 'galeri') && $request->input('versi_galeri') !== $this->orderStamp($this->images($id)->get(['id']))) {
+                return null;
+            }
             $row = $this->images($id)->where('id', $foto)->first();
             abort_unless($row, 404);
             DB::table('gambar_produk')->where('id', $foto)->delete();
@@ -109,11 +174,12 @@ final class CatalogMediaController extends Controller
             $this->audit($request, $id, 'hapus_gambar', ['gambar_id' => $foto]);
             return $row->jalur_berkas;
         }, 3);
+        if ($path === null) { return $this->staleGallery($request, $id); }
         // Only unlink unique files created by this workflow, not arbitrary legacy paths.
         if (preg_match('~^produk/galeri/[a-f0-9-]{36}\.webp$~D', $path)) {
             abort_unless(Storage::disk('public')->delete($path), 503, 'Referensi terhapus, berkas perlu dibersihkan operator.');
         }
-        return response()->noContent();
+        return $this->finished($request,$id,'Foto telah dihapus.',response()->noContent());
     }
 
     private function audit(Request $request, int $id, string $action, array $details): void

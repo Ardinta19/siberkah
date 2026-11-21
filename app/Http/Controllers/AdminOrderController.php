@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Admin Order Controller - Order management for owner/admin
@@ -23,9 +24,19 @@ class AdminOrderController extends BaseController
      *
      * @return View
      */
+    private function filters(Request $request): array
+    {
+        return array_filter($request->validate(['q' => 'nullable|string|max:150', 'status' => 'nullable|string|max:30', 'tanggal' => 'nullable|date_format:Y-m-d', 'pelanggan' => 'nullable|integer|min:1']), fn ($v) => $v !== null && $v !== '');
+    }
+
+    private function browser(Request $request): bool
+    {
+        return !$request->expectsJson() && !$request->acceptsAnyContentType() && $request->getPreferredFormat() === 'html';
+    }
+
     public function index(Request $request)
     {
-        $filters = $request->validate(['q' => 'nullable|string|max:150', 'status' => 'sometimes|string|max:30', 'tanggal' => 'sometimes|date_format:Y-m-d', 'pelanggan' => 'sometimes|integer|min:1']);
+        $filters = $this->filters($request);
         $query = Pesanan::query();
         foreach (['status' => 'status', 'tanggal' => 'tanggal_serah', 'pelanggan' => 'pelanggan_id'] as $field => $column) {
             if (isset($filters[$field])) {
@@ -36,26 +47,147 @@ class AdminOrderController extends BaseController
             $q = '%'.str_replace(['!', '%', '_'], ['!!','!%','!_'], $filters['q']).'%';
             $query->where(fn ($row) => $row->whereRaw("nama_pemesan LIKE ? ESCAPE '!'", [$q])->orWhereRaw("nomor LIKE ? ESCAPE '!'", [$q]));
         }
-        return response()->json($query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo']))
+        $rows = $query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo'])->appends($filters);
+        $context = $filters + ($rows->currentPage()>1 ? ['page'=>$rows->currentPage()] : []);
+        return ($this->browser($request) ? response()->view('admin.pesanan.index',compact('rows','filters','context')) : response()->json($rows))
             ->header('Cache-Control', 'private, no-store');
     }
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
         $order = Pesanan::with(['items', 'pembayaran'])->findOrFail($id);
         $order->setAttribute('tautan_whatsapp', \App\Services\WhatsAppLinks::order($order, true));
+        if ($this->browser($request)) {
+            $context = $this->filters($request) + ($request->integer('page')>1 ? ['page'=>$request->integer('page')] : []);
+            $refund = null;
+            if ($order->status === 'dibatalkan' && config('checkout.staging') && app()->environment('local','testing','staging')) {
+                $refund = DB::table('keputusan_refund as k')
+                    ->leftJoin('pembayaran as p','p.id','=','k.pembayaran_refund_id')
+                    ->leftJoin('referensi_mutasi_keluar as r','r.pembayaran_refund_id','=','p.id')
+                    ->where('k.pesanan_id',$id)->first(['k.nominal_final','k.nominal_sistem','k.alasan_override','k.diputuskan_pada',
+                        'p.status','p.diverifikasi_pada','r.referensi_keluar']);
+            }
+            $board = DB::table('desain_papan')->where('pesanan_id',$id)->first(['metode','jadwal_serah','judul','penerima','pengirim']);
+            $extension = null;
+            if (config('checkout.staging') && app()->environment('local','testing','staging') && DB::table('checkout_sewa')->where('pesanan_id',$id)->exists()) {
+                $entries = DB::table('perpanjangan_sewa')->where('pesanan_id',$id)->orderByDesc('id')->get(['jam','nominal','alasan','batas_baru']);
+                $extension = \App\Support\RentalExtension::terms($order,(int)$entries->sum('jam')) + ['entries'=>$entries];
+            }
+            $action = null;
+            if (config('checkout.staging') && app()->environment('local','testing','staging')) {
+                $online = DB::table('checkout_bank')->where('pesanan_id',$id)->exists();
+                if ($online && $order->status === 'menunggu_pembayaran' && $order->jumlah_dibayar === 0) {
+                    $action = \App\Actions\ReleaseOrderHold::needsReview($id) ? 'periksa' : 'T04';
+                } elseif ($online && in_array($order->status,['dikonfirmasi','sedang_diproduksi','siap'],true)) {
+                    $action = DB::table('permohonan_batal')->where(['pesanan_id'=>$id,'status'=>'menunggu'])->exists() ? 'permohonan' : 'T12';
+                } elseif ($order->status === 'sudah_diserahkan' && $order->saldo === 0 && $order->jumlah_dibayar === $order->total
+                    && (DB::table('checkout_buket')->where('pesanan_id',$id)->exists() || DB::table('penjualan_toko')->where('pesanan_id',$id)->exists())) {
+                    $action = 'T10';
+                }
+            }
+            $history = $order->riwayatStatus()->orderByDesc('id')->get();
+            $rincianPenyesuaian = $order->rincianPenyesuaian();
+            $opsiPerItem = $order->snapshotOpsiPerItem();
+            return response()->view('admin.pesanan.show',compact('order','context','refund','rincianPenyesuaian','opsiPerItem','board','history','extension','action'))->header('Cache-Control','private, no-store');
+        }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
+    }
+
+    public function cancelUnpaid(Request $request, int $id, \App\Actions\ReleaseOrderHold $holds)
+    {
+        $data = $request->validate(['alasan'=>'required|string|max:300','konfirmasi'=>'accepted']);
+        try { $holds->staffCancel($request->user('staff'),$id,$data['alasan']); }
+        catch (\DomainException $e) { abort(409,$e->getMessage()); }
+        return response()->json(['status'=>'dibatalkan']);
+    }
+
+    private function manualCustomers()
+    {
+        return DB::table('pelanggan')->where('aktif',true)->whereNull('dihapus_pada')->whereNotNull('nomor_terverifikasi_pada');
+    }
+
+    public function manualCustomer(Request $request)
+    {
+        $phone = $request->validate(['nomor_wa'=>['required','string','regex:/^(?:0|\+?62)[0-9]{8,13}$/D']])['nomor_wa'];
+        $phone = preg_replace('/^0/','62',ltrim($phone,'+'));
+        $id = $this->manualCustomers()->where('nomor_wa',$phone)->value('id');
+        $route = match ($request->input('tujuan')) { 'toko'=>'toko.form', 'buket'=>'admin.buket.pilih', default=>'admin.pesanan.manual-sewa' };
+        return $id ? redirect()->route($route,['pelanggan'=>$id])
+            : redirect()->route($route)->withErrors(['nomor_wa'=>'Tidak ditemukan pelanggan aktif terverifikasi dengan nomor tersebut.']);
+    }
+
+    public function bouquetPicker(Request $request)
+    {
+        $customer = $products = null;
+        if ($request->filled('pelanggan')) {
+            $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            if ($request->has('susun')) {
+                $ids = $request->validate(['produk'=>'required|array|list|min:1|max:25','produk.*'=>'required|integer|min:1|distinct'])['produk'];
+                $first = \App\Models\Produk::findOrFail(array_shift($ids));
+                return redirect()->route('admin.buket.form',[$customer->id,$first->slug,'tambahan'=>$ids]);
+            }
+            $products = \App\Models\Produk::whereIn('jenis',['jual','custom'])->where('aktif',true)
+                ->whereHas('kategori',fn($q)=>$q->where('aktif',true))->orderBy('nama')->orderBy('id')
+                ->paginate(25,['id','slug','nama','jenis'])->appends(['pelanggan'=>$customer->id]);
+        }
+        return response()->view('admin.pesanan.pilih-buket',compact('customer','products'))->header('Cache-Control','private, no-store');
+    }
+
+    public function counterForm(Request $request)
+    {
+        $customer = null;
+        $variants = collect();
+        if ($request->filled('pelanggan')) {
+            $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            $variants = DB::table('varian_produk as v')->join('produk as p','p.id','=','v.produk_id')->join('kategori as k','k.id','=','p.kategori_id')
+                ->where('v.aktif',true)->where('p.aktif',true)->where('k.aktif',true)->where('p.jenis','jual')->where('v.harga','>',0)->where('v.stok','>',0)
+                ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('opsi_produk as o')->whereColumn('o.produk_id','p.id'))
+                ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('blokir_kalender as b')->where('b.tanggal',today('Asia/Jakarta')->toDateString())->where(fn($w)=>$w->whereNull('b.produk_id')->orWhereColumn('b.produk_id','p.id')))
+                ->orderBy('p.nama')->orderBy('v.nama')->get(['v.id','v.nama','v.harga','v.stok','p.nama as produk']);
+        }
+        return response()->view('admin.pesanan.toko',compact('customer','variants'))->header('Cache-Control','private, no-store');
+    }
+
+    public function manualRentalForm(Request $request)
+    {
+        $now = \Carbon\CarbonImmutable::now('Asia/Jakarta');
+        $sameDay = $request->query('jadwal') === 'hari-ini';
+        $today = $now->toDateString();
+        $earliest = $now->addHours(3)->ceilMinute()->max($now->setTime(7,0));
+        $closed = $earliest->gt($now->setTime(17,0));
+        $minDate = $now->addDay();
+        if (!\App\Support\RentalSchedule::permits($minDate->toDateString(),null,null,$now)) { $minDate = $minDate->addDay(); }
+        $customer = null;
+        $variants = $zones = collect();
+        if ($request->filled('pelanggan')) {
+            $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            $variants = DB::table('varian_produk as v')->join('produk as p','p.id','=','v.produk_id')->join('kategori as k','k.id','=','p.kategori_id')
+                ->where('v.aktif',true)->where('p.aktif',true)->where('k.aktif',true)->where('p.jenis','sewa')->where('v.harga','>',0)
+                ->when($sameDay,fn($q)=>$q->where('p.izin_hari_sama',true))
+                ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('opsi_produk as o')->whereColumn('o.produk_id','p.id'))
+                ->orderBy('p.nama')->orderBy('v.nama')->get(['v.id','v.nama','v.harga','p.nama as produk']);
+            $zones = DB::table('zona_antar')->where('aktif',true)->where('jarak_maks_km','<=',15)->orderBy('nama')->get(['id','nama','ongkir']);
+        }
+        return response()->view('admin.pesanan.manual-sewa',compact('customer','variants','zones','sameDay','today','closed','earliest','minDate'))->header('Cache-Control','private, no-store');
     }
 
     public function manualStore(Request $request, \App\Actions\CreateRentalOrder $checkout)
     {
         $data = $request->validate(['pelanggan_id' => 'required|integer|min:1', 'persetujuan_pelanggan_diperiksa' => 'accepted', 'alasan_pengecualian' => 'prohibited']);
         $customer = \App\Models\Pelanggan::findOrFail($data['pelanggan_id']);
+        $form = $request->input('asal_form') === 'manual-sewa' && !$request->expectsJson();
+        $input = $request->all();
+        if ($form) {
+            $request->validate(['varian_id'=>'required|integer|min:1']);
+            $input['produk_id'] = DB::table('varian_produk')->where('id',$input['varian_id'])->value('produk_id');
+        }
         try {
-            $order = $checkout->create($customer, $request->all(), $request->user('staff'));
+            $order = $checkout->create($customer, $input, $request->user('staff'));
         } catch (\DomainException $exception) {
+            if ($form) { return back()->withInput($request->except(['persetujuan_pelanggan_diperiksa','setuju_privasi']))->withErrors(['pesanan'=>$exception->getMessage()]); }
             abort(409, $exception->getMessage());
         }
+        if ($form) { return redirect()->route('admin.pesanan.show',$order->id)->with('manual_success','Pesanan sewa manual tercatat.'); }
         return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor]);
     }
 

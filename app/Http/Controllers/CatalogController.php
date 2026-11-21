@@ -16,6 +16,15 @@ use Illuminate\View\View;
  */
 class CatalogController extends BaseController
 {
+    public function home(): View
+    {
+        $categories = Kategori::aktif()->terurut()->orderBy('id')->whereHas('produkAktif')
+            ->with(['produkAktif' => fn ($q) => $q->orderBy('urutan')->orderBy('id')->limit(1)])
+            ->get();
+
+        return view('publik.beranda', compact('categories'));
+    }
+
     /**
      * Display the product catalog listing.
      * K-01: Beranda/Katalog - grid 2 kolom mobile, 4 kolom desktop
@@ -28,9 +37,8 @@ class CatalogController extends BaseController
 
         $request->validate(['q' => 'nullable|string|max:150', 'kategori' => 'nullable|integer', 'jenis' => 'nullable|in:sewa,jual,custom', 'urut' => 'nullable|in:harga_naik,harga_turun', 'tanggal' => 'nullable|date_format:Y-m-d']);
         if ($request->filled('q')) {
-            $term = '%'.$request->string('q')->trim().'%';
-            $query->where(fn ($q) => $q->where('nama', 'like', $term)
-                ->orWhereHas('kategori', fn ($category) => $category->where('nama', 'like', $term)));
+            $term = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($request->input('q')));
+            $query->whereRaw("produk.nama LIKE ? ESCAPE '!'", ['%'.$term.'%']);
         }
 
         // Filter by kategori
@@ -38,7 +46,10 @@ class CatalogController extends BaseController
             $query->where('kategori_id', $request->kategori);
         }
 
-        $date = $request->input('tanggal');
+        $date = in_array($request->input('jenis'), ['jual','custom'], true) ? null : $request->input('tanggal');
+        if (! $date && $request->filled('tanggal')) {
+            return redirect()->route('catalog.index', $request->only(['q','jenis','kategori','urut']));
+        }
         if ($date) {
             $query->bisaDisewaPada($date);
         }
@@ -49,13 +60,14 @@ class CatalogController extends BaseController
         }
 
         $kategoris = Kategori::where('aktif', true)->orderBy('urutan')->get();
+        $query->denganHargaTampil($date);
         if ($request->filled('urut')) {
-            $query->orderBy('harga_dasar', $request->input('urut') === 'harga_turun' ? 'desc' : 'asc');
+            $query->orderByRaw('harga_tampil is null')->orderBy('harga_tampil', $request->input('urut') === 'harga_turun' ? 'desc' : 'asc');
         }
         $produk = $query->with(['kategori', 'varianProduk' => fn ($q) => $date ? $q->tersediaPada($date) : $q->where('aktif', true)])
-            ->orderBy('urutan')->orderBy('id')->paginate(24)->withQueryString();
+            ->orderBy('urutan')->orderBy('id')->paginate(24)->withQueryString()->fragment('produk-katalog');
 
-        return view('katalog.index', [
+        return view('publik.katalog.index', [
             'produk' => $produk,
             'kategoris' => $kategoris,
             'filterKategori' => $request->get('kategori'),
@@ -76,6 +88,7 @@ class CatalogController extends BaseController
 
         $tanggal = $request->validate(['tanggal' => 'nullable|date_format:Y-m-d'])['tanggal'] ?? null;
         $filter = $tanggal && $produk->jenis === 'sewa';
+        $produk->harga_tampil = Produk::denganHargaTampil($filter ? $tanggal : null)->whereKey($produk->id)->firstOrFail()->harga_tampil;
         $varian = $produk->varianProduk()->where('aktif', true)->when($filter, fn ($q) => $q->tersediaPada($tanggal))->get();
         $tersedia = $filter ? $varian->isNotEmpty() : null;
         $saran = [];
@@ -91,7 +104,7 @@ class CatalogController extends BaseController
         $opsiProduk = $produk->opsiProduk()->orderBy('urutan')->get();
         $gambarProduk = $produk->gambarProduk()->orderBy('urutan')->get();
 
-        return view('katalog.show', [
+        return view('publik.katalog.show', [
             'produk' => $produk,
             'varian' => $varian,
             'opsiProduk' => $opsiProduk,

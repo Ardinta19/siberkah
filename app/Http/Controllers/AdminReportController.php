@@ -44,7 +44,9 @@ final class AdminReportController extends Controller
 
     public function index(Request $request)
     {
-        return response()->json($this->totals($request))->header('Cache-Control', 'private, no-store');
+        $report = $this->totals($request);
+        return ($request->getPreferredFormat() === 'html' && !$request->acceptsAnyContentType() && !$request->expectsJson()
+            ? response()->view('owner.laporan.index',$report) : response()->json($report))->header('Cache-Control', 'private, no-store');
     }
 
     public function exportAnonymousCsv(Request $request)

@@ -81,6 +81,14 @@ class Produk extends Model
     }
 
     /** Date-specific catalog estimate; checkout must still lock and reserve the units. */
+    public function scopeDenganHargaTampil(Builder $query, ?string $date = null): Builder
+    {
+        $variantPrice = \App\Models\VarianProduk::selectRaw('min(harga)')->whereColumn('produk_id','produk.id')->where('aktif',true)
+            ->where('harga','>',0)->where(fn ($q) => $q->where('produk.jenis','!=','jual')->orWhere('stok','>',0))
+            ->when($date, fn ($q) => $q->tersediaPada($date));
+        return $query->select('produk.*')->selectRaw("coalesce(({$variantPrice->toSql()}), case when produk.jenis = 'custom' and not exists (select 1 from varian_produk v where v.produk_id = produk.id) then nullif(produk.harga_dasar,0) end) as harga_tampil", $variantPrice->getBindings());
+    }
+
     public function scopeBisaDisewaPada(Builder $query, string $date): Builder
     {
         return $query->where('jenis', 'sewa')->whereHas('varianProduk', fn ($q) => $q->tersediaPada($date));

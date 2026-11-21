@@ -161,9 +161,29 @@ class BouquetCheckoutTest extends TestCase
         $this->postJson($url, array_replace($data, ['kunci' => (string) Str::uuid(), 'sebelum' => 141000, 'sesudah' => 140000, 'catatan' => 'Kelebihan dikembalikan']))->assertCreated();
         $this->getJson($list)->assertJsonPath('rincian.data.0.status_setoran', 'cocok');
         $this->getJson(route('kas-antar.history', $cashId))->assertJsonPath('total', 3);
+        $this->get(route('kas-antar.history', $cashId), ['Accept'=>'text/html'])->assertOk()
+            ->assertSeeInOrder(['Hitung #3','−Rp1.000','Kelebihan dikembalikan','Hitung #2','+Rp6.000','Setoran tambahan','Hitung #1','Kurang saat hitung pertama'])
+            ->assertSee('#setoran-'.$cashId);
         $this->assertDatabaseCount('pembayaran', 2);
         $this->assertSame(0, $order->fresh()->saldo);
         $this->assertDatabaseCount('mutasi_masuk', 1);
+    }
+
+    public function test_receipt_keeps_ordered_choices_and_prices_after_catalog_changes(): void
+    {
+        $data = $this->cart();
+        $number = $this->postJson(route('pesanan.buket'),$data)->assertOk()->json('nomor');
+        DB::table('nilai_opsi')->update(['label'=>'Label baru','harga_tambahan'=>7000]);
+        DB::table('varian_produk')->update(['nama'=>'Varian baru','harga'=>50000]);
+        $this->get(route('pesanan.show',$number))->assertOk()->assertSee('Varian: Putih')
+            ->assertSee('Bunga: Mawar')->assertSee('3 satuan per produk')->assertSee('+Rp15.000 per produk')
+            ->assertSee('Rp115.000 per produk × 2')->assertSee('Rp230.000')->assertSee('Rp270.000')
+            ->assertDontSee('Label baru')->assertDontSee('Varian baru');
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']), 'staff');
+        $this->get(route('admin.pesanan.show',Pesanan::sole()->id), ['Accept'=>'text/html'])->assertOk()
+            ->assertSee('Varian: Putih')->assertSee('Bunga: Mawar')->assertSee('3 satuan per produk')
+            ->assertSee('+Rp15.000 per produk')->assertSee('Rp115.000 per produk × 2')->assertSee('Rp270.000')
+            ->assertDontSee('Label baru')->assertDontSee('Varian baru');
     }
 
     public function test_mixed_cart_from_checkout_through_payment_production_and_handover(): void
@@ -194,6 +214,50 @@ class BouquetCheckoutTest extends TestCase
         $this->postJson(route('toko.serah', $order->id), $proof)->assertOk();
         $this->postJson(route('toko.selesai', $order->id))->assertOk();
         $this->assertSame('selesai', $order->fresh()->status);
+    }
+
+    public function test_admin_books_custom_product_from_browser_form_without_marking_it_paid(): void
+    {
+        $cart = $this->cart();
+        $customer = Pelanggan::sole();
+        $admin = Pengguna::factory()->create(['peran'=>'admin']);
+        $url = route('admin.buket.form',[$customer->id,'custom']);
+        $this->actingAs($admin,'staff')->get(route('admin.buket.pilih',['pelanggan'=>$customer->id]))->assertOk()->assertSee('Pilih Custom');
+        $this->get($url)->assertOk()->assertSee('persetujuan_pelanggan_diperiksa')->assertSee('Bunga');
+        $option = $cart['items'][1]['opsi'][0];
+        $input = array_diff_key($cart,['items'=>true]) + ['jumlah'=>2,'opsi'=>[$option['id']=>['nilai_id'=>$option['nilai_id'],'satuan'=>3]]];
+        $this->from($url)->post($url,$input)->assertSessionHasErrors('persetujuan_pelanggan_diperiksa');
+        $input['persetujuan_pelanggan_diperiksa'] = 1;
+        $input['pembayaran'] = 'penuh'; // The custom line alone is below the DP threshold.
+        $this->post($url,$input)->assertSessionHas('manual_success');
+        $order = Pesanan::sole();
+        $this->post($url,$input)->assertRedirect(route('admin.pesanan.show',$order->id));
+        $this->assertDatabaseHas('pesanan',['id'=>$order->id,'asal'=>'admin','pengguna_id'=>$admin->id,'total'=>230000,'jumlah_dibayar'=>0]);
+        $this->assertDatabaseCount('pesanan',1);
+    }
+
+    public function test_manual_mixed_checkout_validates_all_lines_then_reserves_once(): void
+    {
+        $cart = $this->cart();
+        [$sale,$custom] = $cart['items'];
+        $url = route('admin.buket.submit',[Pelanggan::sole()->id,'siap']);
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']),'staff');
+        $choice = $custom['opsi'][0];
+        $extra = ['produk_id'=>$custom['produk_id'],'jumlah'=>2,'opsi'=>[$choice['id']=>['nilai_id'=>$choice['nilai_id'],'satuan'=>3]]];
+        $input = array_diff_key($cart,['items'=>true]) + ['varian_id'=>$sale['varian_id'],'jumlah'=>1,'persetujuan_pelanggan_diperiksa'=>1,'tambahan'=>[$extra]];
+        $invalid = $input;
+        unset($invalid['tambahan'][0]['opsi']);
+        $this->post($url,$invalid)->assertSessionHasErrors();
+        $this->assertDatabaseCount('pesanan',0);
+        $this->assertDatabaseHas('varian_produk',['id'=>$sale['varian_id'],'stok'=>3]);
+        $this->post($url,$input)->assertSessionHas('manual_success');
+        $order = Pesanan::sole();
+        $this->post($url,$input)->assertRedirect(route('admin.pesanan.show',$order->id));
+        $this->assertSame(270000,$order->total);
+        $this->assertSame(0,$order->jumlah_dibayar);
+        $this->assertCount(2,$order->items);
+        $this->assertDatabaseHas('varian_produk',['id'=>$sale['varian_id'],'stok'=>2]);
+        $this->assertDatabaseCount('pesanan',1);
     }
 
     public function test_manual_custom_cancellation_after_production_restores_only_sale_stock(): void
@@ -260,6 +324,9 @@ class BouquetCheckoutTest extends TestCase
         foreach (['SHORT' => $bill->tagihan - 1, 'NO-CODE' => $bill->tagihan] as $ref => $nominal) {
             $this->postJson(route('admin.pesanan.verify-payment', $order->id), ['referensi' => $ref, 'pembayaran_id' => $bill->id, 'nominal' => $nominal])->assertAccepted();
         }
+        $queue = route('admin.rekonsiliasi.index');
+        $html = ['Accept'=>'text/html'];
+        $this->get($queue,$html)->assertOk()->assertSee('Terima selisih kode unik · NO-CODE')->assertDontSee('Terima selisih kode unik · SHORT')->assertSee('Tolak selisih · SHORT');
         $short = DB::table('mutasi_masuk')->where('referensi', 'SHORT')->value('id');
         $data = ['mutasi_id' => $short, 'action' => 'terima', 'catatan' => 'Periksa pokok tagihan'];
         $this->postJson($url, $data)->assertConflict();
@@ -271,6 +338,7 @@ class BouquetCheckoutTest extends TestCase
         $this->postJson($url, $data)->assertOk();
         $this->postJson($url, array_replace($data, ['action' => 'tolak']))->assertConflict();
         $this->assertDatabaseCount('mutasi_masuk', 2);
+        $this->get($queue.'?kelompok=dikreditkan',$html)->assertOk()->assertSee('NO-CODE')->assertSee('Periksa pokok tagihan')->assertDontSee('SHORT');
         $this->assertDatabaseCount('keputusan_selisih', 2);
         $this->assertDatabaseCount('pembayaran', 2);
         $this->assertSame((int) $bill->tagihan, $order->fresh()->jumlah_dibayar);

@@ -32,6 +32,7 @@ jobs:
           node-version: 22
       - run: cp .env.example .env && composer install --no-interaction --prefer-dist && php artisan key:generate
       - run: npm ci && npm run build
+      - run: php artisan view:cache
       - run: php artisan migrate --force
       - name: Latihan pemulihan MariaDB terisolasi
         env:
