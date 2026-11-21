@@ -22,7 +22,7 @@
         <input type="hidden" name="kunci" value="{{ old('kunci', $key) }}">
         <input type="hidden" name="versi_privasi" value="{{ config('checkout.privacy_version') }}">
         <div class="bk-checkout-fields">
-        <section class="bk-checkout-card" aria-labelledby="pilihan-produk"><h2 id="pilihan-produk" tabindex="-1">Pilihan produk</h2>
+        <section class="bk-checkout-card" aria-labelledby="pilihan-produk"><h2 id="pilihan-produk" tabindex="-1"><span class="bk-section-petal" aria-hidden="true"></span>Pilihan produk</h2>
         @if($needsVariant)<label>Varian <select name="varian_id" required>@foreach($variants as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga }}" @selected(old('varian_id') == $v->id)>{{ $v->nama }} · Rp{{ number_format($v->harga,0,',','.') }}</option>@endforeach</select></label>@endif
         @include('partials.quantity',['itemId'=>'checkout-'.$product->id,'quantity'=>old('jumlah',request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1)])
         @foreach($options as $o)
@@ -33,7 +33,7 @@
             @endif</label>
             @if($o->tipe === 'satuan')<label>Jumlah {{ $o->nama }} per produk <input type="number" name="opsi[{{ $o->id }}][satuan]" min="1" max="100" value="{{ old('opsi.'.$o->id.'.satuan',1) }}"></label>@endif
         @endforeach
-        </section><section class="bk-checkout-card" aria-labelledby="serah-produk"><h2 id="serah-produk" tabindex="-1">Serah terima</h2>
+        </section><section class="bk-checkout-card" aria-labelledby="serah-produk"><h2 id="serah-produk" tabindex="-1"><span class="bk-section-petal" aria-hidden="true"></span>Serah terima</h2>
         <label>Tanggal serah <input type="date" required name="tanggal" min="{{ today()->toDateString() }}" value="{{ old('tanggal',$day) }}"></label>
         @if($product->jenis === 'sewa')
             <label>Metode teks <select name="metode_teks">@foreach(['spidol','templat','cutting'] as $m)<option @selected(old('metode_teks') === $m)>{{ $m }}</option>@endforeach</select></label>
@@ -44,7 +44,7 @@
             <label>Zona <select name="zona_antar_id">@foreach($zones as $z)<option value="{{ $z->id }}" data-price="{{ $z->ongkir }}" @selected(old('zona_antar_id') == $z->id)>{{ $z->nama }} · Rp{{ number_format($z->ongkir,0,',','.') }}</option>@endforeach</select></label>
             <label>Alamat <textarea maxlength="500" name="alamat_antar">{{ old('alamat_antar') }}</textarea></label>
         </fieldset>
-        </section><section class="bk-checkout-card" aria-labelledby="bayar-produk"><h2 id="bayar-produk" tabindex="-1">Pembayaran</h2>
+        </section><section class="bk-checkout-card" aria-labelledby="bayar-produk"><h2 id="bayar-produk" tabindex="-1"><span class="bk-section-petal" aria-hidden="true"></span>Pembayaran</h2>
         <label>Skema pembayaran <select name="pembayaran"><option value="penuh">Penuh</option>@if($bank)<option value="dp" @selected(old('pembayaran') === 'dp')>DP 50% di muka</option>@endif</select></label>
         <p>DP tersedia mulai Rp{{ number_format($threshold,0,',','.') }} bila tenggat H-1 pukul 18.00 WIB belum lewat.</p>
         <label>Metode pelunasan <select name="metode_pelunasan">@if($bank)<option value="bank">Transfer / QRIS sesuai tujuan aktif</option>@endif<option value="tunai_saat_serah" @selected(old('metode_pelunasan') === 'tunai_saat_serah')>Tunai saat ambil atau diantar</option></select></label>

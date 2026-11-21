@@ -19,5 +19,18 @@ if(checkout){
     gsap.from(checkout.querySelectorAll('.bk-checkout-card,.bk-checkout-review'),{
       y:10,opacity:.8,duration:.46,stagger:.06,ease:'power2.out',clearProps:'transform,opacity'
     });
+    // Native fragment navigation already scrolls and focuses the destination.
+    // Animate only its decorative marker; repeated jumps must not accumulate tweens.
+    let accent;
+    function markDestination(event){
+      const petal=event.target.closest('h2[tabindex]')?.querySelector('.bk-section-petal');
+      if(!petal)return;
+      accent?.revert();
+      accent=gsap.timeline({defaults:{ease:'power2.out'}})
+        .fromTo(petal,{rotation:-28,scale:.82},{rotation:12,scale:1.18,duration:.22})
+        .to(petal,{rotation:0,scale:1,duration:.28,clearProps:'transform'});
+    }
+    checkout.addEventListener('focusin',markDestination);
+    return ()=>{checkout.removeEventListener('focusin',markDestination);accent?.revert();};
   });
 }

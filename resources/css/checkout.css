@@ -4,3 +4,6 @@
 .bk-checkout-fields,.bk-checkout-review,.bk-checkout-card{min-width:0;display:grid;align-content:start;gap:1rem}.bk-checkout-card,.bk-checkout-review{border:1px solid #dcc8cd;border-radius:1.25rem;background:#fffaf7;padding:clamp(1rem,2vw,1.55rem)}
 .bk-checkout-card h2{font:1.5rem Georgia,serif;color:#71203c;scroll-margin-top:7rem}.bk-checkout-card label:not([hidden]){display:grid;gap:.35rem}.bk-checkout-card :is(select,textarea,input):not(.bk-stepper input){display:block;box-sizing:border-box;width:100%;min-width:0;min-height:44px;border:1px solid #c8afb8;border-radius:.65rem;background:white;color:#492330;padding:.55rem .7rem}.bk-checkout-card fieldset{min-width:0}.bk-checkout-review{align-self:start;background:#fff}.bk-checkout-review button{min-height:46px}.bk-checkout-review .bk-estimate{min-width:0}.bk-checkout-page :focus-visible{outline:2px solid #8a052b;outline-offset:3px}
 @media(min-width:60rem){.bk-checkout-page #checkout{grid-template-columns:minmax(0,1.35fr) minmax(18rem,1fr);align-items:start}}
+/* The marker identifies a navigation destination, not a completed checkout step. */
+.bk-section-petal{display:inline-block;width:.52em;height:.52em;margin-inline:.1em .48em;vertical-align:.08em;border-radius:65% 12%;background:#c695a5}
+.bk-checkout-card h2:is(:target,:focus) .bk-section-petal{background:#8a052b;box-shadow:0 0 0 3px #f0dce4}
