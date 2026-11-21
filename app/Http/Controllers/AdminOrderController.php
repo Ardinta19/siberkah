@@ -23,9 +23,19 @@ class AdminOrderController extends BaseController
      *
      * @return View
      */
+    private function filters(Request $request): array
+    {
+        return array_filter($request->validate(['q' => 'nullable|string|max:150', 'status' => 'nullable|string|max:30', 'tanggal' => 'nullable|date_format:Y-m-d', 'pelanggan' => 'nullable|integer|min:1']), fn ($v) => $v !== null && $v !== '');
+    }
+
+    private function browser(Request $request): bool
+    {
+        return !$request->expectsJson() && !$request->acceptsAnyContentType() && $request->getPreferredFormat() === 'html';
+    }
+
     public function index(Request $request)
     {
-        $filters = $request->validate(['q' => 'nullable|string|max:150', 'status' => 'sometimes|string|max:30', 'tanggal' => 'sometimes|date_format:Y-m-d', 'pelanggan' => 'sometimes|integer|min:1']);
+        $filters = $this->filters($request);
         $query = Pesanan::query();
         foreach (['status' => 'status', 'tanggal' => 'tanggal_serah', 'pelanggan' => 'pelanggan_id'] as $field => $column) {
             if (isset($filters[$field])) {
@@ -36,14 +46,20 @@ class AdminOrderController extends BaseController
             $q = '%'.str_replace(['!', '%', '_'], ['!!','!%','!_'], $filters['q']).'%';
             $query->where(fn ($row) => $row->whereRaw("nama_pemesan LIKE ? ESCAPE '!'", [$q])->orWhereRaw("nomor LIKE ? ESCAPE '!'", [$q]));
         }
-        return response()->json($query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo']))
+        $rows = $query->orderByDesc('id')->paginate(20, ['id','nomor','status','tanggal_serah','asal','total','saldo'])->appends($filters);
+        $context = $filters + ($rows->currentPage()>1 ? ['page'=>$rows->currentPage()] : []);
+        return ($this->browser($request) ? response()->view('admin.pesanan.index',compact('rows','filters','context')) : response()->json($rows))
             ->header('Cache-Control', 'private, no-store');
     }
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
         $order = Pesanan::with(['items', 'pembayaran'])->findOrFail($id);
         $order->setAttribute('tautan_whatsapp', \App\Services\WhatsAppLinks::order($order, true));
+        if ($this->browser($request)) {
+            $context = $this->filters($request) + ($request->integer('page')>1 ? ['page'=>$request->integer('page')] : []);
+            return response()->view('admin.pesanan.show',compact('order','context'))->header('Cache-Control','private, no-store');
+        }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
 
