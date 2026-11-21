@@ -29,3 +29,5 @@
 **UC-21 sewa hari ini:** pilih pelanggan → Hari ini. Hanya produk berizin, spidol/templat, pembayaran penuh dan slot 07.00–17.00 WIB minimal tiga jam ke depan. Saat slot habis, arahkan ke tanggal mendatang. Tanggal mendatang mengikuti cutoff bisnis. Pemeriksaan akhir stok/jadwal tetap pada checkout terkunci.
 
 **UC-21 transaksi langsung:** Admin dapat memilih pelanggan dan varian siap jual tanpa opsi, mencocokkan total pembulatan dengan tunai fisik, lalu membuka rincian pesanan terbayar. Stok dan harga diperiksa ulang saat menyimpan. Penjualan ini tidak mewakili checkout buket/custom melalui WhatsApp.
+
+**UC-21 buket:** dari daftar pesanan, cari pelanggan, pilih produk siap jual/custom dan isi checkout satu produk (beberapa unit, varian, opsi dan catatan). Harga serta kapasitas dihitung ulang oleh aksi bersama; POST manual terpisah dari sesi pelanggan dan keranjang. Keranjang manual multi-produk belum tersedia di UI.

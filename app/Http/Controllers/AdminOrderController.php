@@ -90,9 +90,21 @@ class AdminOrderController extends BaseController
         $phone = $request->validate(['nomor_wa'=>['required','string','regex:/^(?:0|\+?62)[0-9]{8,13}$/D']])['nomor_wa'];
         $phone = preg_replace('/^0/','62',ltrim($phone,'+'));
         $id = $this->manualCustomers()->where('nomor_wa',$phone)->value('id');
-        $route = $request->input('tujuan') === 'toko' ? 'toko.form' : 'admin.pesanan.manual-sewa';
+        $route = match ($request->input('tujuan')) { 'toko'=>'toko.form', 'buket'=>'admin.buket.pilih', default=>'admin.pesanan.manual-sewa' };
         return $id ? redirect()->route($route,['pelanggan'=>$id])
             : redirect()->route($route)->withErrors(['nomor_wa'=>'Tidak ditemukan pelanggan aktif terverifikasi dengan nomor tersebut.']);
+    }
+
+    public function bouquetPicker(Request $request)
+    {
+        $customer = $products = null;
+        if ($request->filled('pelanggan')) {
+            $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            $products = \App\Models\Produk::whereIn('jenis',['jual','custom'])->where('aktif',true)
+                ->whereHas('kategori',fn($q)=>$q->where('aktif',true))->orderBy('nama')->orderBy('id')
+                ->paginate(20,['slug','nama','jenis'])->appends(['pelanggan'=>$customer->id]);
+        }
+        return response()->view('admin.pesanan.pilih-buket',compact('customer','products'))->header('Cache-Control','private, no-store');
     }
 
     public function counterForm(Request $request)

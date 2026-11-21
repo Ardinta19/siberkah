@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\CreateBouquetOrder;
 use App\Actions\CreateRentalOrder;
 use App\Models\Produk;
+use App\Models\Pelanggan;
 use App\Support\BusinessSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,8 +34,34 @@ final class ProductCheckoutController extends Controller
                     'dari_keranjang'=>$request->boolean('dari_keranjang') ? 1 : null])]);
             return redirect()->route('profile.edit',['lanjut'=>$token]);
         }
+        return $this->form($product,$day);
+    }
+
+    private function manualContext(int $pelanggan, string $slug): array
+    {
+        $customer = Pelanggan::where('aktif',true)->whereNull('dihapus_pada')->whereNotNull('nomor_terverifikasi_pada')->findOrFail($pelanggan);
+        $product = $this->product($slug);
+        abort_unless(in_array($product->jenis,['jual','custom'],true),404);
+        return [$customer,$product];
+    }
+
+    public function manualShow(int $pelanggan, string $slug)
+    {
+        [$customer,$product] = $this->manualContext($pelanggan,$slug);
+        return $this->form($product,null,$customer);
+    }
+
+    public function manualSubmit(Request $request, int $pelanggan, string $slug)
+    {
+        [$customer,$product] = $this->manualContext($pelanggan,$slug);
+        $request->validate(['persetujuan_pelanggan_diperiksa'=>'accepted','alasan_pengecualian'=>'prohibited']);
+        return $this->submit($request,$product,$customer,true);
+    }
+
+    private function form(Produk $product, ?string $day, ?Pelanggan $manualCustomer=null)
+    {
         return response()->view('pelanggan.checkout.produk', [
-            'product' => $product, 'variants' => $product->varianProduk()->where('aktif', true)->orderBy('id')->get(),
+            'manualCustomer' => $manualCustomer, 'product' => $product, 'variants' => $product->varianProduk()->where('aktif', true)->orderBy('id')->get(),
             'needsVariant' => $product->jenis !== 'custom' || $product->varianProduk()->exists(),
             'options' => $product->opsiProduk()->with(['nilaiOpsi' => fn ($q) => $q->where('aktif', true)])->orderBy('urutan')->get(),
             'zones' => DB::table('zona_antar')->where('aktif', true)->where('jarak_maks_km', '<=', 15)->orderBy('ongkir')->get(),
@@ -45,8 +72,11 @@ final class ProductCheckoutController extends Controller
 
     public function store(Request $request, string $slug)
     {
-        $product = $this->product($slug);
-        $customer = $request->user('customer');
+        return $this->submit($request,$this->product($slug),$request->user('customer'),false);
+    }
+
+    private function submit(Request $request, Produk $product, Pelanggan $customer, bool $manual)
+    {
         $d = $request->only(['kunci','tanggal','pembayaran','metode_pelunasan','cara_serah','versi_privasi','setuju_privasi']);
         if ($request->input('cara_serah') === 'antar') {
             $d += $request->only(['alamat_antar','zona_antar_id']);
@@ -64,7 +94,7 @@ final class ProductCheckoutController extends Controller
                         $line['opsi'][] = ['id' => $id] + $choice;
                     }
                 }
-                $order = app(CreateBouquetOrder::class)->create($customer, $d + ['items' => [$line]]);
+                $order = app(CreateBouquetOrder::class)->create($customer, $d + ['items' => [$line]], $manual ? $request->user('staff') : null);
             }
         } catch (\DomainException $e) {
             return back()->withInput()->withErrors(['checkout' => $e->getMessage()]);
@@ -72,6 +102,7 @@ final class ProductCheckoutController extends Controller
             if (! in_array($e->getStatusCode(), [409,422], true)) { throw $e; }
             return back()->withInput()->withErrors(['checkout' => $e->getMessage() ?: 'Periksa pilihan, tanggal, dan ketersediaan produk.']);
         }
+        if ($manual) { return redirect()->route('admin.pesanan.show',$order->id)->with('manual_success','Pesanan buket manual tercatat.'); }
         if ($request->boolean('dari_keranjang')) { $request->session()->forget('cart.'.$product->id); }
         return redirect()->route('pesanan.show', $order->nomor);
     }

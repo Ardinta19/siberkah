@@ -1,14 +1,16 @@
-@extends('layouts.customer')
+@extends($manualCustomer ? 'layouts.admin' : 'layouts.customer')
 @section('title', 'Pesan '.$product->nama.' · SIBERKAH')
 @section('content')
 <section class="bk-checkout-page">
-    @if(request()->boolean('dari_keranjang'))
+    @if($manualCustomer)<x-back-link :href="route('admin.buket.pilih',['pelanggan'=>$manualCustomer->id])">Kembali ke pilihan buket</x-back-link>
+    @elseif(request()->boolean('dari_keranjang'))
         <x-back-link href="{{ route('cart.index') }}#keranjang-{{ $product->id }}">Kembali ke keranjang</x-back-link>
     @else
         @php($koleksi = collect((array)request('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])->filter(fn ($v) => is_scalar($v))->all())
         <x-back-link :href="route('catalog.show', ['slug'=>$product->slug,'tanggal'=>$day,'koleksi'=>$koleksi])">Kembali ke detail produk</x-back-link>
     @endif
-    <p class="kc-kicker">Berkah Kreatif · Checkout</p><h1>Pesan {{ $product->nama }}</h1>
+    <p class="kc-kicker">{{ $manualCustomer ? 'Admin · Pesanan WhatsApp / toko' : 'Berkah Kreatif · Checkout' }}</p><h1>Pesan {{ $product->nama }}</h1>
+    @if($manualCustomer)<p>Pemesan: {{ $manualCustomer->nama }} · Nomor berakhir {{ substr($manualCustomer->nomor_wa,-4) }}. Membuat pesanan tidak mencatat penerimaan uang.</p>@endif
     @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
     @if($options->contains(fn ($option) => $option->wajib && $option->tipe !== 'teks' && $option->nilaiOpsi->isEmpty()))
         <p role="status">Pilihan wajib produk ini belum tersedia. Hubungi Admin sebelum memesan.</p>
@@ -16,15 +18,15 @@
         <p>Produk belum dapat dipesan melalui formulir ini. Hubungi Admin.</p>
     @else
     <nav class="bk-checkout-jumps" aria-label="Bagian checkout"><a href="#pilihan-produk">Pilihan produk</a><a href="#serah-produk">Serah terima</a><a href="#bayar-produk">Pembayaran</a></nav>
-    <form data-pending="Membuat pesanan…" method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-rendered-at="{{ now()->timestamp }}" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
+    <form data-pending="Membuat pesanan…" method="POST" action="{{ $manualCustomer ? route('admin.buket.submit',[$manualCustomer->id,$product->slug]) : route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-rendered-at="{{ now()->timestamp }}" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
         @csrf
-        @if(request()->boolean('dari_keranjang'))<input type="hidden" name="dari_keranjang" value="1">@endif
+        @if(!$manualCustomer && request()->boolean('dari_keranjang'))<input type="hidden" name="dari_keranjang" value="1">@endif
         <input type="hidden" name="kunci" value="{{ old('kunci', $key) }}">
         <input type="hidden" name="versi_privasi" value="{{ config('checkout.privacy_version') }}">
         <div class="bk-checkout-fields">
         <section class="bk-checkout-card" aria-labelledby="pilihan-produk"><h2 id="pilihan-produk" tabindex="-1"><span class="bk-section-petal" aria-hidden="true"></span>Pilihan produk</h2>
         @if($needsVariant)<label>Varian <select name="varian_id" required>@foreach($variants as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga }}" @selected(old('varian_id') == $v->id)>{{ $v->nama }} · Rp{{ number_format($v->harga,0,',','.') }}</option>@endforeach</select></label>@endif
-        @include('partials.quantity',['itemId'=>'checkout-'.$product->id,'quantity'=>old('jumlah',request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1)])
+        @include('partials.quantity',['itemId'=>'checkout-'.$product->id,'quantity'=>old('jumlah',!$manualCustomer && request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1)])
         @foreach($options as $o)
             <label>{{ $o->nama }} @if($o->wajib)(wajib)@endif
             @if($o->tipe === 'teks')<input maxlength="300" name="opsi[{{ $o->id }}][teks]" value="{{ old('opsi.'.$o->id.'.teks') }}" @required($o->wajib)>
@@ -60,7 +62,8 @@
             <p data-payment-note role="status"></p>
         </section>
         <p>Total akhir dan ketersediaan diperiksa server saat memesan. Jangan membayar sebelum melihat tagihan.</p>
-        <label><input type="checkbox" required name="setuju_privasi" value="1"> Saya menyetujui <a href="{{ route('privasi') }}" target="_blank" rel="noopener">kebijakan privasi</a> versi {{ config('checkout.privacy_version') }}.</label>
+        <label><input type="checkbox" required name="setuju_privasi" value="1"> {{ $manualCustomer ? 'Pelanggan menyetujui' : 'Saya menyetujui' }} <a href="{{ route('privasi') }}" target="_blank" rel="noopener">kebijakan privasi</a> versi {{ config('checkout.privacy_version') }}.</label>
+        @if($manualCustomer)<label><input type="checkbox" name="persetujuan_pelanggan_diperiksa" required value="1"> Saya sudah memeriksa pilihan, jadwal dan persetujuan pelanggan.</label>@endif
         <button type="submit" class="btn-primary">Buat pesanan</button>
         </div>
     </form>

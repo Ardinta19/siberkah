@@ -141,6 +141,11 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->whereNumber('id')->name('admin.pesanan.show');
         Route::get('pesanan/manual/sewa', [AdminOrderController::class, 'manualRentalForm'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-sewa');
         Route::post('pesanan/manual/pelanggan', [AdminOrderController::class, 'manualCustomer'])->middleware([RentalStaging::class,'throttle:30,1'])->name('admin.pesanan.manual-pelanggan');
+        Route::get('pesanan/manual/buket', [AdminOrderController::class,'bouquetPicker'])->middleware(RentalStaging::class)->name('admin.buket.pilih');
+        Route::prefix('pesanan/manual/buket/{pelanggan}/{slug}')->where(['pelanggan'=>'[0-9]+'])->middleware(RentalStaging::class)->controller(\App\Http\Controllers\ProductCheckoutController::class)->group(function () {
+            Route::get('/', 'manualShow')->name('admin.buket.form');
+            Route::post('/', 'manualSubmit')->name('admin.buket.submit');
+        });
         Route::post('pesanan/manual/buket', [AdminOrderController::class, 'manualBouquet'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-buket');
         Route::post('pesanan/manual/sewa', [AdminOrderController::class, 'manualStore'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
