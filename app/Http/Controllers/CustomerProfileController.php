@@ -6,9 +6,16 @@ use Illuminate\Http\Request;
 
 class CustomerProfileController extends Controller
 {
+    private function pendingCheckout(Request $request): ?array
+    {
+        $pending = $request->session()->get('checkout.onboarding');
+        return $pending && $pending['customer'] === $request->user('customer')->id && $pending['expires'] > now()->timestamp
+            && $pending['token'] === $request->input('lanjut') ? $pending : null;
+    }
+
     public function edit(Request $request)
     {
-        return response()->view('pelanggan.profil.edit', ['pelanggan' => $request->user('customer')])->header('Cache-Control', 'private, no-store');
+        return response()->view('pelanggan.profil.edit', ['pelanggan' => $request->user('customer'), 'pending'=>$this->pendingCheckout($request)])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $request)
@@ -28,6 +35,15 @@ class CustomerProfileController extends Controller
             $customer->fill($data)->save();
             return $first;
         });
+        if ($pending = $this->pendingCheckout($request)) {
+            $request->session()->forget('checkout.onboarding');
+            $product = \App\Models\Produk::whereKey($pending['product'])->where('aktif',true)
+                ->whereHas('kategori',fn ($q) => $q->where('aktif',true))->first();
+            if ($product) {
+                return redirect()->route('checkout.product',['slug'=>$product->slug]+$pending['params']);
+            }
+            return redirect()->route('catalog.index')->with('status','Profil tersimpan. Produk tidak lagi tersedia.');
+        }
         return ($onboarding ? redirect()->route('catalog.index') : back())->with('status', 'Profil berhasil diperbarui.');
     }
 

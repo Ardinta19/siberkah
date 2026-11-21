@@ -13,6 +13,22 @@ class CatalogPublicationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_profile_completion_resumes_cart_checkout_without_creating_order(): void
+    {
+        config(['checkout.staging'=>true,'checkout.privacy_version'=>'v1']);
+        $category = DB::table('kategori')->insertGetId(['nama'=>'Buket','slug'=>'buket']);
+        Produk::create(['nama'=>'Mawar','slug'=>'mawar','jenis'=>'jual','kategori_id'=>$category,'harga_dasar'=>100,'aktif'=>true]);
+        $customer = Pelanggan::forceCreate(['nomor_wa'=>'628100000001','aktif'=>true,'nomor_terverifikasi_pada'=>now()]);
+        $url = route('checkout.product',['slug'=>'mawar','tanggal'=>'2030-01-01','koleksi'=>['q'=>'Mawar'],'dari_keranjang'=>1]);
+        $this->actingAs($customer,'customer')->get($url)->assertRedirect();
+        $token = session('checkout.onboarding.token');
+        $this->assertNotEmpty($token);
+        $this->get(route('profile.edit',['lanjut'=>$token]))->assertOk()->assertSee('Pesanan belum dibuat');
+        $this->put(route('profile.update'),['nama'=>'Pelanggan','lanjut'=>$token,'setuju_privasi'=>true,'versi_privasi'=>'v1'])
+            ->assertRedirect($url)->assertSessionMissing('checkout.onboarding');
+        $this->assertDatabaseCount('pesanan',0);
+    }
+
     public function test_owner_name_search_is_literal_and_context_survives_navigation(): void
     {
         $owner = Pengguna::factory()->create(['peran'=>'owner']);

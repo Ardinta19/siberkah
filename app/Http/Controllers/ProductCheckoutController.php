@@ -21,11 +21,18 @@ final class ProductCheckoutController extends Controller
 
     public function show(Request $request, string $slug)
     {
-        if (! $request->user('customer')->canPlaceOrders()) {
-            return redirect()->route('profile.edit');
-        }
         $product = $this->product($slug);
         $day = $request->validate(['tanggal' => 'nullable|date_format:Y-m-d'])['tanggal'] ?? null;
+        $customer = $request->user('customer');
+        if (! $customer->canPlaceOrders()) {
+            $token = (string) Str::uuid();
+            $collection = collect((array)$request->query('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])
+                ->filter(fn ($value) => is_scalar($value))->all();
+            $request->session()->put('checkout.onboarding', ['token'=>$token,'customer'=>$customer->id,'product'=>$product->id,
+                'expires'=>now()->addMinutes(30)->timestamp,'params'=>array_filter(['tanggal'=>$day,'koleksi'=>$collection,
+                    'dari_keranjang'=>$request->boolean('dari_keranjang') ? 1 : null])]);
+            return redirect()->route('profile.edit',['lanjut'=>$token]);
+        }
         return response()->view('pelanggan.checkout.produk', [
             'product' => $product, 'variants' => $product->varianProduk()->where('aktif', true)->orderBy('id')->get(),
             'needsVariant' => $product->jenis !== 'custom' || $product->varianProduk()->exists(),

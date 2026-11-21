@@ -13,6 +13,7 @@
     @if(session('status'))<p role="status" class="bk-notice">{{ session('status') }}</p>@endif
     <form data-profile-editor data-saved-name="{{ $pelanggan->nama }}" data-pending="Menyimpan profil…" method="post" action="{{ route('profile.update') }}">
         @csrf @method('put')
+        @if($pending)<p>Setelah profil tersimpan, Anda akan kembali ke checkout. Pesanan belum dibuat.</p><input type="hidden" name="lanjut" value="{{ $pending['token'] }}">@endif
         <label for="profile-name">Nama pelanggan</label>
         <input id="profile-name" required autocomplete="name" maxlength="100" name="nama" value="{{ old('nama', $pelanggan->nama) }}" aria-describedby="name-help @error('nama') name-error @enderror" @error('nama') aria-invalid="true" @enderror>
         <small id="name-help">Maksimal 100 karakter.</small>
