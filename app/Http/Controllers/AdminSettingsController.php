@@ -102,11 +102,24 @@ class AdminSettingsController extends BaseController
      *
      * @return RedirectResponse
      */
+    public function calendar(Request $request)
+    {
+        $day = $request->validate(['tanggal'=>'sometimes|required|date_format:Y-m-d'])['tanggal'] ?? now('Asia/Jakarta')->toDateString();
+        $capacity = DB::table('kapasitas_produksi_harian')->where(['tanggal'=>$day,'kelompok_kapasitas'=>'buket_custom'])->first();
+        $blocks = BlokirKalender::with('produk:id,nama')->where('tanggal',$day)->orderBy('id')->get();
+        $products = DB::table('produk')->where('aktif',true)->orderBy('nama')->get(['id','nama']);
+        return response()->view('owner.pengaturan.kalender',compact('day','capacity','blocks','products'))->header('Cache-Control','private, no-store');
+    }
+
     public function manageCalendarBlocks(Request $request)
     {
+        if ($request->input('asal') === 'kalender') {
+            $request->validate(['tanggal'=>'required|date_format:Y-m-d|after_or_equal:today', 'cakupan'=>'required|in:toko,produk',
+                'produk_id'=>'required_if:cakupan,produk|prohibited_if:cakupan,toko|nullable|exists:produk,id','konfirmasi'=>'accepted']);
+        }
         $request->validate([
             'tanggal' => 'required|date',
-            'produk_id' => 'sometimes|exists:produk,id',
+            'produk_id' => 'nullable|exists:produk,id',
             'alasan' => 'required|string|max:160',
         ]);
 
@@ -128,7 +141,8 @@ class AdminSettingsController extends BaseController
         if ($request->expectsJson()) {
             return response()->json(['peringatan_pesanan_aktif' => $bentrok], 201);
         }
-        return back()->with('success', 'Kalender berhasil diblokir.')->with('peringatan_pesanan_aktif', $bentrok->all());
+        $back = $request->input('asal') === 'kalender' ? redirect()->route('admin.pengaturan.kalender',['tanggal'=>$request->tanggal]) : back();
+        return $back->with('success', 'Kalender berhasil diblokir.')->with('peringatan_pesanan_aktif', $bentrok->all());
     }
 
     /**
@@ -138,6 +152,11 @@ class AdminSettingsController extends BaseController
      */
     public function manageProductionCapacity(Request $request)
     {
+        $editor = $request->input('asal') === 'kalender';
+        if ($editor) {
+            $request->validate(['tanggal'=>'required|date_format:Y-m-d|after_or_equal:today','sebelum'=>'required|integer|between:0,15',
+                'kelompok_kapasitas'=>'required|in:buket_custom','batas'=>'required|integer|between:0,15']);
+        }
         $request->validate([
             'tanggal' => 'required|date_format:Y-m-d',
             'kelompok_kapasitas' => 'required|string|max:30',
@@ -147,16 +166,20 @@ class AdminSettingsController extends BaseController
         $key = $request->only('tanggal', 'kelompok_kapasitas');
         $limit = (int) $request->batas;
         abort_if($key['kelompok_kapasitas'] === 'buket_custom' && $limit > 15, 422);
-        \Illuminate\Support\Facades\DB::transaction(function () use ($key, $limit) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($key, $limit, $request, $editor) {
             $table = \Illuminate\Support\Facades\DB::table('kapasitas_produksi_harian');
             $created = $table->insertOrIgnore($key + ['batas' => $limit, 'dibuat_pada' => now()]);
             $current = $table->where($key)->lockForUpdate()->first();
+            if ($editor && ((!$created && (int)$current->batas !== $limit && (int)$current->batas !== $request->integer('sebelum')) || $current->terpakai > $limit)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['batas'=>'Kapasitas berubah atau batas baru kurang dari jumlah terpakai. Periksa nilai terbaru.']);
+            }
+            if (!$created && (int)$current->batas === $limit) { return; }
             abort_if($current->terpakai > $limit, 409, 'Kapasitas baru di bawah jumlah yang sudah dipesan.');
             $table->update(['batas' => $limit, 'diubah_pada' => now()]);
             \App\Support\StaffAudit::record('ubah_kapasitas','kapasitas_produksi_harian',$current->id,$created ? null : $key + ['batas' => (int) $current->batas], $key + ['batas' => $limit]);
         }, 3);
 
-        return back()
+        return ($editor ? redirect()->route('admin.pengaturan.kalender',['tanggal'=>$request->tanggal]) : back())
             ->with('success', 'Kapasitas produksi harian berhasil diupdate.');
     }
 }
