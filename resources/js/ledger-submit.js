@@ -21,6 +21,9 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
         locked=false;button.disabled=false;
         const invalid=form.elements.namedItem(Object.keys(data.errors||{})[0]);
         (invalid?.focus ? invalid : button).focus();
+      }else if(response.status===413 && form.hasAttribute('data-inspection')){
+        output.textContent='Unggahan terlalu besar. Kurangi ukuran atau jumlah foto, lalu periksa kembali.';
+        locked=false;button.disabled=false;form.querySelector('[data-photos]')?.focus();
       }else if(response.status===202 && data){
         requireReview('Mutasi perlu rekonsiliasi. Jangan catat ulang.');
       }else if(response.ok && data && !response.redirected){

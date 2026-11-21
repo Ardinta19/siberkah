@@ -81,3 +81,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Produksi → Kurir:** konfirmasi tiga baris papan sebelum T05. Formulir membawa versi yang dibaca; bila teks berubah di tab lain, tolak mulai produksi dalam transaksi dan minta pemeriksaan ulang. Chrome mengedit papan, menguji konflik, mengunci, menandai siap dan menemukan tugas antar bertanggal/jam sama dalam sesi Kurir.
 
 **Kurir — inspeksi sewa:** kartu agenda memuat checklist setiap unit, foto privat 1–6 per tahap, kondisi/catatan, pemeriksaan identitas tanpa unggah identitas atau deposit tunai. Saat jemput jangan ulangi penerimaan jaminan. Chrome menguji jadwal, penyerahan dan jemput melalui akun Kurir.
+
+**Kurir — kamera dan jaringan:** satu pilihan kamera ditambahkan ke daftar berkas milik unit, dapat dihapus sebelum submit; tidak menyimpan draf foto di browser. Bila server menolak ukuran (413), koreksi berkas tanpa kehilangan checklist. Bila respons hilang, kunci kirim dan periksa agenda lewat GET sebelum mencoba tindakan lain. Chrome mensimulasikan input kamera dan respons hilang setelah commit; bukan uji kamera fisik.

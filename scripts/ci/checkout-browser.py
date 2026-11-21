@@ -919,9 +919,25 @@ with sync_playwright() as playwright:
         else:
             inspect.get_by_label('Jaminan yang diterima').select_option('ktp')
             expect(inspect.locator('[name=nominal_jaminan]')).to_be_disabled()
-        inspect.locator('[type=file]').set_input_files('public/images/berkah-kreatif.webp')
+        inspect.locator('[data-photos]').set_input_files('public/images/berkah-kreatif.webp')
+        inspect.locator('[data-camera]').set_input_files('public/images/katalog-editorial.webp')
+        expect(inspect.locator('[data-photo-count]')).to_contain_text('2 dari maksimal 6')
+        inspect.get_by_role('button',name='Hapus foto 1',exact=True).click()
+        expect(inspect.locator('[data-photo-list]')).to_contain_text('katalog-editorial.webp')
         expect(inspect.locator('[data-photo-count]')).to_contain_text('1 dari maksimal 6')
-        inspect.get_by_role('button',name='Simpan inspeksi '+stage).click()
+        submit_inspection=inspect.get_by_role('button',name='Simpan inspeksi '+stage)
+        if stage=='serah':
+            path=inspect.get_attribute('action')
+            courier.route(path,lambda r:r.fulfill(status=413,body='Too large'),times=1)
+            submit_inspection.click()
+            expect(inspect.locator('output')).to_contain_text('Unggahan terlalu besar')
+            expect(submit_inspection).to_be_enabled()
+            courier.route(path,lose_receipt,times=1)
+        submit_inspection.click()
+        if stage=='serah':
+            expect(inspect.locator('output')).to_contain_text('belum dapat dipastikan')
+            expect(submit_inspection).to_be_disabled()
+            inspect.get_by_role('link',name='Muat ulang untuk memeriksa status').click()
         expect(assigned).to_have_count(0)
 
     screen.close()
