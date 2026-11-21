@@ -432,8 +432,19 @@ with sync_playwright() as playwright:
     expect(verification.get_by_role('button')).to_be_disabled()
     verification.get_by_role('link',name='Muat ulang untuk memeriksa status').click()
     expect(admin.get_by_text('Tidak ada konfirmasi baru.')).to_be_visible()
-    admin.goto(base+'/staf/produksi')
-    ready = admin.locator('.bk-task').filter(has_text=number)
+    producer = login('staf_produksi')
+    expect(producer.get_by_role('heading',name='Antrean produksi')).to_be_visible()
+    producer.get_by_label('Nomor pesanan',exact=True).fill(number)
+    producer.get_by_label('Tanggal serah (WIB)').fill(str(delivery_day))
+    producer.get_by_role('button',name='Tampilkan pekerjaan').click()
+    producer.get_by_role('link',name='Dikonfirmasi',exact=True).click()
+    expect(producer.get_by_label('Nomor pesanan',exact=True)).to_have_value(number)
+    expect(producer.get_by_label('Tanggal serah (WIB)')).to_have_value(str(delivery_day))
+    assert producer.request.get(base+'/admin/pesanan').status==403
+    for width in (320,768,1440):
+        producer.set_viewport_size({'width':width,'height':850})
+        assert producer.locator('main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'), f'Produksi overflow: {width}'
+    ready = producer.locator('.bk-task').filter(has_text=number)
     expect(ready.get_by_role('button', name='Mulai produksi custom')).to_have_count(0)
     ready.get_by_role('button', name='Tandai siap').click()
     expect(ready).to_have_count(0)

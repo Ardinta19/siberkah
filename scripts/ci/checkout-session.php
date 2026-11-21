@@ -25,7 +25,7 @@ DB::table('varian_produk')->insert(['produk_id' => $product, 'nama' => 'Putih', 
 DB::table('zona_antar')->insert(['nama' => 'Zona Uji', 'jarak_maks_km' => 5, 'ongkir' => 10000]);
 DB::table('rekening_pembayaran')->insert(['nama_bank' => 'BRI', 'nomor_rekening' => '00000000', 'atas_nama' => 'BUKAN REKENING NYATA']);
 $password = bin2hex(random_bytes(24));
-foreach (['owner','admin','staf_kurir'] as $role) {
+foreach (['owner','admin','staf_kurir','staf_produksi'] as $role) {
     DB::table('pengguna')->insert(['nama' => 'Operator CI', 'surel' => $role.'@example.test', 'peran' => $role, 'aktif' => true,
         'wajib_ganti_sandi' => false, 'kata_sandi' => password_hash($password, PASSWORD_BCRYPT)]);
 }

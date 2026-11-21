@@ -10,10 +10,13 @@ class StaffProductionController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->validate(['tahap' => 'sometimes|in:dikonfirmasi,sedang_diproduksi'])['tahap'] ?? null;
+        $filters = array_filter($request->validate(['tahap'=>'nullable|in:dikonfirmasi,sedang_diproduksi','tanggal_serah'=>'nullable|date_format:Y-m-d','nomor'=>'nullable|string|max:30']),fn($v)=>$v!==null && $v!=='');
+        $status = $filters['tahap'] ?? null;
         $orders = Pesanan::whereIn('status', ['dikonfirmasi', 'sedang_diproduksi'])
             ->when($status, fn ($q) => $q->where('status', $status))
-            ->orderBy('tanggal_serah')->orderBy('id')->paginate(20, ['id','nomor','status','tanggal_serah','catatan_pelanggan'])->appends(array_filter(['tahap'=>$status]));
+            ->when(isset($filters['tanggal_serah']),fn($q)=>$q->where('tanggal_serah',$filters['tanggal_serah']))
+            ->when(isset($filters['nomor']),fn($q)=>$q->whereRaw("nomor LIKE ? ESCAPE '!'",['%'.strtr($filters['nomor'],['!'=>'!!','%'=>'!%','_'=>'!_']).'%']))
+            ->orderBy('tanggal_serah')->orderBy('id')->paginate(20, ['id','nomor','status','tanggal_serah','catatan_pelanggan'])->appends($filters);
         $ids = $orders->pluck('id');
         $items = DB::table('item_pesanan')->join('produk','produk.id','=','item_pesanan.produk_id')->whereIn('pesanan_id', $ids)->orderBy('item_pesanan.id')->get(['item_pesanan.id','pesanan_id','nama_produk','nama_varian','jumlah','tulisan_kustom','produk.jenis']);
         $options = DB::table('opsi_item_pesanan')->whereIn('item_pesanan_id', $items->pluck('id'))->orderBy('id')->get(['item_pesanan_id','nama_opsi','label_nilai','teks_bebas'])->groupBy('item_pesanan_id');
@@ -26,7 +29,7 @@ class StaffProductionController extends Controller
             $order->papan = $boards->get($order->id);
             $order->langkah = $this->nextStep($order->status, $order->rincian->pluck('jenis'), $snapshots->get($order->id), $order->papan);
         }
-        $data = ['judul' => 'Antrean produksi', 'produksi' => true, 'pesanan' => $orders];
+        $data = ['judul' => 'Antrean produksi', 'produksi' => true, 'filters'=>$filters, 'pesanan' => $orders];
         return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda.index', $data))->header('Cache-Control','private, no-store');
     }
 

@@ -10,9 +10,16 @@
     @if(session('status')) <p role="status" class="bk-notice">{{ session('status') }}</p> @endif
     @if($errors->any())<p role="alert" class="bk-notice">{{ $errors->first() }}</p>@endif
     @if($produksi ?? false)
+        <p>Urutan mengikuti tanggal serah terdekat. Pesanan siap jual dapat langsung ditandai siap; buket custom dan papan melewati tahap produksi.</p>
+        <form method="get" action="{{ route('staf.produksi.index') }}#daftar-tugas" class="bk-agenda-tools" role="search" aria-label="Cari pekerjaan produksi">
+        @isset($filters['tahap'])<input name="tahap" type="hidden" value="{{ $filters['tahap'] }}">@endisset
+        <label>Nomor pesanan<input type="search" name="nomor" maxlength="30" value="{{ $filters['nomor'] ?? '' }}"></label>
+        <label>Tanggal serah (WIB)<input type="date" name="tanggal_serah" value="{{ $filters['tanggal_serah'] ?? '' }}"></label>
+        <button class="bk-secondary">Tampilkan pekerjaan</button>
+        @if(isset($filters['nomor']) || isset($filters['tanggal_serah']))<a href="{{ route('staf.produksi.index',array_intersect_key($filters,['tahap'=>true])) }}#daftar-tugas">Hapus pencarian dan tanggal</a>@endif</form>
         <nav class="bk-history-filters" aria-label="Tahap produksi">
             @foreach([''=>'Semua tahap','dikonfirmasi'=>'Dikonfirmasi','sedang_diproduksi'=>'Sedang diproduksi'] as $key=>$label)
-                <a href="{{ route('staf.produksi.index',array_filter(['tahap'=>$key])) }}#daftar-tugas" @if((request('tahap') ?? '')===$key) aria-current="page" @endif>{{ $label }}</a>
+                <a href="{{ route('staf.produksi.index',array_filter(['tahap'=>$key])+array_diff_key($filters,['tahap'=>true])) }}#daftar-tugas" @if((request('tahap') ?? '')===$key) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
         </nav>
     @endif
@@ -36,7 +43,7 @@
         @if($produksi ?? false)
             <ul>@foreach($p->rincian as $item)<li>{{ $item->jumlah }} × {{ $item->nama_produk }} {{ $item->nama_varian }} {{ $item->tulisan_kustom }}
                 @foreach($item->opsi as $opt)<span>{{ $opt->nama_opsi }}: {{ $opt->label_nilai }} {{ $opt->teks_bebas }}</span>@endforeach</li>@endforeach</ul>
-            @if($p->papan)<div>Papan {{ $p->papan->metode }}: {{ $p->papan->judul }} · {{ $p->papan->penerima }} · {{ $p->papan->pengirim }}</div>@endif
+            @if($p->papan)@include('staf.agenda.teks-papan')@endif
             @if($p->catatan_pelanggan)<div>Catatan: {{ $p->catatan_pelanggan }}</div>@endif
         @else
             <div>{{ ucfirst($p->tugas) }} · {{ $p->jadwal ? substr($p->jadwal,11,5).' WIB' : 'Jam belum ditetapkan' }} · {{ $p->nomor_wa_pemesan }}
@@ -65,7 +72,7 @@
         </article>
     @empty
         <div class="kc-empty"><p>Tidak ada pesanan dalam antrean.</p>
-            @if(($produksi ?? false) && request()->filled('tahap'))<a class="bk-secondary" href="{{ route('staf.produksi.index') }}#daftar-tugas">Kembali ke semua tahap</a>@endif
+            @if(($produksi ?? false) && $filters)<a class="bk-secondary" href="{{ route('staf.produksi.index') }}#daftar-tugas">Reset semua filter produksi</a>@endif
             @if(isset($tanggal) && request()->filled('tugas'))<a class="bk-secondary" href="{{ route('staf.kurir.index',['tanggal'=>$tanggal]) }}#daftar-tugas">Lihat semua tugas pada tanggal ini</a>@endif
         </div>
     @endforelse

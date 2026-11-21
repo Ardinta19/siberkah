@@ -31,8 +31,10 @@ final class BoardOperationsController extends Controller
             DB::table('log_aktivitas')->insert(['aksi' => 'ubah_teks_papan', 'pengguna_id' => $request->user('staff')->id,
                 'subjek_tabel' => 'pesanan', 'subjek_id' => $id, 'dibuat_pada' => now()]);
         }, 3);
-        if (!$request->expectsJson() && $request->input('asal') === 'rincian-admin') {
-            return back()->withFragment('teks-papan')->with('status_papan','Teks papan tersimpan.');
+        if (!$request->expectsJson() && in_array($request->input('asal'),['rincian-admin','antrean-produksi'],true)) {
+            return $request->input('asal') === 'antrean-produksi'
+                ? back()->withFragment('tugas-'.$id)->with('status','Teks papan tersimpan.')
+                : back()->withFragment('teks-papan')->with('status_papan','Teks papan tersimpan.');
         }
         return response()->noContent();
     }

@@ -75,3 +75,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — telusur mutasi:** pencarian literal dalam kelompok menurut nomor pesanan/referensi masuk, serta referensi keluar untuk pengembalian. Perpindahan kelompok mempertahankan pencarian; menghapus pencarian mempertahankan kelompok. Chrome menelusuri satu transfer tambahan hingga bukti keluar tanpa kredit ganda.
 
 **Gerbang Admin:** lihat [audit SRS dan celah akses Admin](audit-admin.md); cakupan layar lintas ukuran tidak menutup celah UC-21/22/24.
+
+**Staf Produksi — antrean:** masuk sebagai staf_produksi, saring nomor/tanggal serah/tahap, periksa rincian item dan sunting teks papan pada pesanan dikonfirmasi. Simpan mengembalikan konteks antrean; revisi basi ditolak dan teks terkunci setelah produksi dimulai. Chrome menguji alur siap jual → siap dengan akses Admin ditolak.
