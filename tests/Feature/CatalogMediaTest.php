@@ -40,6 +40,13 @@ class CatalogMediaTest extends TestCase
         $sort = route('admin.katalog.images.order', $id);
         $this->putJson($sort, ['urutan' => [$b['id']]])->assertConflict();
         $this->putJson($sort, ['urutan' => [$b['id'], $a['id']]])->assertNoContent();
+        $oldStamp = hash('sha256', $a['id'].','.$b['id']);
+        $stale = ['versi_galeri'=>$oldStamp, 'asal'=>'galeri'];
+        $this->put($sort, $stale+['urutan'=>[$a['id'],$b['id']]])
+            ->assertRedirect(route('admin.katalog.gallery',$id))->assertSessionHas('galeri_konflik');
+        $this->deleteJson(route('admin.katalog.images.delete',[$id,$b['id']]), $stale)->assertConflict();
+        Storage::disk('public')->assertExists($b['jalur_berkas']);
+        $this->assertDatabaseHas('produk',['id'=>$id,'foto_utama'=>$b['jalur_berkas']]);
         $this->getJson(route('admin.katalog.images', $id))->assertOk()->assertJsonPath('0.id', $b['id']);
         $this->deleteJson(route('admin.katalog.images.delete', [$other, $b['id']]))->assertNotFound();
         $this->deleteJson(route('admin.katalog.images.delete', [$id, $b['id']]))->assertNoContent();

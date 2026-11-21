@@ -71,3 +71,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Galeri Owner:** pisahkan unggahan/penghapusan dari editor teks produk. Nama foto utama merujuk keadaan tersimpan. Memindah posisi adalah draf lokal sampai Simpan urutan ditekan; kirim daftar lengkap ke server. Selalu sediakan konfirmasi hapus dan jalan kembali ke kartu asal.
 
 **Persiapan foto:** pratinjau berkas lokal bukan unggahan. Beri tahu ukuran/dimensi dan alasan jika tidak sesuai, tanpa mengganti validasi server. Membatalkan pilihan hanya mengosongkan berkas, bukan deskripsi atau varian. Batalkan perubahan urutan mengembalikan susunan awal tanpa POST dan tanpa mengganti foto utama.
+
+**Galeri terbuka di beberapa tab:** simpan urutan dan hapus foto hanya jika susunan ID foto masih sama seperti saat halaman dibuka. Bila foto ditambah, dihapus, atau dipindahkan dari tab lain, jangan timpa susunan baru; tampilkan keadaan terbaru dan minta Owner meninjau ulang. Pemeriksaan berlangsung di dalam transaksi yang sama dengan perubahan.

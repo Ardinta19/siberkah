@@ -4,6 +4,7 @@
 <section class="bk-owner-list bk-media-manager">
     <x-back-link href="{{ route('admin.katalog.index',$context) }}#kelola-{{ $product->id }}">Kembali ke kelola katalog</x-back-link>
     <header><p class="kc-kicker">Owner · Galeri</p><h1>Foto {{ $product->nama }}</h1><p>{{ $photos->count() }} dari 50 foto galeri. Mengelola foto tidak mengubah status publikasi produk.</p></header>
+    @if(session('galeri_konflik'))<p class="bk-notice" role="alert">{{ session('galeri_konflik') }}</p>@endif
     @if(session('success'))<p class="bk-notice" role="status">{{ session('success') }}</p>@endif
     @if($errors->any())<ul class="bk-notice" role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
     @if($photos->count()<50)
@@ -20,7 +21,7 @@
         </form>
     @else<p>Galeri penuh. Hapus foto yang tidak diperlukan sebelum mengunggah foto baru.</p>@endif
     <h2>Urutan galeri</h2><p>Setelah urutan disimpan, foto pertama menjadi foto utama.</p>
-    <form id="media-order" method="post" data-pending="Menyimpan urutan…" action="{{ route('admin.katalog.images.order',['id'=>$product->id]+$context) }}">@csrf @method('put')<input type="hidden" name="asal" value="galeri"></form>
+    <form id="media-order" method="post" data-pending="Menyimpan urutan…" action="{{ route('admin.katalog.images.order',['id'=>$product->id]+$context) }}">@csrf @method('put')<input type="hidden" name="versi_galeri" value="{{ $stamp }}"><input type="hidden" name="asal" value="galeri"></form>
     <ol data-media-list>
         @forelse($photos as $photo)<li class="bk-task" data-media-row>
             <input form="media-order" type="hidden" name="urutan[]" value="{{ $photo->id }}">
@@ -28,7 +29,7 @@
             <strong>{{ $photo->teks_alternatif ?: $product->nama }}</strong>
             @if($product->foto_utama===$photo->jalur_berkas)<small>Foto utama tersimpan</small>@endif
             <div hidden data-move-tools><button type="button" data-move="-1">Naik</button> <button type="button" data-move="1">Turun</button></div>
-            <details class="bk-confirm"><summary>Hapus foto</summary><p>Hapus foto “{{ $photo->teks_alternatif ?: $product->nama }}” dari produk ini?</p><form data-pending="Menghapus foto…" method="post" action="{{ route('admin.katalog.images.delete',['id'=>$product->id,'foto'=>$photo->id]+$context) }}">@csrf @method('delete')<input type="hidden" name="asal" value="galeri"><button>Ya, hapus foto ini</button></form></details>
+            <details class="bk-confirm"><summary>Hapus foto</summary><p>Hapus foto “{{ $photo->teks_alternatif ?: $product->nama }}” dari produk ini?</p><form data-pending="Menghapus foto…" method="post" action="{{ route('admin.katalog.images.delete',['id'=>$product->id,'foto'=>$photo->id]+$context) }}">@csrf @method('delete')<input type="hidden" name="versi_galeri" value="{{ $stamp }}"><input type="hidden" name="asal" value="galeri"><button>Ya, hapus foto ini</button></form></details>
         </li>@empty<li>Belum ada foto galeri.</li>@endforelse
     </ol>
     <p role="status" data-order-note></p><button hidden type="button" data-reset-order class="bk-secondary">Batalkan perubahan urutan</button> <button hidden form="media-order" data-save-order class="btn-primary">Simpan urutan</button>
