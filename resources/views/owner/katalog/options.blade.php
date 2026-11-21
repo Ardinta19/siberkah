@@ -7,7 +7,7 @@
 @if(session('success'))<p role="status">{{ session('success') }}</p>@endif
 @if(session('option_warning'))<p role="alert">{{ session('option_warning') }}</p>@endif
 @if($errors->any())<ul role="alert">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>@endif
-<form method="post" action="{{ route('admin.katalog.manage-options',['id'=>$product->id]+$context) }}" data-pending="Menyimpan opsi…" class="bk-product-editor grid gap-3 p-4">@csrf
+<form data-option-editor method="post" action="{{ route('admin.katalog.manage-options',['id'=>$product->id]+$context) }}" data-pending="Menyimpan opsi…" class="bk-product-editor grid gap-3 p-4">@csrf
 <h2>{{ $selected ? 'Edit opsi' : 'Tambah opsi' }}</h2><input type="hidden" name="asal" value="opsi">
 @if($selected)<input type="hidden" name="id" value="{{ $selected->id }}"><input type="hidden" name="versi_opsi" value="{{ old('versi_opsi',$stamp) }}"><input type="hidden" name="tipe" value="{{ $selected->tipe }}"><p>Tipe: {{ ucfirst($selected->tipe) }} (tetap)</p>
 @else<label>Tipe opsi <select name="tipe">@foreach(['teks','pilihan','satuan'] as $type)<option @selected(old('tipe')===$type)>{{ $type }}</option>@endforeach</select></label>@endif
@@ -19,7 +19,7 @@
 <label>Label pilihan <input required maxlength="80" name="nilai[{{ $i }}][label]" value="{{ old('nilai.'.$i.'.label',$v->label) }}"></label>
 <label>Tambahan (Rp) <input type="number" min="0" max="2147482648" required name="nilai[{{ $i }}][harga_tambahan]" value="{{ old('nilai.'.$i.'.harga_tambahan',$v->harga_tambahan) }}"></label>
 <input type="hidden" name="nilai[{{ $i }}][aktif]" value="0"><label><input type="checkbox" name="nilai[{{ $i }}][aktif]" value="1" @checked(old('nilai.'.$i.'.aktif',$v->aktif))> Tawarkan pilihan ini</label></fieldset>@endforeach
-@if($values->count()<50)<fieldset><legend>Pilihan baru (untuk tipe pilihan atau satuan)</legend><p>Kosongkan label jika tidak menambah pilihan.</p>
+@if($values->count()<50)<fieldset data-new-choice><legend>Pilihan baru (untuk tipe pilihan atau satuan)</legend><p>Kosongkan label jika tidak menambah pilihan.</p>
 <label>Label baru <input maxlength="80" name="baru[label]" value="{{ old('baru.label') }}"></label><input type="hidden" name="baru[aktif]" value="1">
 <label>Tambahan pilihan baru (Rp) <input type="number" min="0" max="2147482648" name="baru[harga_tambahan]" value="{{ old('baru.harga_tambahan',0) }}"></label></fieldset>@endif
 @endif

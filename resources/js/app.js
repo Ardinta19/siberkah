@@ -1,3 +1,4 @@
+import "./option-editor.js";
 import "./product-editor.js";
 import "./media-preview.js";
 import "./media-order.js";
