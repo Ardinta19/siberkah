@@ -424,7 +424,8 @@ class RentalCheckoutTest extends TestCase
     {
         config(['checkout.staging'=>true]);
         $data = $this->fixture();
-        $order = app(CreateRentalOrder::class)->create($this->customer('628111111128'), $data);
+        $customer = $this->customer('628111111128');
+        $order = app(CreateRentalOrder::class)->create($customer, $data);
         $admin = Pengguna::factory()->create(['peran'=>'admin']);
         $this->actingAs($admin,'staff');
         // Start at the closeout boundary with a settled, assessed rental.
@@ -442,6 +443,8 @@ class RentalCheckoutTest extends TestCase
         $this->assertNull($order->fresh()->jaminan_kembali_pada);
         $this->postJson($close,$payload)->assertOk();
         $this->postJson($close,$payload)->assertOk();
+        $this->actingAs($customer,'customer')->get(route('pesanan.show',$order->nomor))->assertOk()->assertSee('Jaminan dokumen: '.strtoupper($kind))->assertSee('Pengembalian dokumen tercatat')->assertDontSee($payload['catatan']);
+        $this->actingAs($this->customer('628111111129'),'customer')->get(route('pesanan.show',$order->nomor))->assertNotFound();
         $this->assertNotNull($order->fresh()->jaminan_kembali_pada);
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where(['pesanan_id'=>$order->id,'kode_transisi'=>'T11'])->count());
     }
@@ -576,6 +579,7 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'status' => 'selesai', 'saldo' => 0, 'jumlah_dibayar' => 511000 + $delta]);
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi','T11')->count());
         $this->actingAs($owner, 'staff')->getJson(route('admin.laporan.index', ['period'=>'harian']))->assertOk()->assertJsonPath('neto', (int) $bill->nominal_diharapkan);
+        $this->actingAs($customer,'customer')->get(route('pesanan.show',$order->nomor))->assertOk()->assertSee('Deposit saat serah: Rp100.000')->assertSee('Dipakai untuk biaya kerusakan: Rp'.number_format($used,0,',','.'))->assertSee($used === 100000 ? 'Tidak ada sisa untuk dikembalikan' : 'Pengembalian deposit tercatat: Rp'.number_format(100000-$used,0,',','.'))->assertDontSee($complete['catatan']);
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('lateCases')]
