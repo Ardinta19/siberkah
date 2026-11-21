@@ -7,6 +7,9 @@
 <nav class="bk-history-filters" aria-label="Bagian rincian pesanan">@if($board)<a href="#teks-papan">Teks papan</a>@endif<a href="#order-cost-title">Biaya</a><a href="#pembayaran">Pembayaran</a><a href="#riwayat-status">Riwayat status</a></nav>
 @if($board)@include('admin.pesanan.papan')@endif
 @include('partials.rincian-biaya-pesanan',['pesanan'=>$order])
+@if(config('checkout.staging') && app()->environment('local','testing','staging'))
+@foreach($order->items->whereNotNull('unit_sewa_id') as $line)<a id="unit-item-{{ $line->id }}" class="bk-secondary" href="{{ route('admin.pesanan.unit',['id'=>$order->id,'item'=>$line->id]+$context+(request('asal')==='pembatalan'?['asal'=>'pembatalan']:[])) }}">Periksa unit · {{ $line->nama_produk }} · item #{{ $line->id }}</a>@endforeach
+@endif
 <h2 id="pembayaran">Posisi pembayaran</h2><p>Total Rp{{ number_format($order->total,0,',','.') }} · Saldo Rp{{ number_format($order->saldo,0,',','.') }}</p>
 @forelse($order->pembayaran as $bill)<article class="bk-task"><h3>{{ ucfirst($bill->getRawOriginal('jenis')) }}</h3><p>Status: {{ str_replace('_',' ',$bill->getRawOriginal('status')) }} · Pokok Rp{{ number_format($bill->tagihan,0,',','.') }}</p></article>@empty<p>Belum ada baris pembayaran.</p>@endforelse
 @if($refund)@include('admin.pesanan.refund')@endif

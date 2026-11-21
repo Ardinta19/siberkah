@@ -164,6 +164,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::post('pesanan/{id}/perpanjangan', [BoardOperationsController::class, 'extend'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.perpanjang');
         Route::post('unit/{unit}/blokir', [BoardOperationsController::class, 'block'])->whereNumber('unit')->middleware(RentalStaging::class)->name('papan.blokir');
         Route::delete('unit/{unit}/blokir/{blokir}', [BoardOperationsController::class, 'unblock'])->whereNumber('unit')->whereNumber('blokir')->middleware(RentalStaging::class)->name('papan.buka');
+        Route::get('pesanan/{id}/unit/{item}', [\App\Http\Controllers\RentalUnitReplacementController::class, 'show'])->whereNumber('id')->whereNumber('item')->middleware(RentalStaging::class)->name('admin.pesanan.unit');
         Route::post('pesanan/{id}/ganti-unit', \App\Http\Controllers\RentalUnitReplacementController::class)->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.ganti-unit');
         Route::post('pesanan/{id}/reactivate-expired', [AdminOrderController::class, 'reactivateExpired'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.reactivate-expired');
     });

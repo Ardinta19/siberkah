@@ -343,8 +343,12 @@ class RentalCheckoutTest extends TestCase
         $url = route('admin.pesanan.ganti-unit', $order->id);
         $this->actingAs($admin, 'staff')->postJson($url, $data)->assertConflict();
         $this->assertDatabaseHas('hari_reservasi', ['unit_sewa_id' => $item->unit_sewa_id]);
+        $screen = route('admin.pesanan.unit', [$order->id,$item->id]);
+        $this->get($screen)->assertOk()->assertDontSee('A-02')->assertSee('Tidak ada unit pengganti');
         DB::table('unit_sewa')->where('id', $new)->update(['status' => 'aktif']);
+        $this->get($screen)->assertOk()->assertSee('Pilih kode unit')->assertSee('A-02');
         $this->postJson($url, $data)->assertCreated();
+        $this->get($screen)->assertOk()->assertSee('Unit yang ditetapkan:')->assertSee('→ A-02')->assertSee($data['alasan']);
         $this->postJson($url, $data)->assertOk();
         $this->postJson($url, array_replace($data, ['kunci' => (string) Str::uuid()]))->assertConflict();
         $this->assertDatabaseCount('penggantian_unit', 1);

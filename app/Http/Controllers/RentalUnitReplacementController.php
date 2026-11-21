@@ -9,6 +9,34 @@ use Illuminate\Support\Facades\DB;
 
 final class RentalUnitReplacementController extends Controller
 {
+    public function show(Request $request, int $id, int $item)
+    {
+        $order = Pesanan::findOrFail($id);
+        abort_unless(DB::table('checkout_sewa')->where('pesanan_id',$id)->exists(),404);
+        $line = $order->items()->whereKey($item)->whereNotNull('unit_sewa_id')->firstOrFail();
+        $current = DB::table('unit_sewa')->where('id',$line->unit_sewa_id)->value('kode');
+        $day = $order->tanggal_serah->toDateString();
+        $locked = !in_array($order->status,['dikonfirmasi','siap'],true) || $order->tanggal_serah->lt(today('Asia/Jakarta'));
+        $pending = DB::table('permohonan_batal')->where(['pesanan_id'=>$id,'status'=>'menunggu'])->exists();
+        $choices = null;
+        if (!$locked && !$pending) {
+            $choices = DB::table('unit_sewa as u')->where('u.varian_produk_id',$line->varian_produk_id)
+                ->where('u.id','<>',$line->unit_sewa_id)->where('u.status','aktif');
+            foreach (['blokir_unit_harian','hari_reservasi','penguasaan_unit'] as $table) {
+                $choices->whereNotExists(function ($q) use ($table,$day) {
+                    $q->selectRaw('1')->from($table)->whereColumn($table.'.unit_sewa_id','u.id');
+                    if ($table !== 'penguasaan_unit') { $q->where($table.'.tanggal',$day); }
+                });
+            }
+            $choices = $choices->orderBy('u.kode')->orderBy('u.id')->paginate(20,['u.id','u.kode'],'unit_page')->withQueryString();
+        }
+        $history = DB::table('penggantian_unit as g')->join('unit_sewa as a','a.id','=','g.unit_lama_id')
+            ->join('unit_sewa as b','b.id','=','g.unit_baru_id')->where('g.pesanan_id',$id)->where('g.item_id',$item)
+            ->orderByDesc('g.id')->paginate(20,['a.kode as lama','b.kode as baru','g.alasan','g.dicatat_pada','g.pengguna_id'],'riwayat_page')->withQueryString();
+        $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
+        return response()->view('admin.pesanan.unit',compact('order','line','current','locked','pending','choices','history','context'))->header('Cache-Control','private, no-store');
+    }
+
     public function __invoke(Request $request, int $id)
     {
         $d = $request->validate(['kunci' => 'required|uuid', 'item_id' => 'required|integer|min:1', 'unit_lama_id' => 'required|integer|min:1',
