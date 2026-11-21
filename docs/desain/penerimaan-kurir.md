@@ -13,3 +13,5 @@
 | Jemput unit terlambat atau diperpanjang | Tanggal dan jam batas terbaru terlihat. Periksa kondisi kembali, bukti privat, perpindahan tugas dan saldo di Admin. | Belum diuji |
 
 Jika beda hasil, catat tahap, waktu, jumlah unit/foto dan apakah transaksi tercatat **sekali** di server. Jangan meluluskan skenario hanya karena tombol menghilang. Penguji dan penanggung jawab operasional harus menyepakati hasil sebelum penggunaan nyata.
+
+**Bukti otomatis terpisah:** setelah tiap tahap Chrome dua unit, CI membaca kembali penyimpanan privat dan database uji. Pada jam 18.01 WIB dengan tarif Rp10.000/jam/unit dan tanpa perpanjangan, diharapkan satu denda Rp20.000; deposit Rp100.000 bukan pembayaran denda. Ini bukan hasil uji lapangan.

@@ -912,9 +912,10 @@ with sync_playwright() as playwright:
     courier.reload()
     for stage in ('serah','kembali'):
         if stage=='kembali':
+            clock.write_text(f'{delivery_day} 18:01:00')
             courier.get_by_role('link',name='Jemput',exact=True).click()
             expect(courier.get_by_label('Nomor pesanan kurir')).to_have_value('CI-PRODUKSI')
-            expect(assigned).to_contain_text('Batas kembali')
+            expect(assigned).to_contain_text('Batas kembali sudah lewat')
         assigned.get_by_text('Inspeksi '+stage+' · CI-PRODUKSI',exact=True).click()
         inspect=assigned.locator('form[data-inspection]')
         units=inspect.locator('[data-inspection-unit]')
@@ -938,6 +939,8 @@ with sync_playwright() as playwright:
             second.get_by_label('Catatan kondisi').fill('Goresan lama CI')
             inspect.get_by_label('Jaminan yang diterima').select_option('ktp')
             expect(inspect.locator('[name=nominal_jaminan]')).to_be_disabled()
+            inspect.get_by_label('Jaminan yang diterima').select_option('deposit')
+            inspect.locator('[name=nominal_jaminan]').fill('100000')
         first.locator('[data-photos]').set_input_files('public/images/berkah-kreatif.webp')
         assert not second.locator('[data-photos]').evaluate('el=>el.checkValidity()'), 'Foto unit pertama tidak boleh memenuhi syarat unit cacat kedua'
         second.locator('[data-camera]').set_input_files('public/images/katalog-editorial.webp')
@@ -971,6 +974,7 @@ with sync_playwright() as playwright:
             expect(submit_inspection).to_be_disabled()
             inspect.get_by_role('link',name='Muat ulang untuk memeriksa status').click()
         expect(assigned).to_have_count(0)
+        subprocess.run(['php','scripts/ci/check-courier-inspection.php',stage],check=True)
 
     screen.close()
     browser.close()
