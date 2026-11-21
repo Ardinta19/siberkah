@@ -2,6 +2,7 @@
 @section('title','Pengaturan bisnis · SIBERKAH')
 @section('content')
 <section class="bk-owner-list"><x-back-link :href="route('dashboard.hari-ini')">Kembali ke dasbor</x-back-link><header><p class="kc-kicker">Owner · Operasional</p><h1>Pengaturan bisnis</h1><p>Simpan satu aturan pada satu waktu. Batas dan satuan tercantum di setiap aturan.</p></header>
+@if(config('checkout.staging') && app()->environment('local','staging','testing'))<a class="bk-secondary" href="{{ route('tujuan.index') }}">Kelola tujuan pembayaran</a>@endif
 @if(session('success'))<p role="status" class="bk-notice">{{ session('success') }}</p>@endif
 @foreach($pengaturan as $key=>$s)<article id="aturan-{{ $key }}" class="bk-task"><h2>{{ ucfirst(str_replace('_',' ',$key)) }}</h2><p>Nilai aktif: {{ $s['nilai'] }} · Bawaan: {{ $s['bawaan'] }}</p>
 <form action="{{ route('admin.pengaturan.update') }}" method="post" class="bk-product-editor grid gap-3 p-4" data-pending="Menyimpan aturan…">@csrf<input type="hidden" name="kunci" value="{{ $key }}"><input type="hidden" name="sebelum" value="{{ $s['nilai'] }}">

@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\DB;
 /** Immutable account details: add a replacement and retire the previous destination. */
 final class PaymentDestinationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(DB::table('rekening_pembayaran')->orderBy('urutan')->orderBy('id')->paginate(10))
+        $rows = DB::table('rekening_pembayaran')->orderBy('urutan')->orderBy('id')->paginate(10);
+        return ($request->getPreferredFormat() === 'html' && !$request->acceptsAnyContentType() && !$request->expectsJson()
+            ? response()->view('owner.pengaturan.tujuan',compact('rows')) : response()->json($rows))
             ->header('Cache-Control', 'private, no-store');
     }
 
@@ -37,6 +39,9 @@ final class PaymentDestinationController extends Controller
             $this->audit($request, $id, 'buat_tujuan_bayar', false);
             return $id;
         });
+        if ($request->input('asal') === 'editor' && !$request->expectsJson()) {
+            return redirect()->route('tujuan.index')->with('success', 'Tujuan #'.$id.' tersimpan sebagai nonaktif. Periksa sebelum mengaktifkan.');
+        }
         return response()->json(['id' => $id, 'aktif' => false], 201);
     }
 
@@ -52,6 +57,10 @@ final class PaymentDestinationController extends Controller
                 $this->audit($request, $id, 'status_tujuan_bayar', $active);
             }
         });
+        if ($request->input('asal') === 'editor' && !$request->expectsJson()) {
+            $url = route('tujuan.index', $request->integer('page') > 1 ? ['page'=>$request->integer('page')] : []);
+            return redirect($url.'#tujuan-'.$id)->with('tujuan_disimpan',$id);
+        }
         return response()->noContent();
     }
 
