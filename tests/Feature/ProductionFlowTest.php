@@ -28,7 +28,7 @@ class ProductionFlowTest extends TestCase
         $this->get(route('staf.produksi.index'))->assertOk()->assertSee('Mulai produksi custom')->assertDontSee('Tandai siap');
         $this->post(route('staf.produksi.mark-ready'), $data)->assertConflict();
         $this->post(route('staf.produksi.start'), $data)->assertRedirect();
-        $this->get(route('staf.produksi.index',['tahap'=>'dikonfirmasi']))->assertOk()->assertDontSee($order->nomor)->assertSee('Kembali ke semua tahap');
+        $this->get(route('staf.produksi.index',['tahap'=>'dikonfirmasi']))->assertOk()->assertDontSee($order->nomor)->assertSee('Reset semua filter produksi');
         $this->get(route('staf.produksi.index',['tahap'=>'sedang_diproduksi']))->assertOk()->assertSee($order->nomor)->assertSee('Tandai siap')->assertDontSee('Mulai produksi custom');
         $this->post(route('staf.produksi.mark-ready'), $data)->assertRedirect();
         $this->post(route('staf.produksi.mark-ready'), $data)->assertConflict();
