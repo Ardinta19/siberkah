@@ -17,6 +17,26 @@ final class CatalogMediaController extends Controller
         return DB::table('gambar_produk')->where('produk_id', $id)->orderBy('urutan')->orderBy('id');
     }
 
+    private function context(Request $request): array
+    {
+        return array_filter(['page'=>$request->integer('page') > 1 ? $request->integer('page') : null,
+            'tampil'=>in_array($request->query('tampil'), ['publik','nonaktif','kategori'], true) ? $request->query('tampil') : null]);
+    }
+
+    public function manage(Request $request, int $id)
+    {
+        $product = Produk::with('varianProduk')->findOrFail($id);
+        return response()->view('owner.katalog.gallery', ['product'=>$product, 'photos'=>$this->images($id)->get(),
+            'context'=>$this->context($request)])->header('Cache-Control','private, no-store');
+    }
+
+    private function finished(Request $request, int $id, string $message, $apiResponse)
+    {
+        return !$request->expectsJson() && $request->input('asal') === 'galeri'
+            ? redirect()->route('admin.katalog.gallery', ['id'=>$id]+$this->context($request))->with('success',$message)
+            : $apiResponse;
+    }
+
     public function index(int $id)
     {
         Produk::findOrFail($id);
@@ -74,13 +94,13 @@ final class CatalogMediaController extends Controller
             Storage::disk('public')->delete($path);
             throw $error;
         }
-        return response()->json(['id' => $result, 'jalur_berkas' => $path], 201);
+        return $this->finished($request,$id,'Foto berhasil ditambahkan.', response()->json(['id' => $result, 'jalur_berkas' => $path], 201));
     }
 
     public function reorder(Request $request, int $id)
     {
         $ids = $request->validate(['urutan' => 'required|array|list|min:1|max:50', 'urutan.*' => 'required|integer|distinct|min:1'])['urutan'];
-        return DB::transaction(function () use ($request, $id, $ids) {
+        DB::transaction(function () use ($request, $id, $ids) {
             $product = Produk::lockForUpdate()->findOrFail($id);
             $rows = $this->images($id)->get()->keyBy('id');
             abort_unless($rows->count() === count($ids) && $rows->has($ids), 409, 'Kirim daftar lengkap foto produk ini.');
@@ -89,8 +109,8 @@ final class CatalogMediaController extends Controller
             }
             $product->update(['foto_utama' => $rows[$ids[0]]->jalur_berkas]);
             $this->audit($request, $id, 'urut_gambar', ['urutan' => $ids]);
-            return response()->noContent();
         }, 3);
+        return $this->finished($request,$id,'Urutan dan foto utama telah disimpan.',response()->noContent());
     }
 
     public function remove(Request $request, int $id, int $foto)
@@ -113,7 +133,7 @@ final class CatalogMediaController extends Controller
         if (preg_match('~^produk/galeri/[a-f0-9-]{36}\.webp$~D', $path)) {
             abort_unless(Storage::disk('public')->delete($path), 503, 'Referensi terhapus, berkas perlu dibersihkan operator.');
         }
-        return response()->noContent();
+        return $this->finished($request,$id,'Foto telah dihapus.',response()->noContent());
     }
 
     private function audit(Request $request, int $id, string $action, array $details): void

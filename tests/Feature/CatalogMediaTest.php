@@ -32,6 +32,7 @@ class CatalogMediaTest extends TestCase
         $this->assertSame([], Storage::disk('public')->allFiles());
         $a = $this->postJson($url, $upload())->assertCreated()->json();
         $b = $this->postJson($url, $upload())->assertCreated()->json();
+        $this->get(route('admin.katalog.gallery',$id))->assertOk()->assertSee('Buket merah dengan pita putih')->assertSee('Foto utama tersimpan');
         $bytes = Storage::disk('public')->get($a['jalur_berkas']);
         $this->assertSame(IMAGETYPE_WEBP, getimagesizefromstring($bytes)[2]);
         $this->assertStringNotContainsString('lokasi', $a['jalur_berkas']);

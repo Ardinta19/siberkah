@@ -67,3 +67,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Dasbor operasional:** sebutkan cakupan tanggal setiap angka. Ringkasan jumlah pesanan bukan jumlah rupiah atau instruksi pencatatan. Pisahkan indikator baca-saja, peringatan unit yang benar-benar terdeteksi, dan tautan menuju antrean. Berikan jalan kembali ke dasbor pada agenda bagi Owner/Admin saja, bukan staf yang tidak memiliki akses dasbor.
 
 **Kelola katalog:** bedakan flag produk dari visibilitas aktual. Produk aktif dengan kategori nonaktif tersembunyi dari publik. Jangan tawarkan Terbitkan bila kategori masih nonaktif. Draf dan arsip sama-sama nonaktif; jangan menyimpulkan riwayat penerbitan dari flag itu saja.
+
+**Galeri Owner:** pisahkan unggahan/penghapusan dari editor teks produk. Nama foto utama merujuk keadaan tersimpan. Memindah posisi adalah draf lokal sampai Simpan urutan ditekan; kirim daftar lengkap ke server. Selalu sediakan konfirmasi hapus dan jalan kembali ke kartu asal.

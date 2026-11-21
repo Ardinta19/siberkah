@@ -180,6 +180,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::post('{id}/manage-variants', [CatalogInventoryController::class, 'variant'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-variants');
         Route::post('{id}/manage-options', [CatalogInventoryController::class, 'option'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-options');
         Route::prefix('{id}/manage-images')->where(['id' => '[0-9]+'])->middleware('role:owner')->group(function () {
+            Route::get('kelola', [CatalogMediaController::class, 'manage'])->name('admin.katalog.gallery');
             Route::get('/', [CatalogMediaController::class, 'index'])->name('admin.katalog.images');
             Route::post('/', [CatalogMediaController::class, 'store'])->middleware('throttle:30,1')->name('admin.katalog.manage-images');
             Route::put('urutan', [CatalogMediaController::class, 'reorder'])->name('admin.katalog.images.order');
