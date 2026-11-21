@@ -142,8 +142,8 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::post('pesanan/manual/sewa', [AdminOrderController::class, 'manualStore'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');
         Route::prefix('pesanan/{id}/retur')->where(['id' => '[0-9]+'])->middleware(RentalStaging::class)->group(function () {
-            Route::get('inspeksi', [RentalCloseoutController::class, 'evidence']);
-            Route::get('foto/{foto}', [RentalCloseoutController::class, 'photo'])->whereNumber('foto');
+            Route::get('inspeksi', [RentalCloseoutController::class, 'evidence'])->name('retur.inspeksi');
+            Route::get('foto/{foto}', [RentalCloseoutController::class, 'photo'])->whereNumber('foto')->name('retur.foto');
             Route::post('nilai', [RentalCloseoutController::class, 'assess'])->name('retur.nilai');
             Route::post('potong-deposit', [RentalCloseoutController::class, 'applyDeposit'])->middleware('role:owner')->name('retur.potong');
             Route::post('setoran', [RentalCloseoutController::class, 'confirmDeposit'])->name('retur.setoran');

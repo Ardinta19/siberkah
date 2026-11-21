@@ -10,12 +10,21 @@ use Illuminate\Support\Facades\Storage;
 
 class RentalCloseoutController extends Controller
 {
-    public function evidence(int $id)
+    public function evidence(Request $request, int $id)
     {
         abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $id)->exists(), 404);
-        $rows = DB::table('inspeksi_sewa as i')->join('item_pesanan as item', 'item.id', '=', 'i.item_pesanan_id')
+        $query = DB::table('inspeksi_sewa as i')->join('item_pesanan as item', 'item.id', '=', 'i.item_pesanan_id')
             ->leftJoin('foto_inspeksi as f', 'f.inspeksi_sewa_id', '=', 'i.id')->where('item.pesanan_id', $id)
-            ->orderBy('i.id')->orderBy('f.urutan')->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
+            ->orderBy('i.id')->orderBy('f.urutan');
+        if (!$request->expectsJson() && !$request->acceptsAnyContentType() && $request->getPreferredFormat() === 'html') {
+            $order = Pesanan::findOrFail($id);
+            $items = $order->items()->leftJoin('unit_sewa as u','u.id','=','item_pesanan.unit_sewa_id')
+                ->orderBy('item_pesanan.id')->get(['item_pesanan.id','nama_produk','nama_varian','u.kode']);
+            $inspections = $query->get(['item.id as item_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','i.dilakukan_pada','i.pengguna_id','f.id as foto_id','f.urutan'])->groupBy(['item_id','tahap']);
+            $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
+            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context'))->header('Cache-Control','private, no-store');
+        }
+        $rows = $query->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
         return response()->json($rows)->header('Cache-Control', 'private, no-store');
     }
 

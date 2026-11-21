@@ -471,7 +471,14 @@ class RentalCheckoutTest extends TestCase
         $photo = DB::table('foto_inspeksi')->first();
         \Illuminate\Support\Facades\Storage::disk('local')->assertExists($photo->jalur_berkas);
         $assessment = ['rincian'=>[['kode'=>'akrilik_pecah','jumlah'=>1]], 'biaya_kerusakan' => 200000, 'alasan' => 'Foto menunjukkan akrilik pecah'];
-        $this->actingAs($admin, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertForbidden();
+        $evidence = route('retur.inspeksi',$order->id);
+        $this->get($evidence,['Accept'=>'text/html'])->assertForbidden();
+        $this->actingAs($admin,'staff')->get($evidence,['Accept'=>'text/html'])->assertOk()
+            ->assertSeeInOrder(['Saat diserahkan','Kondisi: Baik','Saat dikembalikan','Kondisi: Rusak','Akrilik retak saat kembali'])
+            ->assertSee(route('retur.foto',[$order->id,$photo->id]))->assertDontSee($photo->jalur_berkas);
+        $this->getJson($evidence)->assertOk()->assertJsonCount(2);
+        $this->get(route('retur.foto',[$order->id,$photo->id]))->assertOk()->assertHeader('X-Content-Type-Options','nosniff');
+        $this->postJson(route('retur.nilai', $order->id), $assessment)->assertForbidden();
         $this->actingAs($owner, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertCreated();
         $invoice = $this->postJson(route('retur.nilai', $order->id), $assessment)->assertOk()->json('tagihan_id');
         $this->assertSame(250000 + $delta, $order->fresh()->saldo);
