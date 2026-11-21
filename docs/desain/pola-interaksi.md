@@ -91,3 +91,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 Pada inventaris, pencarian kode fisik dan filter kondisi berlaku hanya di daftar unit produk terpilih. Pertahankan konteks katalog induk secara terpisah. Jika status baru tidak memenuhi filter, tetap konfirmasikan penyimpanan dan jelaskan hasil kosong. Reset kondisi tidak menghapus kode, hapus pencarian kode tidak menghapus kondisi.
 
 **Tambahan checkout:** harga opsi satuan berlaku per produk, bukan per pesanan. Saat dipilih, tampilkan harga awal dan tambahan per produk sebelum subtotal. Jangan mewajibkan jumlah tambahan jika opsi tidak dipilih; pilihan kosong tidak boleh menahan pembayaran tunai. Jika opsi harga wajib tidak memiliki nilai aktif, jelaskan alasan pemesanan belum tersedia alih-alih menampilkan formulir buntu.
+
+**Rincian setelah checkout:** gunakan nama, varian, opsi, satuan dan biaya yang disalin saat pemesanan, bukan katalog saat ini. Harga satuan tersimpan sudah mencakup tambahan; tampilkan subtotal tiap baris tanpa menjumlahkan opsi dua kali. Pisahkan ongkir, pembulatan, penyesuaian dan total dari saldo serta kode unik pada tagihan.

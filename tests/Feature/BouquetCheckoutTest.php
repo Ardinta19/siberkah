@@ -166,6 +166,18 @@ class BouquetCheckoutTest extends TestCase
         $this->assertDatabaseCount('mutasi_masuk', 1);
     }
 
+    public function test_receipt_keeps_ordered_choices_and_prices_after_catalog_changes(): void
+    {
+        $data = $this->cart();
+        $number = $this->postJson(route('pesanan.buket'),$data)->assertOk()->json('nomor');
+        DB::table('nilai_opsi')->update(['label'=>'Label baru','harga_tambahan'=>7000]);
+        DB::table('varian_produk')->update(['nama'=>'Varian baru','harga'=>50000]);
+        $this->get(route('pesanan.show',$number))->assertOk()->assertSee('Varian: Putih')
+            ->assertSee('Bunga: Mawar')->assertSee('3 satuan per produk')->assertSee('+Rp15.000 per produk')
+            ->assertSee('Rp115.000 per produk × 2')->assertSee('Rp230.000')->assertSee('Rp270.000')
+            ->assertDontSee('Label baru')->assertDontSee('Varian baru');
+    }
+
     public function test_mixed_cart_from_checkout_through_payment_production_and_handover(): void
     {
         $d = $this->cart();
