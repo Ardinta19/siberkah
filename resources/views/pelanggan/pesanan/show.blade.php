@@ -1,8 +1,9 @@
 @extends('layouts.customer')
 @section('title', 'Pesanan '.$pesanan->nomor)
 @section('content')
+@php($riwayatContext = array_filter(['kelompok'=>in_array(request('kelompok'),['aktif','arsip'],true)?request('kelompok'):null,'page'=>request()->integer('page') > 1 ? request()->integer('page') : null]))
 <section class="container-siberkah py-8 bk-order-detail" @if(!$papan || !in_array($pesanan->status,['menunggu_pembayaran','dikonfirmasi'])) data-order-refresh @endif>
-    <x-back-link href="{{ route('pesanan.index',array_filter(['kelompok'=>in_array(request('kelompok'),['aktif','arsip'],true)?request('kelompok'):null,'page'=>request()->integer('page') > 1 ? request()->integer('page') : null])) }}#pesanan-{{ $pesanan->id }}" class="bk-order-back">Kembali ke riwayat pesanan</x-back-link>
+    <x-back-link href="{{ route('pesanan.index',$riwayatContext) }}#pesanan-{{ $pesanan->id }}" class="bk-order-back">Kembali ke riwayat pesanan</x-back-link>
     @if($errors->any())<div class="bk-notice" role="alert"><strong>Perubahan belum tersimpan.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @if($notice=session('status') ?? session('success'))<p role="status" class="bk-notice">{{ $notice }}</p>@endif
     <h1 class="text-2xl font-bold">Pesanan {{ $pesanan->nomor }}</h1>
@@ -29,7 +30,7 @@
     <ol class="bk-order-timeline">@foreach($riwayat as $perubahan)<li @if($loop->last) aria-current="step" @endif>{{ $perubahan->dibuat_pada }} WIB · {{ str_replace('_', ' ', $perubahan->status_baru) }}</li>@endforeach</ol>
     <strong>Total Rp{{ number_format($pesanan->total, 0, ',', '.') }}</strong>
     @if(config('checkout.staging') && in_array($pesanan->asal, ['situs','admin']))
-        <a href="{{ route('payment.show', $pesanan->nomor) }}">Lihat tagihan dan petunjuk pembayaran</a>
+        <a href="{{ route('payment.show',['nomor'=>$pesanan->nomor]+$riwayatContext) }}">Lihat tagihan dan petunjuk pembayaran</a>
     @endif
     @if(config('checkout.staging') && in_array($pesanan->asal, ['situs','admin']))
         @if($permohonan)

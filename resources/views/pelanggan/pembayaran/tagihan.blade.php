@@ -2,7 +2,7 @@
 @section('title', 'Tagihan '.$nomor)
 @section('content')
 <section class="container-siberkah py-8">
-    <x-back-link :href="route('pesanan.show', $nomor)">Kembali ke rincian pesanan</x-back-link>
+    <x-back-link :href="route('pesanan.show',['nomor'=>$nomor]+array_filter(['kelompok'=>in_array(request('kelompok'),['aktif','arsip'],true)?request('kelompok'):null,'page'=>request()->integer('page') > 1 ? request()->integer('page') : null]))">Kembali ke rincian pesanan</x-back-link>
     <h1 class="text-2xl font-bold">Tagihan {{ $nomor }}</h1>
     <p>Status pesanan: {{ str_replace('_', ' ', $status) }} · Saldo Rp{{ number_format($saldo, 0, ',', '.') }}</p>
     @if($tunai_saat_serah)<p>Metode pelunasan: tunai saat {{ $cara_serah === 'ambil' ? 'ambil di toko' : 'diantar' }}. Jangan transfer bagian yang dibayar tunai.</p>@endif
