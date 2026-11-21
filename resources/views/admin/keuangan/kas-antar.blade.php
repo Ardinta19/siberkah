@@ -11,7 +11,7 @@
     <input type="hidden" name="pembayaran_id" value="{{ $b->id }}">
     <label>Referensi mutasi aktual <input required name="referensi" maxlength="100"></label>
     <label>Nominal masuk aktual <input required name="nominal" type="number" min="1"></label>
-    <button class="btn-primary">Catat mutasi yang sudah diperiksa</button><output role="status"></output>
+    <button class="btn-primary">Catat mutasi yang sudah diperiksa</button>@include('partials.ledger-feedback')
 </form>@empty<p>Tidak ada konfirmasi baru.</p>@endforelse
 {{ $queue->fragment('antrean-bank')->links('partials.pagination') }}
 <h2 id="setoran-antar">Setoran uang pengantaran</h2>
@@ -32,10 +32,10 @@
     <label>Catatan selisih atau koreksi <input name="catatan" maxlength="200" @required($r->status_setoran !== 'belum_disetor')></label>
     <small>Catatan wajib jika jumlah berbeda dari tagihan setor atau mengoreksi setoran sebelumnya.</small>
     <label><input required type="checkbox" name="diperiksa_fisik" value="1"> Kas fisik sudah diperiksa</label>
-    <button class="btn-primary">Catat hasil hitung</button><output role="status"></output>
+    <button class="btn-primary">Catat hasil hitung</button>@include('partials.ledger-feedback')
 </form>@else<p>Setoran ini harus diperiksa oleh petugas lain.</p>@endif</article>
 @empty<p>Tidak ada pembayaran tunai antar pada tanggal ini.</p>@endforelse
 {{ $rincian->fragment('setoran-antar')->links('partials.pagination') }}
-@include('partials.submit-ledger')
+
 </section>
 @endsection

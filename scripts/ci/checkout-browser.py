@@ -347,7 +347,23 @@ with sync_playwright() as playwright:
     assert 135000 < int(exact) <= 135999
     verification.locator('[name=referensi]').fill('CI:BANK:001')
     verification.locator('[name=nominal]').fill(exact)
+    # First the request is rejected before a write. Keep the entered reference correctable.
+    endpoint=verification.get_attribute('action')
+    admin.route(endpoint,lambda r:r.fulfill(status=422,json={'errors':{'referensi':['Periksa referensi uji.']}}),times=1)
     verification.get_by_role('button').click()
+    expect(verification.locator('[name=referensi]')).to_be_focused()
+    expect(verification.get_by_role('status')).to_contain_text('Periksa referensi uji.')
+    expect(verification.get_by_role('button')).to_be_enabled()
+    # Commit to the real CI database but drop the response before it reaches the UI.
+    def lose_receipt(route):
+        receipt=route.fetch()
+        assert receipt.ok
+        route.abort('failed')
+    admin.route(endpoint,lose_receipt,times=1)
+    verification.get_by_role('button').click()
+    expect(verification.get_by_role('status')).to_contain_text('belum dapat dipastikan')
+    expect(verification.get_by_role('button')).to_be_disabled()
+    verification.get_by_role('link',name='Muat ulang untuk memeriksa status').click()
     expect(admin.get_by_text('Tidak ada konfirmasi baru.')).to_be_visible()
     admin.goto(base+'/staf/produksi')
     ready = admin.locator('.bk-task').filter(has_text=number)

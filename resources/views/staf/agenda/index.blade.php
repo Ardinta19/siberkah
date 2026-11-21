@@ -48,7 +48,7 @@
                     <label>Uang diterima (saldo Rp{{ number_format($p->saldo,0,',','.') }}) <input required type="number" min="1" name="nominal_tunai"></label>
                     <label><input type="checkbox" required name="tunai_diterima" value="1"> Uang tunai sudah diterima</label>
                 @endif
-                <button class="btn-primary">Catat serah terima {{ $p->nomor }}</button><output role="status"></output>
+                <button class="btn-primary">Catat serah terima {{ $p->nomor }}</button>@include('partials.ledger-feedback')
             </form>
         @endif
         @if($produksi ?? false)
@@ -67,6 +67,6 @@
         </div>
     @endforelse
     {{ $pesanan->fragment('daftar-tugas')->links('partials.pagination') }}</div>
-    @include('partials.submit-ledger')
+
 </section>
 @endsection

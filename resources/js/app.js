@@ -1,3 +1,4 @@
+import "./ledger-submit.js";
 import "./cash-count.js";
 import "./profile-editor.js";
 import "./order-refresh.js";
