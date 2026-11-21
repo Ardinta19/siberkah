@@ -22,7 +22,11 @@ for (const gallery of document.querySelectorAll('[data-gallery]')) {
     const previous=index;index=(next+photos.length)%photos.length;
     photos.forEach((photo,i)=>{photo.hidden=i!==index;});
     const image=photos[index].querySelector('img');
-    if(dialog.open){large.src=image.src;large.alt=image.alt;}
+    if(dialog.open){
+      large.src=image.src;large.alt=image.alt;
+      const caption=dialog.querySelector('[data-large-variant]'), variant=photos[index].dataset.variantLabel;
+      caption.hidden=!variant;caption.textContent=variant?`Varian: ${variant}`:'';
+    }
     for(const count of gallery.querySelectorAll('[data-count]'))count.textContent=`Foto ${index+1} dari ${photos.length}`;
     markThumb();
     const target=dialog.open?large:image;
@@ -32,6 +36,15 @@ for (const gallery of document.querySelectorAll('[data-gallery]')) {
     }
   }
   function open(from){invoker=from;dialog.showModal();show(index,false);dialog.querySelector('[data-close]').focus();}
+  for(const link of gallery.closest('[data-product-detail]').querySelectorAll('[data-variant-photo]')){
+    const position=photos.findIndex(photo=>photo.dataset.mediaId===link.dataset.variantPhoto);
+    if(position<0)continue;
+    link.setAttribute('aria-haspopup','dialog');
+    link.onclick=e=>{
+      if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+      e.preventDefault();show(position,false);open(link);
+    };
+  }
   photos.forEach(photo=>{const link=photo.querySelector('a');link.onclick=e=>{
     if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
     e.preventDefault();open(link);

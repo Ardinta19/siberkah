@@ -13,7 +13,13 @@
         <strong>{{ $produk->harga_tampil !== null ? 'Mulai Rp'.number_format($produk->harga_tampil,0,',','.') : 'Harga belum tersedia' }}</strong>
         @if($varian->isNotEmpty())
             <h2 class="font-bold">Pilihan varian</h2>
-            <ul class="bk-options">@foreach($varian as $v)<li>{{ $v->nama }} · Rp{{ number_format($v->harga, 0, ',', '.') }}</li>@endforeach</ul>
+            @php($byVariant = $gambarProduk->whereNotNull('varian_produk_id')->groupBy('varian_produk_id'))
+            <ul class="bk-options">@foreach($varian as $v)<li><span>{{ $v->nama }} · Rp{{ number_format($v->harga, 0, ',', '.') }}</span>
+                @if($linked = $byVariant->get($v->id))
+                    @php($firstPhoto = $linked->firstWhere('jalur_berkas',$produk->foto_utama) ?? $linked->first())
+                    <a data-variant-photo="{{ $firstPhoto->id }}" href="{{ asset('storage/'.$firstPhoto->jalur_berkas) }}">Lihat foto {{ $v->nama }}</a>
+                @endif
+            </li>@endforeach</ul>
         @endif
         @if($produk->jenis === 'sewa')
             <form class="bk-form-row" data-pending="Memeriksa…">@foreach($koleksi as $k=>$v)<input type="hidden" name="koleksi[{{ $k }}]" value="{{ $v }}">@endforeach

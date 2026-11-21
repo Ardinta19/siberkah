@@ -75,3 +75,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Galeri terbuka di beberapa tab:** simpan urutan dan hapus foto hanya jika susunan ID foto masih sama seperti saat halaman dibuka. Bila foto ditambah, dihapus, atau dipindahkan dari tab lain, jangan timpa susunan baru; tampilkan keadaan terbaru dan minta Owner meninjau ulang. Pemeriksaan berlangsung di dalam transaksi yang sama dengan perubahan.
 
 **Koreksi detail foto:** ubah teks alternatif atau varian tanpa unggah ulang, memindahkan posisi, atau mengganti sampul. Draf validasi hanya kembali ke kartu foto terkait. Jika detail tersebut sudah berubah di tab lain, tampilkan keadaan terbaru alih-alih menimpa koreksi orang lain.
+
+**Foto varian di etalase:** tampilkan tautan hanya bila varian yang ditawarkan memiliki foto terkait. Prioritaskan sampul bila milik varian itu; jika tidak, pakai urutan galeri. Tautan membuka foto, bukan memilih varian checkout. Nama varian harus mengikuti foto yang sedang dibuka, termasuk setelah pengguna berpindah ke foto umum. Saat ditutup, kembalikan fokus ke tautan asal.
