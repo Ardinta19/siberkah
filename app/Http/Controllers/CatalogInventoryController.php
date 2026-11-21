@@ -48,14 +48,54 @@ final class CatalogInventoryController extends Controller
             ? redirect($url.'#varian-'.$result['id'])->with('success','Varian berhasil disimpan.') : $result;
     }
 
+    private function choiceValues(int $optionId)
+    {
+        return DB::table('nilai_opsi')->where('opsi_produk_id',$optionId)->orderBy('urutan')->orderBy('id')->get();
+    }
+
+    public function options(Request $request, int $id)
+    {
+        $product = DB::table('produk')->where('id',$id)->whereIn('jenis',['jual','custom'])->first();
+        abort_unless($product,404);
+        $options = DB::table('opsi_produk')->where('produk_id',$id)->orderBy('urutan')->orderBy('id')->get();
+        $selected = $request->has('edit') ? $options->firstWhere('id',$request->integer('edit')) : null;
+        abort_if($request->has('edit') && !$selected,404);
+        $values = $selected ? $this->choiceValues($selected->id) : collect();
+        $stamp = hash('sha256',json_encode([$selected,$values],JSON_THROW_ON_ERROR));
+        return response()->view('owner.katalog.options',compact('product','options','selected','values','stamp')+
+            ['context'=>OwnerCatalogContext::from($request)])->header('Cache-Control','private, no-store');
+    }
+
     public function option(Request $request, int $id)
     {
+        $editor = !$request->expectsJson() && $request->input('asal') === 'opsi';
+        if ($editor && is_array($request->input('baru')) && filled($request->input('baru.label'))) {
+            $values = $request->input('nilai',[]);
+            if (is_array($values)) { $values[] = $request->input('baru'); $request->merge(['nilai'=>$values]); }
+        }
         $data = $request->validate(['id' => 'sometimes|integer|min:1', 'nama' => 'required|string|max:80', 'tipe' => 'required|in:pilihan,teks,satuan',
             'wajib' => 'required|boolean', 'urutan' => 'sometimes|integer|between:0,65535', 'nilai' => 'sometimes|array|list|max:50',
             'nilai.*' => 'array:id,label,harga_tambahan,aktif', 'nilai.*.id' => 'sometimes|integer|min:1|distinct', 'nilai.*.label' => 'required|string|max:80|distinct',
             'nilai.*.harga_tambahan' => 'required|integer|between:0,2147482648', 'nilai.*.aktif' => 'required|boolean']);
-        return DB::transaction(function () use ($request, $id, $data) {
-            $this->product($id);
+        $result = DB::transaction(function () use ($request, $id, $data, $editor) {
+            $product = $this->product($id);
+            if ($editor) {
+                abort_if($product->jenis==='sewa',422);
+                if (isset($data['id'])) {
+                    $row=DB::table('opsi_produk')->where('produk_id',$id)->where('id',$data['id'])->first();
+                    abort_unless($row,404);
+                    if (hash('sha256',json_encode([$row,$this->choiceValues($row->id)],JSON_THROW_ON_ERROR)) !== $request->input('versi_opsi')) { return null; }
+                    $data['tipe']=$row->tipe;
+                } elseif (DB::table('opsi_produk')->where('produk_id',$id)->count()>=20) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['nama'=>'Maksimal 20 opsi per produk.']);
+                }
+                if ($data['tipe']==='teks' && !empty($data['nilai'])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['nilai'=>'Opsi teks tidak memakai pilihan berharga.']);
+                }
+                if ($data['tipe']!=='teks' && $data['wajib'] && !collect($data['nilai'] ?? [])->contains(fn ($v)=>(bool)$v['aktif'])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['nilai'=>'Opsi wajib memerlukan minimal satu pilihan aktif.']);
+                }
+            }
             $values = $data['nilai'] ?? [];
             unset($data['nilai']);
             $option = $this->save($request, 'opsi_produk', ['produk_id' => $id], $data);
@@ -64,6 +104,10 @@ final class CatalogInventoryController extends Controller
             }
             return $option;
         }, 3);
+        if (!$editor) { return $result; }
+        $params = ['id'=>$id,'edit'=>$result['id'] ?? $data['id']]+OwnerCatalogContext::from($request);
+        return redirect()->route('admin.katalog.options',$params)->with($result ? 'success' : 'option_warning',
+            $result ? 'Opsi checkout tersimpan.' : 'Opsi sudah berubah. Periksa data terbaru sebelum menyunting kembali.');
     }
 
     private const UNIT_STATES = ['aktif','perawatan','rusak','pensiun'];

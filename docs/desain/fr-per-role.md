@@ -35,3 +35,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Owner — kalender operasional:** pilih tanggal dengan GET sebelum menulis. Bedakan kuota custom (bawaan 15) dari blokir toko/produk. Lihat tanggal lampau tanpa formulir mutasi. Blokir memerlukan alasan dan konfirmasi; nomor pesanan aktif yang terdampak adalah peringatan, bukan pembatalan. Validasi batas terbaru di bawah lock saat menyimpan kapasitas.
 
 **Membuka blokir kalender:** Owner melepas satu entri spesifik pada tanggal sekarang/mendatang dengan alasan dan konfirmasi. Jangan menghapus semua entri tanggal, mengubah kuota, atau menjanjikan produk pasti tersedia. Simpan audit sebelum/sesudah; pengiriman ulang tidak menambah audit.
+
+**Owner — opsi checkout:** untuk siap jual/custom, pisahkan catatan teks gratis, pilihan harga tetap dan tambahan satuan. Pertahankan tipe opsi lama; nonaktifkan nilai yang tidak dijual, jangan menghapus histori. Opsi harga wajib perlu nilai aktif; pemeriksaan versi mencakup nilai dan harga terkait. Sewa tetap memakai unit dan tanggal, bukan editor opsi buket.
