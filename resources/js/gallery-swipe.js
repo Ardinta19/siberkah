@@ -14,12 +14,12 @@ export function enableGallerySwipe(surface, step) {
   surface.addEventListener('touchcancel',cancel,{passive:true});
   surface.addEventListener('touchend',event=>{
     const origin=start;cancel();
-    if(!origin || event.touches.length || !event.cancelable)return;
+    if(!origin || event.touches.length)return;
     const p=Array.from(event.changedTouches).find(t=>t.identifier===origin.id);
     if(!p)return;
     const dx=p.clientX-origin.x,dy=p.clientY-origin.y;
     if(Math.abs(dx)<44 || Math.abs(dx)<1.5*Math.abs(dy))return;
-    event.preventDefault(); // The completed swipe must not also activate the photo link.
+    if(event.cancelable)event.preventDefault(); // The completed swipe must not also activate the photo link.
     step(dx<0?1:-1);
   },{passive:false});
 }
