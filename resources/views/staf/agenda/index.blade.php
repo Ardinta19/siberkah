@@ -26,13 +26,15 @@
     @isset($tanggal)
         <form method="get" action="{{ route('staf.kurir.index') }}" class="bk-agenda-tools" data-pending="Memuat agenda…">
             @if(request()->filled('tugas'))<input type="hidden" name="tugas" value="{{ request('tugas') }}">@endif
+            <label>Nomor pesanan kurir<input type="search" name="nomor" maxlength="30" value="{{ request('nomor') }}"></label>
             <label>Tanggal WIB <input type="date" required name="tanggal" value="{{ $tanggal }}"></label>
             <button class="bk-secondary">Tampilkan</button>
-            @if($tanggal !== today('Asia/Jakarta')->toDateString())<a class="bk-secondary" href="{{ route('staf.kurir.index',request()->only('tugas')) }}">Hari ini</a>@endif
+            @if($tanggal !== today('Asia/Jakarta')->toDateString())<a class="bk-secondary" href="{{ route('staf.kurir.index',request()->only('tugas','nomor')) }}">Hari ini</a>@endif
+            @if(request()->filled('nomor'))<a class="bk-secondary" href="{{ route('staf.kurir.index',['tanggal'=>$tanggal]+request()->only('tugas')) }}#daftar-tugas">Hapus pencarian nomor</a>@endif
         </form>
         <nav class="bk-history-filters" aria-label="Jenis tugas kurir">
             @foreach([''=>'Semua tugas','antar'=>'Antar','ambil'=>'Ambil di toko','jemput'=>'Jemput'] as $key=>$label)
-                <a href="{{ route('staf.kurir.index',array_filter(['tanggal'=>$tanggal,'tugas'=>$key])) }}#daftar-tugas" @if((request('tugas') ?? '') === $key) aria-current="page" @endif>{{ $label }}</a>
+                <a href="{{ route('staf.kurir.index',array_filter(['tanggal'=>$tanggal,'tugas'=>$key])+request()->only('nomor')) }}#daftar-tugas" @if((request('tugas') ?? '') === $key) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
         </nav>
     @endisset
@@ -46,8 +48,10 @@
             @if($p->papan)@include('staf.agenda.teks-papan')@endif
             @if($p->catatan_pelanggan)<div>Catatan: {{ $p->catatan_pelanggan }}</div>@endif
         @else
-            <div>{{ ucfirst($p->tugas) }} · {{ $p->jadwal ? substr($p->jadwal,11,5).' WIB' : 'Jam belum ditetapkan' }} · {{ $p->nomor_wa_pemesan }}
+            <div>{{ ucfirst($p->tugas) }} · {{ $p->jadwal ? ($p->tugas==='jemput' ? 'Batas kembali '.\Illuminate\Support\Carbon::parse($p->jadwal)->format('d/m/Y H:i') : substr($p->jadwal,11,5)).' WIB' : 'Jam belum ditetapkan' }} · {{ $p->nomor_wa_pemesan }}
             @if($p->peta) {{ $p->alamat_antar }} · <a href="{{ $p->peta }}" target="_blank" rel="noreferrer noopener">Buka peta</a>@endif</div>
+            @if($p->tugas==='jemput' && $p->jadwal && now('Asia/Jakarta')->gt($p->jadwal))<p class="bk-notice">Batas kembali sudah lewat. Catat waktu inspeksi aktual; denda dihitung sistem saat barang kembali.</p>@endif
+            @if($contact=\App\Services\WhatsAppLinks::delivery($p))<a class="bk-secondary" href="{{ $contact }}" target="_blank" rel="noopener noreferrer">Hubungi pelanggan {{ $p->nomor }} (WhatsApp)</a>@endif
         @endif
         @if(isset($rentalUnits) && $rentalUnits->has($p->id))@include('staf.agenda.inspeksi',['units'=>$rentalUnits->get($p->id)])@endif
         @if(!($produksi ?? false) && config('checkout.staging') && app()->environment('testing','staging','local') && $p->buket_online && $p->status === 'siap' && $p->tanggal_serah->isToday())

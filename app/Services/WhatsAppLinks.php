@@ -17,6 +17,11 @@ final class WhatsAppLinks
         return $toCustomer ? self::link((string) $order->nomor_wa_pemesan, $text) : self::contact($text);
     }
 
+    public static function delivery(Pesanan $order): ?string
+    {
+        return self::link((string)$order->nomor_wa_pemesan, 'Halo, saya petugas Berkah Kreatif. Saya ingin mengonfirmasi jadwal serah terima untuk pesanan '.$order->nomor.'.');
+    }
+
     private static function link(string $number, string $message): ?string
     {
         if (! preg_match('/^628\d{7,12}$/D', $number)) {

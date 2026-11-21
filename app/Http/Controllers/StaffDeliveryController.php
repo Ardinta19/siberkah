@@ -22,7 +22,7 @@ class StaffDeliveryController extends BaseController
      */
     public function index(Request $request)
     {
-        $filters = $request->validate(['tanggal' => 'sometimes|date_format:Y-m-d', 'tugas' => 'sometimes|in:antar,ambil,jemput']);
+        $filters = $request->validate(['tanggal' => 'sometimes|date_format:Y-m-d', 'tugas' => 'sometimes|in:antar,ambil,jemput','nomor'=>'nullable|string|max:30']);
         $date = $filters['tanggal'] ?? today('Asia/Jakarta')->toDateString();
         $task = "CASE WHEN p.status='sudah_diserahkan' THEN 'jemput' WHEN p.cara_serah='ambil' THEN 'ambil' ELSE 'antar' END";
         $time = "CASE WHEN p.status='sudah_diserahkan' THEN COALESCE((SELECT MAX(x.batas_baru) FROM perpanjangan_sewa x WHERE x.pesanan_id=p.id), TIMESTAMP(p.tanggal_serah,'18:00:00')) ELSE COALESCE(d.jadwal_serah,TIMESTAMP(p.tanggal_serah,p.jam_serah_mulai)) END";
@@ -35,6 +35,7 @@ class StaffDeliveryController extends BaseController
                     ->orWhere(fn ($p) => $p->where('p.tanggal_serah','<=',$date)->where('p.status','sudah_diserahkan')
                         ->whereExists(fn ($c) => $c->selectRaw('1')->from('penguasaan_unit')->whereColumn('pesanan_id','p.id')));
             })->when(isset($filters['tugas']), fn ($q) => $q->whereRaw("$task = ?", [$filters['tugas']]))
+            ->when(filled($filters['nomor'] ?? null),fn($q)=>$q->whereRaw("p.nomor LIKE ? ESCAPE '!'",['%'.strtr($filters['nomor'],['!'=>'!!','%'=>'!%','_'=>'!_']).'%']))
             ->orderBy('p.tanggal_serah')->orderByRaw('jadwal IS NULL')->orderBy('jadwal')->orderBy('p.id')->paginate(20)->withQueryString();
         foreach ($orders as $order) {
             $order->peta = $order->tugas !== 'ambil' && filled($order->alamat_antar)

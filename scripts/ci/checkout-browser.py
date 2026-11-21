@@ -901,12 +901,20 @@ with sync_playwright() as playwright:
     assigned=courier.locator('.bk-task').filter(has_text='CI-PRODUKSI')
     expect(assigned).to_contain_text('14:00 WIB')
     expect(assigned).to_contain_text('Alamat papan CI')
+    courier.get_by_label('Nomor pesanan kurir').fill('CI-PRODUKSI')
+    courier.get_by_role('button',name='Tampilkan',exact=True).click()
+    expect(assigned.get_by_role('link',name='Hubungi pelanggan')).to_have_attribute('href',re.compile(r'^https://wa\.me/628[0-9]+\?text=.*CI-PRODUKSI'))
+    for width in (320,768,1440):
+        courier.set_viewport_size({'width':width,'height':850})
+        assert courier.locator('main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'), f'Agenda Kurir overflow: {width}'
     expect(assigned).to_contain_text('Inspeksi serah tersedia pada hari dan jam serah')
     clock.write_text(f'{delivery_day} 14:00:00')
     courier.reload()
     for stage in ('serah','kembali'):
         if stage=='kembali':
             courier.get_by_role('link',name='Jemput',exact=True).click()
+            expect(courier.get_by_label('Nomor pesanan kurir')).to_have_value('CI-PRODUKSI')
+            expect(assigned).to_contain_text('Batas kembali')
         assigned.get_by_text('Inspeksi '+stage+' · CI-PRODUKSI',exact=True).click()
         inspect=assigned.locator('form[data-inspection]')
         for part in ('Permukaan akrilik','Kaki atau easel','Rangkaian bunga','Lampu LED'):
