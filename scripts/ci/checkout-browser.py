@@ -82,6 +82,21 @@ with sync_playwright() as playwright:
     expect(palette.locator('input[name=tanggal]')).to_be_enabled()
     palette.locator('.bk-date-trigger').click()
     calendar = page.get_by_role('dialog',name='Pilih tanggal sewa')
+    # Browsing a month/week is a preview, not a submitted date. Escape closes only the calendar.
+    page.keyboard.press('PageDown')
+    page.keyboard.press('Home')
+    monday = calendar.locator('button:focus').get_attribute('data-date')
+    assert datetime.fromisoformat(monday).weekday() == 0
+    page.keyboard.press('End')
+    sunday = calendar.locator('button:focus').get_attribute('data-date')
+    assert datetime.fromisoformat(sunday)-datetime.fromisoformat(monday) == timedelta(days=6)
+    page.keyboard.press('Control+k')
+    expect(calendar).to_be_visible()
+    page.keyboard.press('Escape')
+    expect(calendar).to_be_hidden()
+    expect(palette.locator('.bk-date-trigger')).to_be_focused()
+    expect(palette.locator('[name=tanggal]')).to_have_value('')
+    palette.locator('.bk-date-trigger').click()
     calendar.get_by_role('button',name='Bulan berikutnya').click()
     date_button = calendar.locator('[data-date]').first
     picked = date_button.get_attribute('data-date')
