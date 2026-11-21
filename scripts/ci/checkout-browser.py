@@ -951,6 +951,26 @@ with sync_playwright() as playwright:
         submit_inspection=inspect.get_by_role('button',name='Simpan inspeksi '+stage)
         if stage=='serah':
             path=inspect.get_attribute('action')
+            courier.evaluate('''url => {
+                const original=window.fetch;
+                window.inspectionAttempts=0;
+                window.fetch=function(...args){
+                    if(args[0]===url && args[1]?.method==='POST')window.inspectionAttempts++;
+                    return original.apply(this,args);
+                };
+            }''',path)
+            courier.context.set_offline(True)
+            try:
+                courier.wait_for_function('navigator.onLine === false')
+                submit_inspection.click()
+                expect(inspect.locator('output')).to_contain_text('Perangkat sedang luring')
+                expect(submit_inspection).to_be_enabled()
+            finally:
+                courier.context.set_offline(False)
+            expect(inspect.locator('output')).to_contain_text('Inspeksi belum dikirim')
+            expect(inspect.locator('output')).to_contain_text('Jaringan terdeteksi kembali')
+            assert courier.evaluate('window.inspectionAttempts')==0
+            expect(second.locator('[data-photo-list]')).to_contain_text('katalog-editorial.webp')
             courier.route(path,lambda r:r.fulfill(status=413,body='Too large'),times=1)
             submit_inspection.click()
             expect(inspect.locator('output')).to_contain_text('Unggahan terlalu besar')

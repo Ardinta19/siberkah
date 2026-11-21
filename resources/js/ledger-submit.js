@@ -5,11 +5,26 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
   const review=form.querySelector('[data-review-ledger]');
   const label=button.textContent;
   let locked=false;
+  let waitingForNetwork=false;
+  if(form.hasAttribute('data-inspection')){
+    window.addEventListener('online',()=>{
+      if(!waitingForNetwork || locked)return;
+      waitingForNetwork=false;
+      output.textContent='Jaringan terdeteksi kembali. Inspeksi belum dikirim. Periksa isian lalu tekan Simpan.';
+    });
+  }
   function requireReview(message){
     output.textContent=message;review.hidden=false;review.focus({preventScroll:true});
   }
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(locked)return;
+    // Only a submission stopped BEFORE fetch is safe to label unsent.
+    if(form.hasAttribute('data-inspection') && navigator.onLine===false){
+      waitingForNetwork=true;
+      output.textContent='Perangkat sedang luring. Inspeksi belum dikirim. Biarkan halaman tetap terbuka agar isian dan foto tidak hilang.';
+      return;
+    }
+    waitingForNetwork=false;
     locked=true;button.disabled=true;button.textContent='Mencatat…';
     output.textContent='';form.setAttribute('aria-busy','true');
     try{
