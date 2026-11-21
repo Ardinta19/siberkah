@@ -971,6 +971,24 @@ with sync_playwright() as playwright:
             expect(inspect.locator('output')).to_contain_text('Jaringan terdeteksi kembali')
             assert courier.evaluate('window.inspectionAttempts')==0
             expect(second.locator('[data-photo-list]')).to_contain_text('katalog-editorial.webp')
+            # Hold a synthetic rejection so the in-flight UI can be checked without a timer.
+            courier.evaluate('''url => {
+                const original=window.fetch;
+                window.fetch=function(...args){
+                    if(args[0]!==url)return original.apply(this,args);
+                    window.fetch=original;
+                    return new Promise(resolve=>window.rejectInspection=()=>resolve(new Response(
+                        JSON.stringify({errors:{'inspeksi.1.catatan':['Periksa catatan unit kedua.']}}),
+                        {status:422,headers:{'Content-Type':'application/json'}})));
+                };
+            }''',path)
+            submit_inspection.click()
+            expect(second.locator('[data-note]')).to_be_disabled()
+            expect(second.get_by_role('button',name='Hapus foto 1')).to_be_disabled()
+            courier.evaluate('window.rejectInspection()')
+            expect(second.locator('[data-note]')).to_be_focused()
+            expect(inspect.locator('output')).to_contain_text('Periksa catatan unit kedua')
+            expect(second.get_by_role('button',name='Hapus foto 1')).to_be_enabled()
             courier.route(path,lambda r:r.fulfill(status=413,body='Too large'),times=1)
             submit_inspection.click()
             expect(inspect.locator('output')).to_contain_text('Unggahan terlalu besar')
@@ -992,6 +1010,7 @@ with sync_playwright() as playwright:
         if stage=='serah':
             expect(inspect.locator('output')).to_contain_text('belum dapat dipastikan')
             expect(submit_inspection).to_be_disabled()
+            expect(second.locator('[data-note]')).to_be_disabled()
             inspect.get_by_role('link',name='Muat ulang untuk memeriksa status').click()
         expect(assigned).to_have_count(0)
         subprocess.run(['php','scripts/ci/check-courier-inspection.php',stage],check=True)

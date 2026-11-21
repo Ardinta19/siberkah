@@ -6,6 +6,13 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
   const label=button.textContent;
   let locked=false;
   let waitingForNetwork=false;
+  // Restore only controls that were enabled when this inspection started.
+  // In particular, don't enable the deposit field for a KTP/KTM guarantee.
+  let frozen=[];
+  function allowCorrection(){
+    for(const control of frozen)control.disabled=false;
+    frozen=[];locked=false;button.disabled=false;
+  }
   if(form.hasAttribute('data-inspection')){
     window.addEventListener('online',()=>{
       if(!waitingForNetwork || locked)return;
@@ -28,17 +35,26 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
     locked=true;button.disabled=true;button.textContent='Mencatat…';
     output.textContent='';form.setAttribute('aria-busy','true');
     try{
-      const response=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
+      const body=new FormData(form);
+      if(form.hasAttribute('data-inspection')){
+        frozen=[...form.querySelectorAll('input:enabled,select:enabled,textarea:enabled,button:enabled')];
+        for(const control of frozen)control.disabled=true;
+      }
+      const response=await fetch(form.action,{method:'POST',body,headers:{Accept:'application/json'}});
       const json=response.headers.get('content-type')?.includes('application/json');
       const data=json?await response.json():null;
       if(response.status===422 && data){
         output.textContent=Object.values(data.errors||{}).flat().join(' ') || data.message || 'Periksa isian sebelum mengirim.';
-        locked=false;button.disabled=false;
-        const invalid=form.elements.namedItem(Object.keys(data.errors||{})[0]);
+        allowCorrection();
+        const key=Object.keys(data.errors||{})[0] || '';
+        const [root,...parts]=key.split('.');
+        const name=root+parts.map(part=>`[${part}]`).join('');
+        const invalid=form.elements.namedItem(name) || form.elements.namedItem(name+'[]') ||
+          (/\.foto\.\d+$/.test(key) ? form.elements.namedItem(name.replace(/\[\d+\]$/, '[]')) : null);
         (invalid?.focus ? invalid : button).focus();
       }else if(response.status===413 && form.hasAttribute('data-inspection')){
         output.textContent='Unggahan terlalu besar. Kurangi ukuran atau jumlah foto, lalu periksa kembali.';
-        locked=false;button.disabled=false;form.querySelector('[data-photos]')?.focus();
+        allowCorrection();form.querySelector('[data-photos]')?.focus();
       }else if(response.status===202 && data){
         requireReview('Mutasi perlu rekonsiliasi. Jangan catat ulang.');
       }else if(response.ok && data && !response.redirected){
