@@ -860,7 +860,7 @@ with sync_playwright() as playwright:
     product=screen.get_by_label('Varian siap jual')
     value=product.locator('option').filter(has_text='Buket standar kasir CI').get_attribute('value')
     product.select_option(value)
-    screen.get_by_label('Jumlah barang').fill('3')
+    screen.get_by_role('spinbutton',name='Jumlah barang',exact=True).fill('3')
     expect(screen.locator('[data-counter-total]')).to_contain_text('Rp38.000')
     admin_layout()
     screen.get_by_role('link',name='Kembali ke daftar pesanan').click()
