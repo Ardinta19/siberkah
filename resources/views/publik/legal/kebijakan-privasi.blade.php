@@ -5,6 +5,7 @@
 @section('content')
 <div class="py-12">
     <div class="container-siberkah">
+        <x-back-link :href="route('home')">Kembali ke beranda</x-back-link>
 
         <h1 class="text-3xl font-bold text-primary-900 dark:text-primary-50 mb-6">Kebijakan Privasi</h1>
 

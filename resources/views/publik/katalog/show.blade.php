@@ -3,9 +3,10 @@
 @section('content')
 @php($koleksi = collect((array)request('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])->filter(fn ($value) => is_scalar($value))->all())
 <article data-product-detail class="container-siberkah grid gap-6 py-8 md:grid-cols-2">
+    <x-back-link class="md:col-span-2" href="{{ route('catalog.index',$koleksi) }}{{ request()->has('koleksi') ? '#produk-'.$produk->id : '#produk-katalog' }}">Kembali ke katalog</x-back-link>
     @include('partials.product-gallery')
     <section class="bk-product-panel">
-        <a class="text-primary underline" href="{{ route('catalog.index',$koleksi) }}{{ request()->has('koleksi') ? '#produk-'.$produk->id : '#produk-katalog' }}">Kembali ke katalog</a>
+
         <p class="kc-kicker">{{ $produk->kategori?->nama }} · {{ ucfirst($produk->jenis) }}</p>
         <h1 class="font-display text-3xl font-bold">{{ $produk->nama }}</h1>
         <p>{{ $produk->deskripsi }}</p>
@@ -31,7 +32,7 @@
         </form>
         @if(config('checkout.staging') && app()->environment('local','testing','staging'))
             @auth('customer')
-                <a class="bk-checkout" href="{{ route('checkout.product', ['slug' => $produk->slug, 'tanggal' => $tanggalRequest]) }}">Pesan produk ini</a>
+                <a class="bk-checkout" href="{{ route('checkout.product', ['slug' => $produk->slug, 'tanggal' => $tanggalRequest,'koleksi'=>$koleksi]) }}">Pesan produk ini</a>
             @else
                 <a class="bk-checkout" href="{{ route('otp.form') }}">Masuk untuk memesan</a>
             @endauth

@@ -1,7 +1,8 @@
 @extends('layouts.guest')
 @section('content')
 <form data-pending="Menyimpan sandi…" method="post" action="{{ route('staff.password.change') }}" class="mx-auto my-12 grid max-w-sm gap-4 p-5">
-    @csrf
+    <x-back-link :href="route('home')">Kembali ke beranda</x-back-link>
+@csrf
     <h1>Ganti kata sandi staf</h1>
     <p>Gunakan minimal 12 karakter. Setelah menyimpan, masuk kembali dengan kata sandi baru.</p>
     @if($errors->any()) <p role="alert">{{ $errors->first() }}</p> @endif

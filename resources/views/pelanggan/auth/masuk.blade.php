@@ -2,6 +2,7 @@
 @section('title', 'Masuk pelanggan · SIBERKAH')
 @section('content')
 <section class="mx-auto my-12 grid max-w-md gap-5 p-5">
+<x-back-link :href="route('catalog.index')">Kembali ke katalog</x-back-link>
     <h1 class="text-2xl font-bold">Masuk dengan WhatsApp</h1>
     @isset($otpError)
         <p role="alert">{{ $otpError }}</p>

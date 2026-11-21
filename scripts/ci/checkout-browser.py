@@ -237,7 +237,9 @@ with sync_playwright() as playwright:
     expect(page.locator('[data-quantity-state]')).to_contain_text('Jumlah berubah')
     page.get_by_role('button',name='Lanjut pesan').click()
     expect(page.locator('[name=jumlah]')).to_have_value('3')
-    page.goto(base+'/keranjang')
+    page.get_by_role('link',name='Kembali ke keranjang',exact=True).click()
+    assert '/keranjang#keranjang-' in page.url
+    expect(page.locator('main [name=jumlah]')).to_have_value('3')
     page.locator('.bk-remove summary').click()
     page.get_by_role('button',name='Ya, hapus').click()
     expect(page.get_by_role('status').filter(has_text='Produk dihapus')).to_be_visible()

@@ -7,6 +7,7 @@
     $canConsent = is_string($version) && filled($version) && mb_strlen($version) <= 40;
 @endphp
 <section class="bk-profile container-siberkah py-8" aria-labelledby="profile-title">
+<x-back-link :href="route('catalog.index')">Kembali ke katalog</x-back-link>
     <header><p class="kc-kicker">Berkah Kreatif · Akun pelanggan</p><h1 id="profile-title">Profil saya</h1>
         <p>{{ $complete ? 'Kelola nama yang digunakan untuk pesanan Anda.' : 'Lengkapi nama dan persetujuan privasi sebelum memesan.' }}</p></header>
     @if(session('status'))<p role="status" class="bk-notice">{{ session('status') }}</p>@endif

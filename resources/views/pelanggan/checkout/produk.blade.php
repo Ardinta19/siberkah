@@ -1,7 +1,12 @@
 @extends('layouts.customer')
 @section('content')
 <section class="mx-auto max-w-xl space-y-4 p-6">
-    <a href="{{ route('catalog.show', $product->slug) }}">Kembali ke detail produk</a>
+    @if(request()->boolean('dari_keranjang'))
+        <x-back-link href="{{ route('cart.index') }}#keranjang-{{ $product->id }}">Kembali ke keranjang</x-back-link>
+    @else
+        @php($koleksi = collect((array)request('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])->filter(fn ($v) => is_scalar($v))->all())
+        <x-back-link :href="route('catalog.show', ['slug'=>$product->slug,'tanggal'=>$day,'koleksi'=>$koleksi])">Kembali ke detail produk</x-back-link>
+    @endif
     <h1 class="text-2xl font-bold">Pesan {{ $product->nama }}</h1>
     @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
     @if(($needsVariant && $variants->isEmpty()) || ($product->jenis === 'sewa' && ($options->isNotEmpty() || $zones->isEmpty())))
