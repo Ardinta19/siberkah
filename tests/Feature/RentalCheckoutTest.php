@@ -310,8 +310,9 @@ class RentalCheckoutTest extends TestCase
         $note = ['alasan' => 'Sudah ditinjau.'];
         $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_kurir']), 'staff')->getJson($queue)->assertForbidden();
         $this->actingAs($admin, 'staff')->getJson($queue)->assertJsonPath('total', 1);
+        $this->get($queue,['Accept'=>'text/html'])->assertOk()->assertSee('Alasan pelanggan: Acara tidak jadi.')->assertSee($order->nomor);
         $accepted = $outcome === 'disetujui';
-        $this->postJson($accepted ? $approve : $reject, $note)->assertOk();
+        $this->post($accepted ? $approve : $reject, $note+['asal'=>'antrean'])->assertRedirect($queue)->assertSessionHas('success');
         $this->postJson($accepted ? $approve : $reject, $note)->assertOk();
         $this->postJson($accepted ? $reject : $approve, $note)->assertConflict();
         $this->getJson($queue)->assertJsonPath('total', 0);

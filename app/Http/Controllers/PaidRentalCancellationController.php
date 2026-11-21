@@ -35,6 +35,9 @@ class PaidRentalCancellationController extends Controller
         } catch (\DomainException $e) {
             abort(409, $e->getMessage());
         }
+        if ($fromRequest && $request->input('asal')==='antrean' && !$request->expectsJson()) {
+            return redirect()->route('admin.permohonan-batal.index')->with('success','Pesanan dibatalkan. Nominal refund: Rp'.number_format($amount,0,',','.').'. Persetujuan bukan bukti transfer keluar.');
+        }
         return response()->json(['status' => 'dibatalkan', 'nominal_refund' => $amount]);
     }
 

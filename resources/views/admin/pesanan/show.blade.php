@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title','Periksa '.$order->nomor.' · SIBERKAH')
 @section('content')
-<section class="bk-owner-list"><x-back-link href="{{ route('admin.pesanan.index',$context) }}#pesanan-{{ $order->id }}">Kembali ke daftar pesanan</x-back-link>
+<section class="bk-owner-list">@if(request('asal')==='pembatalan')<x-back-link href="{{ route('admin.permohonan-batal.index',array_intersect_key($context,['page'=>true])) }}#permohonan-{{ $order->id }}">Kembali ke permohonan pembatalan</x-back-link>@else<x-back-link href="{{ route('admin.pesanan.index',$context) }}#pesanan-{{ $order->id }}">Kembali ke daftar pesanan</x-back-link>@endif
 <header><p class="kc-kicker">Operasional · Rincian pesanan</p><h1>{{ $order->nomor }}</h1><span class="bk-order-status">{{ str_replace('_',' ',$order->status) }}</span></header>
 <p>Pemesan: {{ $order->nama_pemesan }} · {{ $order->cara_serah==='ambil' ? 'Ambil di toko' : 'Pengantaran' }} · {{ $order->tanggal_serah?->format('d/m/Y') }}</p>
 <h2>Produk saat dipesan</h2>@foreach($order->items as $item)<article class="bk-task"><h3>{{ $item->jumlah }} × {{ $item->nama_produk }}</h3>@if($item->nama_varian)<p>Varian: {{ $item->nama_varian }}</p>@endif<p>Subtotal Rp{{ number_format($item->subtotal,0,',','.') }}</p></article>@endforeach
