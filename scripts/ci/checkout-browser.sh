@@ -13,6 +13,7 @@ php artisan migrate --force >/dev/null
 python scripts/ci/checkout-browser.py
 [[ $(sql -NB "$DB_DATABASE" -e "SELECT COUNT(*) FROM pesanan WHERE jumlah_dibayar=270000 AND saldo=0 AND status='sudah_diserahkan'") == 1 ]]
 [[ $(sql -NB "$DB_DATABASE" -e "SELECT COUNT(*) FROM pembayaran b JOIN pesanan p ON p.id=b.pesanan_id WHERE b.nominal_diterima IS NOT NULL AND p.nomor <> 'CI-RETUR-01'") == 2 ]]
-[[ $(sql -NB "$DB_DATABASE" -e 'SELECT COUNT(*) FROM mutasi_masuk') == 1 ]]
+[[ $(sql -NB "$DB_DATABASE" -e 'SELECT COUNT(*) FROM mutasi_masuk') == 2 ]]
 [[ $(sql -NB "$DB_DATABASE" -e 'SELECT COUNT(*) FROM setoran_kas_antar WHERE sebelum=0 AND sesudah=135000') == 1 ]]
 [[ $(sql -NB "$DB_DATABASE" -e "SELECT COUNT(*) FROM pemakaian_deposit d JOIN pesanan p ON p.id=d.pesanan_id WHERE p.nomor='CI-RETUR-01' AND d.nominal=40000 AND p.saldo=160000") == 1 ]]
+[[ $(sql -NB "$DB_DATABASE" -e "SELECT COUNT(*) FROM pengembalian_mutasi WHERE referensi_keluar='CI:OUT_01' AND nominal=1000") == 1 ]]

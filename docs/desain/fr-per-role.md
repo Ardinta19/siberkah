@@ -71,3 +71,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Regresi Chrome retur:** mulai dari fixture inspeksi kembali sintetis. Periksa izin Admin/Owner, estimasi dan konfirmasi tarif, setoran fisik, proyeksi deposit/saldo dan hasil sesudah simpan. Nominal konfirmasi tidak cocok dicegah di browser serta divalidasi kembali di server.
 
 **Admin — keputusan rekonsiliasi bank:** bedakan keputusan selisih kode unik, reaktivasi nyata dengan pemeriksaan stok, dan bukti transfer keluar. Kelompok dikreditkan setelah pemeriksaan hanya memuat selisih yang diterima dan reaktivasi sukses, bukan semua transfer bank biasa.
+
+**Admin — telusur mutasi:** pencarian literal dalam kelompok menurut nomor pesanan/referensi masuk, serta referensi keluar untuk pengembalian. Perpindahan kelompok mempertahankan pencarian; menghapus pencarian mempertahankan kelompok. Chrome menelusuri satu transfer tambahan hingga bukti keluar tanpa kredit ganda.

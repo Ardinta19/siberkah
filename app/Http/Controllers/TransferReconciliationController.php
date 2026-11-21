@@ -37,8 +37,17 @@ final class TransferReconciliationController extends Controller
         } else {
             $query->where('m.hasil','perlu_rekonsiliasi')->orderBy('m.id');
         }
-        $rows = $query->paginate(25,$columns)->appends($history ? ['kelompok'=>'dikembalikan'] : ($credited ? ['kelompok'=>'dikreditkan'] : []));
-        return ($browser ? response()->view('admin.keuangan.rekonsiliasi',compact('rows','history','credited')) : response()->json($rows))->header('Cache-Control','private, no-store');
+        $group = $history ? 'dikembalikan' : ($credited ? 'dikreditkan' : '');
+        $search = $browser ? trim($request->validate(['q'=>'nullable|string|max:100'])['q'] ?? '') : '';
+        if ($search !== '') {
+            $pattern = '%'.str_replace(['!', '%', '_'], ['!!','!%','!_'], $search).'%';
+            $query->where(function ($filter) use ($pattern,$history) {
+                $filter->whereRaw("o.nomor LIKE ? ESCAPE '!'",[$pattern])->orWhereRaw("m.referensi LIKE ? ESCAPE '!'",[$pattern]);
+                if ($history) { $filter->orWhereRaw("k.referensi_keluar LIKE ? ESCAPE '!'",[$pattern]); }
+            });
+        }
+        $rows = $query->paginate(25,$columns)->appends(array_filter(['kelompok'=>$group,'q'=>$search],fn ($v)=>$v!==''));
+        return ($browser ? response()->view('admin.keuangan.rekonsiliasi',compact('rows','history','credited','group','search')) : response()->json($rows))->header('Cache-Control','private, no-store');
     }
 
     public function recordReturn(Request $request, int $mutasi)

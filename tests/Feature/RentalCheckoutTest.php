@@ -211,6 +211,8 @@ class RentalCheckoutTest extends TestCase
         $this->postJson($verify, array_replace($incoming, ['referensi' => 'BANK:IN:B']))->assertAccepted();
         $this->getJson($queue)->assertOk()->assertJsonPath('total', 2);
         $this->get($queue,['Accept'=>'text/html'])->assertOk()->assertSee('BANK:IN:A')->assertSee('Catat mutasi keluar');
+        $this->get($queue.'?q=IN:A',['Accept'=>'text/html'])->assertOk()->assertSee('BANK:IN:A')->assertDontSee('BANK:IN:B');
+        $this->get($queue.'?q=%25',['Accept'=>'text/html'])->assertOk()->assertSee('0 mutasi');
         $id = DB::table('mutasi_masuk')->where('referensi', 'BANK:IN:A')->value('id');
         $url = route('admin.rekonsiliasi.pengembalian', $id);
         $refund = ['referensi_keluar' => 'BANK:OUT:1', 'nominal' => 120000, 'alasan' => 'Nominal transfer tidak cocok; pengembalian dicek pada mutasi keluar.'];
