@@ -46,8 +46,10 @@ class StaffDeliveryController extends BaseController
         if (!$request->expectsJson() && config('checkout.staging') && app()->environment('local','testing','staging')) {
             $ids = $orders->pluck('id');
             $rentalUnits = DB::table('item_pesanan as i')->join('checkout_sewa as c','c.pesanan_id','=','i.pesanan_id')
-                ->join('unit_sewa as u','u.id','=','i.unit_sewa_id')->whereIn('i.pesanan_id',$ids)->orderBy('i.id')
-                ->get(['i.pesanan_id','i.id','i.nama_produk','i.nama_varian','u.kode'])->groupBy('pesanan_id');
+                ->join('unit_sewa as u','u.id','=','i.unit_sewa_id')
+                ->leftJoin('inspeksi_sewa as awal',fn($join)=>$join->on('awal.item_pesanan_id','=','i.id')->where('awal.tahap','serah'))
+                ->whereIn('i.pesanan_id',$ids)->orderBy('i.id')
+                ->get(['i.pesanan_id','i.id','i.nama_produk','i.nama_varian','u.kode','awal.kondisi as kondisi_serah','awal.catatan as catatan_serah'])->groupBy('pesanan_id');
             $pending = DB::table('permohonan_batal')->whereIn('pesanan_id',$ids)->where('status','menunggu')->pluck('pesanan_id');
         }
         $data = ['judul' => 'Agenda serah terima', 'tanggal' => $date, 'pesanan' => $orders];

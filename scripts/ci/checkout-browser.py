@@ -917,21 +917,33 @@ with sync_playwright() as playwright:
             expect(assigned).to_contain_text('Batas kembali')
         assigned.get_by_text('Inspeksi '+stage+' · CI-PRODUKSI',exact=True).click()
         inspect=assigned.locator('form[data-inspection]')
-        for part in ('Permukaan akrilik','Kaki atau easel','Rangkaian bunga','Lampu LED'):
-            inspect.get_by_label(part).select_option('cacat' if stage=='kembali' and part=='Permukaan akrilik' else 'baik')
-        inspect.get_by_label('Kondisi unit',exact=True).select_option('baik')
+        units=inspect.locator('[data-inspection-unit]')
+        expect(units).to_have_count(2)
+        first,second=units.nth(0),units.nth(1)
+        expect(second.locator('legend')).to_contain_text('CI-PROD-B')
         if stage=='kembali':
-            assert not inspect.get_by_label('Kondisi unit',exact=True).evaluate('el=>el.checkValidity()')
-            inspect.get_by_label('Kondisi unit',exact=True).select_option('rusak')
-            inspect.get_by_label('Catatan kondisi').fill('Permukaan retak saat dijemput CI')
+            expect(first.locator('[data-handover-baseline]')).to_contain_text('saat diserahkan: baik')
+            expect(second.locator('[data-handover-baseline]')).to_contain_text('cacat ringan · Goresan lama CI')
+        for control in first.locator('[data-part],[data-condition]').all():
+            control.select_option('baik')
+        for part in ('Permukaan akrilik','Kaki atau easel','Rangkaian bunga','Lampu LED'):
+            second.get_by_label(part).select_option('cacat' if stage=='kembali' and part=='Permukaan akrilik' else 'baik')
+        second.get_by_label('Kondisi unit',exact=True).select_option('baik')
+        if stage=='kembali':
+            assert not second.get_by_label('Kondisi unit',exact=True).evaluate('el=>el.checkValidity()')
+            second.get_by_label('Kondisi unit',exact=True).select_option('rusak')
+            second.get_by_label('Catatan kondisi').fill('Permukaan retak saat dijemput CI')
         else:
+            second.get_by_label('Kondisi unit',exact=True).select_option('cacat_ringan')
+            second.get_by_label('Catatan kondisi').fill('Goresan lama CI')
             inspect.get_by_label('Jaminan yang diterima').select_option('ktp')
             expect(inspect.locator('[name=nominal_jaminan]')).to_be_disabled()
-        inspect.locator('[data-photos]').set_input_files('public/images/berkah-kreatif.webp')
-        inspect.locator('[data-camera]').set_input_files('public/images/katalog-editorial.webp')
+        first.locator('[data-photos]').set_input_files('public/images/berkah-kreatif.webp')
+        assert not second.locator('[data-photos]').evaluate('el=>el.checkValidity()'), 'Foto unit pertama tidak boleh memenuhi syarat unit cacat kedua'
+        second.locator('[data-camera]').set_input_files('public/images/katalog-editorial.webp')
         expect(inspect.locator('[data-photo-count]')).to_contain_text('2 dari maksimal 6')
-        inspect.get_by_role('button',name='Hapus foto 1',exact=True).click()
-        expect(inspect.locator('[data-photo-list]')).to_contain_text('katalog-editorial.webp')
+        first.get_by_role('button',name='Hapus foto 1',exact=True).click()
+        expect(second.locator('[data-photo-list]')).to_contain_text('katalog-editorial.webp')
         expect(inspect.locator('[data-photo-count]')).to_contain_text('1 dari maksimal 6')
         submit_inspection=inspect.get_by_role('button',name='Simpan inspeksi '+stage)
         if stage=='serah':

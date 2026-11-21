@@ -20,6 +20,12 @@ for (const form of document.querySelectorAll('[data-inspection]')) {
             form.elements.nominal_jaminan.required = active;
         }
     }
+    form.addEventListener('formdata', ({ formData }) => {
+        for (const unit of units) {
+            const input = unit.querySelector('[data-photos]');
+            if (!input.files.length) formData.delete(input.name);
+        }
+    });
     form.addEventListener('change', refresh);
     refresh();
 }
