@@ -8,15 +8,49 @@ use Illuminate\Support\Facades\DB;
 
 final class CatalogInventoryController extends Controller
 {
+    private function listContext(Request $request): array
+    {
+        return array_filter(['page'=>$request->integer('page') > 1 ? $request->integer('page') : null,
+            'tampil'=>in_array($request->query('tampil'), ['publik','nonaktif','kategori'], true) ? $request->query('tampil') : null]);
+    }
+
+    private function variantStamp(object $row, string $kind): string
+    {
+        return hash('sha256', json_encode([$kind,$row->id,$row->nama,$row->harga,$row->stok,$row->aktif], JSON_THROW_ON_ERROR));
+    }
+
+    public function variants(Request $request, int $id)
+    {
+        $product = DB::table('produk')->where('id',$id)->first();
+        abort_unless($product,404);
+        $variants = DB::table('varian_produk')->where('produk_id',$id)->orderBy('nama')->orderBy('id')->get();
+        $selected = $request->has('edit') ? $variants->firstWhere('id',$request->integer('edit')) : null;
+        abort_if($request->has('edit') && !$selected,404);
+        return response()->view('owner.katalog.variants', ['product'=>$product,'variants'=>$variants,'selected'=>$selected,
+            'stamp'=>$selected ? $this->variantStamp($selected,$product->jenis) : null,'context'=>$this->listContext($request)])->header('Cache-Control','private, no-store');
+    }
+
     public function variant(Request $request, int $id)
     {
         $data = $request->validate(['id' => 'sometimes|integer|min:1', 'nama' => 'required|string|max:80', 'harga' => 'required|integer|between:0,2147482648',
             'stok' => 'sometimes|integer|between:0,65535', 'aktif' => 'required|boolean']);
-        return DB::transaction(function () use ($id, $data, $request) {
+        $result = DB::transaction(function () use ($id, $data, $request) {
             $product = $this->product($id);
+            if (isset($data['id']) && ($request->input('asal') === 'varian' || $request->has('versi_varian'))) {
+                $row = DB::table('varian_produk')->where('produk_id',$id)->where('id',$data['id'])->lockForUpdate()->first();
+                abort_unless($row,404);
+                if ($this->variantStamp($row,$product->jenis) !== $request->input('versi_varian')) { return null; }
+            }
             abort_if(isset($data['stok']) && $product->jenis !== 'jual', 422, 'Stok angka hanya untuk produk siap jual.');
             return $this->save($request, 'varian_produk', ['produk_id' => $id], $data);
         }, 3);
+        $url = route('admin.katalog.variants',['id'=>$id]+$this->listContext($request));
+        if ($result === null) {
+            abort_if($request->expectsJson(),409,'Data varian sudah berubah.');
+            return redirect($url)->with('variant_warning','Varian atau stok telah berubah. Isian lama tidak diterapkan. Periksa data terbaru sebelum mengedit kembali.');
+        }
+        return !$request->expectsJson() && $request->input('asal') === 'varian'
+            ? redirect($url.'#varian-'.$result['id'])->with('success','Varian berhasil disimpan.') : $result;
     }
 
     public function option(Request $request, int $id)

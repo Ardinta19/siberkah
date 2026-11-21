@@ -516,6 +516,8 @@ class RentalCheckoutTest extends TestCase
         $url = route('admin.katalog.manage-variants', $product);
         $this->actingAs($admin, 'staff')->postJson($url, $variant)->assertForbidden();
         $vid = $this->actingAs($owner, 'staff')->postJson($url, $variant)->assertOk()->json('id');
+        $variantPage = route('admin.katalog.variants',['id'=>$product,'edit'=>$vid]);
+        $stamp = $this->get($variantPage)->assertOk()->assertSee('Stok tersedia')->viewData('stamp');
         $this->postJson(route('admin.katalog.manage-variants', $fixture['produk_id']), ['id' => $vid, 'nama' => 'Salah', 'harga' => 100, 'aktif' => true])->assertNotFound();
         $data = ['pelanggan_id' => $customer->id, 'produk_id' => $product, 'varian_id' => $vid, 'kunci' => (string) Str::uuid(), 'nominal' => 26000,
             'jumlah' => 1, 'versi_privasi' => 'test-v1', 'setuju_privasi' => true];
@@ -525,6 +527,9 @@ class RentalCheckoutTest extends TestCase
         $this->postJson(route('toko.store'), array_replace($data, ['kunci' => (string) Str::uuid()]))->assertConflict();
         $this->assertDatabaseCount('pembayaran', 1);
         $this->assertDatabaseHas('varian_produk', ['id' => $vid, 'stok' => 0]);
+        $this->actingAs($owner,'staff')->postJson($url,$variant+['id'=>$vid,'versi_varian'=>$stamp])->assertConflict();
+        $this->assertDatabaseHas('varian_produk', ['id'=>$vid,'stok'=>0]);
+        $this->actingAs($admin,'staff');
         $this->postJson(route('toko.selesai', $id))->assertConflict();
         $this->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $id])->assertRedirect();
         $this->postJson(route('toko.serah', $id), ['barang_diperiksa' => true, 'diterima_pembeli' => true])->assertOk();

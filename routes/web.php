@@ -177,6 +177,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::put('{id}', [AdminCatalogController::class, 'update'])->middleware('role:owner')->name('admin.katalog.update');
         Route::post('{id}/archive', [AdminCatalogController::class, 'archive'])->middleware('role:owner')->name('admin.katalog.archive');
         Route::post('{id}/publish', [AdminCatalogController::class, 'publish'])->middleware('role:owner')->name('admin.katalog.publish');
+        Route::get('{id}/varian', [CatalogInventoryController::class, 'variants'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.variants');
         Route::post('{id}/manage-variants', [CatalogInventoryController::class, 'variant'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-variants');
         Route::post('{id}/manage-options', [CatalogInventoryController::class, 'option'])->middleware('role:owner')->whereNumber('id')->name('admin.katalog.manage-options');
         Route::prefix('{id}/manage-images')->where(['id' => '[0-9]+'])->middleware('role:owner')->group(function () {

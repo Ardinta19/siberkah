@@ -18,6 +18,7 @@
             <p>{{ $p->kategori?->nama }} · {{ ['jual'=>'Siap jual','sewa'=>'Sewa','custom'=>'Custom'][$p->jenis] ?? $p->jenis }}</p>
             <a class="bk-secondary" href="{{ route('admin.katalog.edit',['id'=>$p->id]+$context) }}">Edit {{ $p->nama }}</a>
             <a class="bk-secondary" href="{{ route('admin.katalog.gallery',['id'=>$p->id]+$context) }}">Kelola foto {{ $p->nama }}</a>
+            <a class="bk-secondary" href="{{ route('admin.katalog.variants',['id'=>$p->id]+$context) }}">Kelola varian {{ $p->nama }}</a>
             @if($p->aktif || $p->kategori?->aktif)
                 <details class="bk-confirm"><summary>{{ $p->aktif ? 'Arsipkan' : 'Terbitkan' }}</summary>
                     <p>{{ $p->nama }} {{ $p->aktif ? 'akan diarsipkan.' : 'akan ditampilkan di katalog publik.' }}</p>
