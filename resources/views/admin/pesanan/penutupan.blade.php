@@ -5,20 +5,22 @@
     $selesai = $order->status === 'selesai';
 @endphp
 <section class="bk-task" aria-labelledby="penutupan"><h2 id="penutupan">Penilaian dan penutupan sewa</h2>
+<p>Saldo pesanan: {{ $rupiah($order->saldo) }}</p>
+@if($lateFee)<p>Denda keterlambatan tercatat: {{ $rupiah($lateFee) }}. Denda terpisah dari biaya kerusakan dan bukan potongan deposit otomatis.</p>@endif
+@if(!$review && $tunai)<p>Deposit saat serah: {{ $rupiah($order->nominal_jaminan) }}. Setoran deposit belum dikonfirmasi. Hitung kas pembayaran antar tidak mengonfirmasi penerimaan jaminan.</p>@endif
 @if(!$review)<p>Belum ada penilaian final. Bukti inspeksi saja tidak cukup untuk menutup pesanan.</p>
 @include('admin.pesanan.nilai-retur')
 @else
 <p>Dinilai {{ $review->dinilai_pada }} WIB · Petugas #{{ $review->penilai_id }}</p>
 <p>Biaya kerusakan: <strong>{{ $rupiah($review->biaya_kerusakan) }}</strong> · {{ $review->alasan }}</p>
 @foreach(json_decode($review->rincian_tarif ?? '[]',true) ?? [] as $line)<p>{{ ucfirst(str_replace('_',' ',$line['kode'])) }}: {{ $line['jumlah'] }} {{ $line['satuan'] }} × {{ $rupiah($line['tarif']) }}</p>@endforeach
-<p>Saldo pesanan: {{ $rupiah($order->saldo) }}</p>
 @if($tunai)<h3>Deposit tunai</h3><dl><div><dt>Deposit awal</dt><dd>{{ $rupiah($order->nominal_jaminan) }}</dd></div><div><dt>Dipakai untuk kerusakan</dt><dd>{{ $rupiah($deposit->nominal ?? 0) }}</dd></div><div><dt>{{ $selesai ? 'Nominal kembali tercatat' : 'Sisa untuk dikembalikan' }}</dt><dd>{{ $rupiah($sisa) }}</dd></div></dl>
 @if($deposit)<p>Alasan penggunaan: {{ $deposit->alasan }} · {{ $deposit->dicatat_pada }} WIB · Petugas #{{ $deposit->pengguna_id }}</p>@endif
 @if($review->setoran_pada)<p>Setoran deposit tercatat {{ $review->setoran_pada }} WIB · Petugas #{{ $review->penerima_setoran_id }}</p>
 @elseif(!$selesai && $order->status==='sudah_dikembalikan')<details class="bk-confirm"><summary>Catat penerimaan setoran deposit</summary>
 <form data-ledger class="bk-product-editor grid gap-3 p-4" method="post" action="{{ route('retur.setoran',$order->id) }}">@csrf
 <p>Hitung uang fisik. Pencatatan ini tidak memotong deposit dan tidak melunasi saldo.</p>
-<label>Nominal deposit yang diterima (Rp)<input name="nominal" type="number" min="100000" max="150000" step="1" required></label>
+<label>Nominal deposit yang diterima (Rp)<input name="nominal" type="number" min="{{ $order->nominal_jaminan }}" max="{{ $order->nominal_jaminan }}" step="1" required></label>
 <button class="btn-primary">Catat deposit yang sudah diterima</button>@include('partials.ledger-feedback')</form></details>@endif
 @include('admin.pesanan.pemakaian-deposit')
 @else<p>Jenis jaminan: {{ $order->jenis_jaminan ?? 'Tidak tercatat' }}</p>@endif

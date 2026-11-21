@@ -21,6 +21,7 @@ class RentalCloseoutController extends Controller
             $items = $order->items()->leftJoin('unit_sewa as u','u.id','=','item_pesanan.unit_sewa_id')
                 ->orderBy('item_pesanan.id')->get(['item_pesanan.id','nama_produk','nama_varian','u.kode']);
             $inspections = $query->get(['item.id as item_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','i.dilakukan_pada','i.pengguna_id','f.id as foto_id','f.urutan'])->groupBy(['item_id','tahap']);
+            $lateFee = (int) DB::table('penyesuaian_pesanan')->where(['pesanan_id'=>$id,'jenis'=>'denda_telat'])->sum('nominal');
             $review = DB::table('penutupan_sewa')->where('pesanan_id',$id)->first();
             $returns = $inspections->map(fn ($stages) => $stages->get('kembali')?->first())->filter();
             $complete = $items->isNotEmpty() && $returns->count() === $items->count();
@@ -33,7 +34,7 @@ class RentalCloseoutController extends Controller
             $canApply = $cap > 0 && $order->jumlah_dibayar + $order->saldo === $order->total
                 && \App\Actions\ApplyDamageDeposit::eligibleBill($order,$review->tagihan_id)->exists();
             $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
-            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','review','deposit','complete','damaged','rates','cap','canApply'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','lateFee','review','deposit','complete','damaged','rates','cap','canApply'))->header('Cache-Control','private, no-store');
         }
         $rows = $query->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
         return response()->json($rows)->header('Cache-Control', 'private, no-store');
