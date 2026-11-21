@@ -1,3 +1,4 @@
+import "./checkout-estimate.js";
 import "./product-gallery.js";
 import "./storefront-navigation.js";
 import "./role-navigation.js";

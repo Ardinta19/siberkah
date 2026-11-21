@@ -7,7 +7,7 @@
     @if(($needsVariant && $variants->isEmpty()) || ($product->jenis === 'sewa' && ($options->isNotEmpty() || $zones->isEmpty())))
         <p>Produk belum dapat dipesan melalui formulir ini. Hubungi Admin.</p>
     @else
-    <form data-pending="Membuat pesanan…" method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
+    <form data-pending="Membuat pesanan…" method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-rendered-at="{{ now()->timestamp }}" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
         @csrf
         @if(request()->boolean('dari_keranjang'))<input type="hidden" name="dari_keranjang" value="1">@endif
         <input type="hidden" name="kunci" value="{{ old('kunci', $key) }}">
@@ -35,35 +35,18 @@
         <label>Skema pembayaran <select name="pembayaran"><option value="penuh">Penuh</option>@if($bank)<option value="dp" @selected(old('pembayaran') === 'dp')>DP 50% di muka</option>@endif</select></label>
         <p>DP tersedia mulai Rp{{ number_format($threshold,0,',','.') }} bila tenggat H-1 pukul 18.00 WIB belum lewat.</p>
         <label>Metode pelunasan <select name="metode_pelunasan">@if($bank)<option value="bank">Transfer / QRIS sesuai tujuan aktif</option>@endif<option value="tunai_saat_serah" @selected(old('metode_pelunasan') === 'tunai_saat_serah')>Tunai saat ambil atau diantar</option></select></label>
-        <output id="estimate" aria-live="polite"></output>
+        <section hidden id="estimate" class="bk-estimate" aria-labelledby="estimate-title">
+            <p class="kc-kicker">Sebelum memesan</p><h2 id="estimate-title">Ringkasan biaya</h2>
+            <dl><div><dt>Subtotal produk</dt><dd data-subtotal></dd></div><div><dt>Ongkos antar</dt><dd data-fee></dd></div>
+                <div hidden data-rounding-row><dt>Pembulatan</dt><dd data-rounding></dd></div>
+                <div class="bk-estimate-total"><dt>Perkiraan total</dt><dd data-total></dd></div></dl>
+            <p data-payment-note role="status"></p>
+        </section>
         <p>Total akhir dan ketersediaan diperiksa server saat memesan. Jangan membayar sebelum melihat tagihan.</p>
         <label><input type="checkbox" required name="setuju_privasi" value="1"> Saya menyetujui <a href="{{ route('privasi') }}" target="_blank" rel="noopener">kebijakan privasi</a> versi {{ config('checkout.privacy_version') }}.</label>
         <button class="btn-primary">Buat pesanan</button>
     </form>
-    <script>
-    const form = document.querySelector('#checkout'), field = name => form.elements.namedItem(name);
-    const price = select => Number(select?.selectedOptions[0]?.dataset.price || 0);
-    function updateEstimate() {
-        const delivery = field('cara_serah').value === 'antar';
-        document.querySelector('#delivery').disabled = !delivery;
-        document.querySelector('#delivery').hidden = !delivery;
-        field('alamat_antar').required = delivery;
-        if (field('jam_serah')) {
-            const sameDay = field('tanggal').value === form.dataset.today;
-            field('jam_serah').disabled = !sameDay;
-            field('jam_serah').required = sameDay;
-            document.querySelector('#slot').hidden = !sameDay;
-        }
-        let unit = field('varian_id') ? price(field('varian_id')) : Number(form.dataset.price);
-        for (const opt of form.querySelectorAll('[data-extra]')) unit += price(opt) * Number(field(`opsi[${opt.dataset.extra}][satuan]`)?.value ?? 1);
-        const total = Math.ceil((unit * Number(field('jumlah').value) + (delivery ? price(field('zona_antar_id')) : 0)) / 1000) * 1000;
-        const dp = field('pembayaran').querySelector('[value="dp"]');
-        if (dp) { dp.disabled = total < Number(form.dataset.threshold); if (dp.disabled) field('pembayaran').value = 'penuh'; }
-        const amount = new Intl.NumberFormat('id-ID').format(total);
-        document.querySelector('#estimate').textContent = `Perkiraan total Rp${amount}` + (field('pembayaran').value === 'dp' ? ` · DP Rp${new Intl.NumberFormat('id-ID').format(total / 2)}; sisanya saat pelunasan.` : '');
-    }
-    form.addEventListener('input', updateEstimate); updateEstimate();
-    </script>
+
     @endif
 </section>
 @endsection
