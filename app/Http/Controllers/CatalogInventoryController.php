@@ -126,6 +126,18 @@ final class CatalogInventoryController extends Controller
         return hash('sha256', json_encode([$unit->id, $unit->varian_produk_id, $unit->kode, $unit->status, $unit->catatan], JSON_THROW_ON_ERROR));
     }
 
+    public function inventory(Request $request)
+    {
+        $context = OwnerCatalogContext::from($request);
+        $query = DB::table('produk')->where('jenis','sewa');
+        if (isset($context['q'])) {
+            $term = strtr($context['q'],['!'=>'!!','%'=>'!%','_'=>'!_']);
+            $query->whereRaw("nama LIKE ? ESCAPE '!'",['%'.$term.'%']);
+        }
+        $products = $query->orderBy('nama')->orderBy('id')->paginate(20,['id','nama','aktif'])->appends(array_intersect_key($context,['q'=>true]));
+        return response()->view('admin.inventaris',compact('products','context'))->header('Cache-Control','private, no-store');
+    }
+
     public function units(Request $request, int $id)
     {
         $product = DB::table('produk')->where('id', $id)->where('jenis', 'sewa')->first();
@@ -179,11 +191,12 @@ final class CatalogInventoryController extends Controller
         $html = !$request->expectsJson() && $request->input('asal') === 'unit';
         $context = OwnerCatalogContext::from($request) + $this->unitFilters($request);
         if ($request->integer('unit_page') > 1) { $context['unit_page'] = $request->integer('unit_page'); }
+        $route = $request->routeIs('admin.inventaris.save') || !$request->user('staff')->isOwner() ? 'admin.inventaris.units' : 'admin.katalog.units';
         if (isset($result['conflict'])) {
             abort_unless($html,409,$result['conflict']);
-            return redirect()->route('admin.katalog.units',['id'=>$id]+$context+(isset($data['id']) ? ['edit'=>$data['id']] : []))->with('unit_warning',$result['conflict']);
+            return redirect()->route($route,['id'=>$id]+$context+(isset($data['id']) ? ['edit'=>$data['id']] : []))->with('unit_warning',$result['conflict']);
         }
-        return $html ? redirect()->route('admin.katalog.units',['id'=>$id,'edit'=>$result['id']]+$context)->with('success','Unit sewa berhasil disimpan.') : $result;
+        return $html ? redirect()->route($route,['id'=>$id,'edit'=>$result['id']]+$context)->with('success','Unit sewa berhasil disimpan.') : $result;
     }
 
     private function product(int $id): object

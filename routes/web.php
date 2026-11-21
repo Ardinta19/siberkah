@@ -137,6 +137,11 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::get('penjualan-toko', [AdminOrderController::class, 'counterForm'])->middleware(RentalStaging::class)->name('toko.form');
         Route::post('penjualan-toko', [StoreSaleController::class, 'store'])->middleware(RentalStaging::class)->name('toko.store');
         Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
+        Route::prefix('inventaris')->middleware(RentalStaging::class)->controller(CatalogInventoryController::class)->group(function () {
+            Route::get('/', 'inventory')->name('admin.inventaris');
+            Route::get('{id}', 'units')->whereNumber('id')->name('admin.inventaris.units');
+            Route::post('{id}', 'unit')->whereNumber('id')->name('admin.inventaris.save');
+        });
         Route::get('kalender', [AdminSettingsController::class,'calendar'])->middleware(RentalStaging::class)->name('admin.kalender');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->whereNumber('id')->name('admin.pesanan.show');
