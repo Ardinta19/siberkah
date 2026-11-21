@@ -54,7 +54,7 @@ final class BoardOperationsController extends Controller
 
     public function extend(Request $request, int $id)
     {
-        $d = $request->validate(['kunci' => 'required|uuid', 'jam' => 'required|integer|between:1,5', 'alasan' => 'required|string|max:200']);
+        $d = $request->validate(['kunci' => 'required|uuid', 'jam' => 'required|integer|between:1,5', 'jam_sebelum' => 'sometimes|required|integer|between:0,5', 'alasan' => 'required|string|max:200']);
         return DB::transaction(function () use ($request, $id, $d) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             abort_unless(DB::table('checkout_sewa')->where('pesanan_id', $id)->exists(), 404);
@@ -64,15 +64,14 @@ final class BoardOperationsController extends Controller
                 abort_unless($old->jam == $d['jam'] && $old->alasan === $d['alasan'], 409, 'Kunci sudah digunakan.');
                 return response()->json(['nominal' => (int) $old->nominal, 'batas_baru' => $old->batas_baru]);
             }
-            abort_unless($order->status === 'sudah_diserahkan' && $order->total === $order->jumlah_dibayar + $order->saldo, 409);
             $used = (int) DB::table('perpanjangan_sewa')->where('pesanan_id', $id)->sum('jam');
-            $end = $order->tanggal_serah->copy()->setTime(18, 0)->addHours($used);
+            abort_if(isset($d['jam_sebelum']) && (int)$d['jam_sebelum'] !== $used, 409, 'Batas kembali sudah berubah. Periksa rincian terbaru.');
+            $terms = \App\Support\RentalExtension::terms($order,$used);
+            abort_if($terms['reason'] !== null,409,$terms['reason'] ?? '');
             $hours = (int) $d['jam'];
-            abort_if(now('Asia/Jakarta')->gt($end) || $used + $hours > 5, 409, 'Tidak boleh berlaku surut atau melampaui hari sewa.');
-            $items = $order->items()->get();
-            $held = DB::table('penguasaan_unit')->where('pesanan_id', $id)->pluck('unit_sewa_id');
-            abort_unless($items->isNotEmpty() && $held->count() === $items->count() && $items->every(fn ($i) => $held->contains($i->unit_sewa_id) && $i->jumlah == 1), 409);
-            $amount = $items->sum(fn ($i) => intdiv($i->harga_satuan + 1999, 2000) * 1000 * $hours);
+            abort_if($used + $hours > 5,409,'Durasi melebihi lima jam tambahan.');
+            $end = $terms['end'];
+            $amount = $terms['rate'] * $hours;
             abort_if($amount < 1 || $order->total + $amount > 2147482648, 422);
             $adjust = DB::table('penyesuaian_pesanan')->insertGetId(['pesanan_id' => $id, 'jenis' => 'perpanjangan', 'nominal' => $amount,
                 'keterangan' => $d['alasan'], 'pengguna_id' => $request->user('staff')->id, 'dibuat_pada' => now()]);

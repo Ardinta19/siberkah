@@ -445,9 +445,15 @@ class RentalCheckoutTest extends TestCase
             $extension = ['kunci' => (string) Str::uuid(), 'jam' => 1, 'alasan' => 'Diminta pelanggan sebelum batas kembali'];
             $url = route('papan.perpanjang', $order->id);
             $this->postJson($url, $extension)->assertForbidden();
-            $this->actingAs($admin, 'staff')->postJson($url, $extension)->assertCreated()->assertJsonPath('nominal', 126000);
+            $detail = route('admin.pesanan.show',$order->id);
+            $html = ['Accept'=>'text/html'];
+            $this->actingAs($admin,'staff')->get($detail,$html)->assertOk()->assertSee('1 jam · 19:00 WIB · +Rp126.000');
+            $extension['jam_sebelum'] = 0;
+            $this->postJson($url, $extension)->assertCreated()->assertJsonPath('nominal', 126000);
             $this->postJson($url, $extension)->assertOk();
             $this->postJson($url, array_replace($extension, ['jam' => 2]))->assertConflict();
+            $this->postJson($url,array_replace($extension,['kunci'=>(string)Str::uuid()]))->assertConflict();
+            $this->get($detail,$html)->assertOk()->assertSee('1 dari 5 jam tambahan terpakai')->assertSee($extension['alasan']);
             $this->assertDatabaseCount('perpanjangan_sewa', 1);
             $this->actingAs($courier, 'staff');
             $delta = 126000 - 25000; // one approved hour replaces one hour of lateness

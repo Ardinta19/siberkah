@@ -57,3 +57,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — pemeriksaan papan dan riwayat:** navigasi bagian rincian, teks sesuai metode/jadwal, edit tiga baris hanya sebelum produksi, deteksi teks kedaluwarsa saat simpan. Riwayat status baca-saja menampilkan tahap lama/baru, pelaku, waktu dan catatan terbaru lebih dahulu.
 
 **Admin — unit sewa per item:** tampilkan kode fisik dan riwayat penggantian, filter calon pengganti menurut varian, kondisi, penguasaan serta reservasi/blokir pada tanggal serah. Penggantian memakai transaksi lama yang memeriksa ulang stok, tahap dan pembatalan; tidak mengubah harga.
+
+**Admin — durasi sewa:** tampilkan batas kembali WIB, sisa kuota dan biaya tiap pilihan sebelum menyimpan. Riwayat menyimpan alasan, biaya dan batas baru. Tolak formulir dengan batas lama; replay identik tidak menambah saldo lagi.

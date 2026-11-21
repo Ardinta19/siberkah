@@ -68,9 +68,14 @@ class AdminOrderController extends BaseController
                         'p.status','p.diverifikasi_pada','r.referensi_keluar']);
             }
             $board = DB::table('desain_papan')->where('pesanan_id',$id)->first(['metode','jadwal_serah','judul','penerima','pengirim']);
+            $extension = null;
+            if (config('checkout.staging') && app()->environment('local','testing','staging') && DB::table('checkout_sewa')->where('pesanan_id',$id)->exists()) {
+                $entries = DB::table('perpanjangan_sewa')->where('pesanan_id',$id)->orderByDesc('id')->get(['jam','nominal','alasan','batas_baru']);
+                $extension = \App\Support\RentalExtension::terms($order,(int)$entries->sum('jam')) + ['entries'=>$entries];
+            }
             $history = $order->riwayatStatus()->orderByDesc('id')->get();
             $opsiPerItem = $order->snapshotOpsiPerItem();
-            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem','board','history'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem','board','history','extension'))->header('Cache-Control','private, no-store');
         }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
