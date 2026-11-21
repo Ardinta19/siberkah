@@ -9,3 +9,5 @@ description: Panduan lokal untuk menambahkan atau mengaudit motion GSAP pada hal
 4. Gunakan stagger singkat dan bersihkan inline styles. Uji kecil/lebar, fokus keyboard, perubahan total dan submit saat animasi berjalan; cek ringkasan tidak menutupi tombol. Catat apa yang benar-benar diuji.
 
 Contoh Basic Tween di checkout: `from` untuk masuknya kartu, `fromTo` untuk aksen kelopak pada judul tujuan, lalu `to` untuk kembali netral. Tandai tujuan dengan CSS `:target`/`:focus` juga saat motion dimatikan. Aksen tujuan bukan indikator bahwa langkah sudah selesai.
+
+Pilih plugin per interaksi, bukan registrasi global. Contoh: `Flip.getState()` sebelum urutan DOM foto berubah, `Flip.from()` setelahnya. Muat plugin hanya pada galeri Owner dengan minimal dua foto dan preferensi gerak normal. Urutan, fokus keyboard, pembatalan dan submit tidak boleh menunggu tween selesai. Jangan memuat GSDevTools/MotionPathHelper di bundle produksi, atau menambahkan ScrollSmoother pada formulir dengan scroll native, dialog dan sticky header tanpa kebutuhan dan pengujian khusus.
