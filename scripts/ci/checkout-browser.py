@@ -1,5 +1,6 @@
 """Exercise native form controls, CSRF, redirects and payment instructions in Chrome."""
 import json
+import re
 import subprocess
 import os
 import sys
@@ -421,7 +422,6 @@ with sync_playwright() as playwright:
     admin.get_by_role('link', name='Periksa pembayaran dan setoran antar').click()
     verification = admin.locator('form[data-ledger]').filter(has_text=number)
     text = verification.inner_text()
-    import re
     exact = re.search(r'Tagihan persis Rp([0-9.]+)', text).group(1).replace('.', '')
     assert 135000 < int(exact) <= 135999
     verification.locator('[name=referensi]').fill('CI:BANK:001')
