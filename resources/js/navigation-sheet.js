@@ -1,5 +1,5 @@
 // Keep native modal focus containment, Escape and inert background. Only the exit is delayed.
-export function navigationSheet(dialog, trigger, prepare) {
+export function navigationSheet(dialog, trigger, prepare, shortcuts = []) {
   let origin, exit;
   const close = () => {
     if (!dialog.open || exit) return;
@@ -8,14 +8,15 @@ export function navigationSheet(dialog, trigger, prepare) {
     exit = dialog.animate([{opacity:1,transform:'none'},{opacity:0,transform:`translateY(${y})`}], {duration:180,easing:'ease-in'});
     exit.onfinish = () => dialog.close();
   };
-  const open = () => {
+  const open = (invoker = document.activeElement) => {
     if (document.querySelector('dialog[open],#role-sidebar[aria-modal=true]')) return;
-    origin = document.activeElement;
+    origin = invoker;
     dialog.showModal(); prepare();
   };
-  trigger.hidden=false;
   trigger.querySelector('kbd').textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ K' : 'Ctrl K';
-  trigger.onclick=open;
+  for(const button of [trigger,...shortcuts]) {
+    button.hidden=false;button.onclick=()=>open(button);
+  }
   dialog.querySelector('[data-dismiss]').onclick=close;
   dialog.addEventListener('keydown',e=>{
     if(e.key==='Escape' && !e.target.closest('select')){e.preventDefault();e.stopPropagation();close();}

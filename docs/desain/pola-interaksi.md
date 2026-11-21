@@ -35,3 +35,5 @@ React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade
 **Logo saat scroll:** satu permukaan kaca untuk satu kontrol. Saat pill merapat, latar dan area tekan bertemu pada lingkaran 52 × 52 px di pusat header. Tombol tidak menggambar oval atau bayangan kedua. Monogram 140:76 dipusatkan tanpa dipotong atau direntangkan; ring fokus hanya muncul untuk navigasi keyboard.
 
 Saat logo ringkas dibuka jauh di bawah halaman, fokus masuk ke kontrol navigasi yang terlihat. Escape mengembalikan fokus ke logo; berpindah fokus ke konten merapatkan navbar tanpa mengambil fokus kembali. Jika pengguna sedang memilih menu atau tanggal, panel terdalam menangani Escape lebih dulu.
+
+**Memperbaiki hasil:** sediakan pemicu Cari & filter di kepala daftar; ini membuka sheet yang sama, bukan filter kedua. Escape mengembalikan fokus ke pemicu asal. Paginasi, hapus kata, dan reset filter mengarah ke daftar, bukan hero editorial. Bedakan katalog kosong dari pencarian tanpa kecocokan.

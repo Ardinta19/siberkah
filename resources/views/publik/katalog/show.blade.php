@@ -13,7 +13,7 @@
         @endforeach
     </div>
     <section class="bk-product-panel">
-        <a class="text-primary underline" href="{{ route('catalog.index',$koleksi) }}">Kembali ke katalog</a>
+        <a class="text-primary underline" href="{{ route('catalog.index',$koleksi) }}{{ request()->has('koleksi') ? '#produk-'.$produk->id : '#produk-katalog' }}">Kembali ke katalog</a>
         <p class="kc-kicker">{{ $produk->kategori?->nama }} · {{ ucfirst($produk->jenis) }}</p>
         <h1 class="font-display text-3xl font-bold">{{ $produk->nama }}</h1>
         <p>{{ $produk->deskripsi }}</p>

@@ -60,6 +60,6 @@ if (pill && header) {
     navigationSheet(palette,launcher,()=>{
       form.reset();syncDate();date.dispatchEvent(new Event('change',{bubbles:true}));
       input.focus();enhanceSelection();
-    });
+    },document.querySelectorAll('[data-edit-collection]'));
   }
 }

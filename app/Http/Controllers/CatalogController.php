@@ -65,7 +65,7 @@ class CatalogController extends BaseController
             $query->orderByRaw('harga_tampil is null')->orderBy('harga_tampil', $request->input('urut') === 'harga_turun' ? 'desc' : 'asc');
         }
         $produk = $query->with(['kategori', 'varianProduk' => fn ($q) => $date ? $q->tersediaPada($date) : $q->where('aktif', true)])
-            ->orderBy('urutan')->orderBy('id')->paginate(24)->withQueryString();
+            ->orderBy('urutan')->orderBy('id')->paginate(24)->withQueryString()->fragment('produk-katalog');
 
         return view('publik.katalog.index', [
             'produk' => $produk,
