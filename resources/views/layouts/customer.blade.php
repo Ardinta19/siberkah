@@ -18,19 +18,16 @@
         @include('partials.expand-pill')
                 <div id="bk-nav-controls" class="container-siberkah bk-full-nav">
             <div class="flex items-center justify-between h-16">
-                <a href="{{ route('catalog.index') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
-                    <svg class="w-8 h-8" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-                        <rect width="48" height="48" rx="12" fill="currentColor"/>
-                        <path d="M12 24L20 32L36 16" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                <a href="{{ route('home') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
+                    <img src="{{ asset('images/berkah-kreatif.webp') }}" width="44" height="44" alt="" class="size-11 object-contain">
                     <span class="bk-wordmark font-bold text-xl hidden sm:block">SIBERKAH</span>
                 </a>
 
                 <nav class="hidden md:flex items-center gap-1" aria-label="Navigasi pelanggan">
-                    <a href="{{ route('catalog.index') }}" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20">
+                    <a href="{{ route('catalog.index') }}" @if($current = \App\Support\StorefrontNavigation::current('catalog.index')) aria-current="{{ $current }}" @endif class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20">
                         Katalog
                     </a>
-                    <a href="{{ route('pesanan.index') }}" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20">
+                    <a href="{{ route('pesanan.index') }}" @if($current = \App\Support\StorefrontNavigation::current('pesanan.index')) aria-current="{{ $current }}" @endif class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150 dark:text-neutral-400 dark:hover:text-primary-400 dark:hover:bg-primary-900/20">
                         Pesanan Saya
                     </a>
                 </nav>

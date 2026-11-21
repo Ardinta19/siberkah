@@ -100,3 +100,4 @@
 #bk-expand-pill .bk-seal-trace{position:absolute;inset:0;width:100%;height:100%;color:#a65b73;opacity:.55;pointer-events:none}
 [data-sidebar-toggle]{min-width:44px;min-height:44px}
 @media(forced-colors:active){.bk-seal-trace{display:none}}
+.bk-full-nav nav a[aria-current]{background:#f5e6eb;color:#751a3b;text-decoration:underline;text-decoration-color:#a6617c;text-underline-offset:.3em}

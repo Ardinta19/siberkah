@@ -28,16 +28,16 @@
 
                 <!-- Navigation -->
                 <nav class="hidden md:flex ml-auto items-center gap-1" aria-label="Navigasi utama">
-                    <a href="{{ route('catalog.index') }}" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('catalog.index') }}" @if($current = \App\Support\StorefrontNavigation::current('catalog.index')) aria-current="{{ $current }}" @endif class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Katalog
                     </a>
-                    <a href="{{ route('syarat-sewa') }}" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('syarat-sewa') }}" @if($current = \App\Support\StorefrontNavigation::current('syarat-sewa')) aria-current="{{ $current }}" @endif class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Syarat Sewa
                     </a>
-                    <a href="{{ route('privasi') }}" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('privasi') }}" @if($current = \App\Support\StorefrontNavigation::current('privasi')) aria-current="{{ $current }}" @endif class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Privasi
                     </a>
-                    <a href="{{ route('kontak') }}" class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
+                    <a href="{{ route('kontak') }}" @if($current = \App\Support\StorefrontNavigation::current('kontak')) aria-current="{{ $current }}" @endif class="px-3 py-2 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors-150">
                         Kontak
                     </a>
                 </nav>
