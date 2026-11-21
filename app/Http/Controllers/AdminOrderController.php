@@ -121,9 +121,14 @@ class AdminOrderController extends BaseController
         $customer = $products = null;
         if ($request->filled('pelanggan')) {
             $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            if ($request->has('susun')) {
+                $ids = $request->validate(['produk'=>'required|array|list|min:1|max:25','produk.*'=>'required|integer|min:1|distinct'])['produk'];
+                $first = \App\Models\Produk::findOrFail(array_shift($ids));
+                return redirect()->route('admin.buket.form',[$customer->id,$first->slug,'tambahan'=>$ids]);
+            }
             $products = \App\Models\Produk::whereIn('jenis',['jual','custom'])->where('aktif',true)
                 ->whereHas('kategori',fn($q)=>$q->where('aktif',true))->orderBy('nama')->orderBy('id')
-                ->paginate(20,['slug','nama','jenis'])->appends(['pelanggan'=>$customer->id]);
+                ->paginate(25,['id','slug','nama','jenis'])->appends(['pelanggan'=>$customer->id]);
         }
         return response()->view('admin.pesanan.pilih-buket',compact('customer','products'))->header('Cache-Control','private, no-store');
     }

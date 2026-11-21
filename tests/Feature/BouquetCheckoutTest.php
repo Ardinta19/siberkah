@@ -236,6 +236,30 @@ class BouquetCheckoutTest extends TestCase
         $this->assertDatabaseCount('pesanan',1);
     }
 
+    public function test_manual_mixed_checkout_validates_all_lines_then_reserves_once(): void
+    {
+        $cart = $this->cart();
+        [$sale,$custom] = $cart['items'];
+        $url = route('admin.buket.submit',[Pelanggan::sole()->id,'siap']);
+        $this->actingAs(Pengguna::factory()->create(['peran'=>'admin']),'staff');
+        $choice = $custom['opsi'][0];
+        $extra = ['produk_id'=>$custom['produk_id'],'jumlah'=>2,'opsi'=>[$choice['id']=>['nilai_id'=>$choice['nilai_id'],'satuan'=>3]]];
+        $input = array_diff_key($cart,['items'=>true]) + ['varian_id'=>$sale['varian_id'],'jumlah'=>1,'persetujuan_pelanggan_diperiksa'=>1,'tambahan'=>[$extra]];
+        $invalid = $input;
+        unset($invalid['tambahan'][0]['opsi']);
+        $this->post($url,$invalid)->assertSessionHasErrors();
+        $this->assertDatabaseCount('pesanan',0);
+        $this->assertDatabaseHas('varian_produk',['id'=>$sale['varian_id'],'stok'=>3]);
+        $this->post($url,$input)->assertSessionHas('manual_success');
+        $order = Pesanan::sole();
+        $this->post($url,$input)->assertRedirect(route('admin.pesanan.show',$order->id));
+        $this->assertSame(270000,$order->total);
+        $this->assertSame(0,$order->jumlah_dibayar);
+        $this->assertCount(2,$order->items);
+        $this->assertDatabaseHas('varian_produk',['id'=>$sale['varian_id'],'stok'=>2]);
+        $this->assertDatabaseCount('pesanan',1);
+    }
+
     public function test_manual_custom_cancellation_after_production_restores_only_sale_stock(): void
     {
         $d = $this->cart() + ['pelanggan_id' => Pelanggan::sole()->id, 'persetujuan_pelanggan_diperiksa' => true];

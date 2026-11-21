@@ -25,16 +25,12 @@
         <input type="hidden" name="versi_privasi" value="{{ config('checkout.privacy_version') }}">
         <div class="bk-checkout-fields">
         <section class="bk-checkout-card" aria-labelledby="pilihan-produk"><h2 id="pilihan-produk" tabindex="-1"><span class="bk-section-petal" aria-hidden="true"></span>Pilihan produk</h2>
-        @if($needsVariant)<label>Varian <select name="varian_id" required>@foreach($variants as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga }}" @selected(old('varian_id') == $v->id)>{{ $v->nama }} · Rp{{ number_format($v->harga,0,',','.') }}</option>@endforeach</select></label>@endif
-        @include('partials.quantity',['itemId'=>'checkout-'.$product->id,'quantity'=>old('jumlah',!$manualCustomer && request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1)])
-        @foreach($options as $o)
-            <label>{{ $o->nama }} @if($o->wajib)(wajib)@endif
-            @if($o->tipe === 'teks')<input maxlength="300" name="opsi[{{ $o->id }}][teks]" value="{{ old('opsi.'.$o->id.'.teks') }}" @required($o->wajib)>
-            @else
-                <select data-extra="{{ $o->id }}" name="opsi[{{ $o->id }}][nilai_id]" @required($o->wajib)><option value="">{{ $o->wajib ? 'Pilih opsi' : 'Tanpa tambahan' }}</option>@foreach($o->nilaiOpsi as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga_tambahan }}" @selected(old('opsi.'.$o->id.'.nilai_id') == $v->id)>{{ $v->label }} (+Rp{{ number_format($v->harga_tambahan,0,',','.') }})</option>@endforeach</select>
-            @endif</label>
-            @if($o->tipe === 'satuan')<label>Jumlah {{ $o->nama }} per produk <input type="number" name="opsi[{{ $o->id }}][satuan]" min="1" max="100" value="{{ old('opsi.'.$o->id.'.satuan',1) }}"></label>@endif
-        @endforeach
+        <div data-checkout-line data-price="{{ $product->harga_dasar }}">
+        @if($others->isNotEmpty())<h3>{{ $product->nama }}</h3>@endif
+        @include('pelanggan.checkout.baris',['name'=>fn($k)=>$k,'oldPrefix'=>''])</div>
+        @foreach($others as $i=>$other)<fieldset data-checkout-line data-price="{{ $other->harga_dasar }}"><legend>{{ $other->nama }}</legend>
+        <input type="hidden" name="tambahan[{{ $i }}][produk_id]" value="{{ $other->id }}">
+        @include('pelanggan.checkout.baris',['product'=>$other,'needsVariant'=>$other->jenis!=='custom' || $other->varian_produk_count>0,'variants'=>$other->varianProduk,'options'=>$other->opsiProduk,'name'=>fn($k)=>"tambahan[$i][$k]",'oldPrefix'=>"tambahan.$i."])</fieldset>@endforeach
         </section><section class="bk-checkout-card" aria-labelledby="serah-produk"><h2 id="serah-produk" tabindex="-1"><span class="bk-section-petal" aria-hidden="true"></span>Serah terima</h2>
         <label>Tanggal serah <input type="date" required name="tanggal" min="{{ today()->toDateString() }}" value="{{ old('tanggal',$day) }}"></label>
         @if($product->jenis === 'sewa')

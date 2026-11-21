@@ -45,10 +45,15 @@ final class ProductCheckoutController extends Controller
         return [$customer,$product];
     }
 
-    public function manualShow(int $pelanggan, string $slug)
+    public function manualShow(Request $request, int $pelanggan, string $slug)
     {
         [$customer,$product] = $this->manualContext($pelanggan,$slug);
-        return $this->form($product,null,$customer);
+        $ids = $request->validate(['tambahan'=>'sometimes|array|list|max:24','tambahan.*'=>'integer|min:1|distinct'])['tambahan'] ?? [];
+        abort_if(in_array($product->id,$ids),422);
+        $others = Produk::whereIn('id',$ids)->whereIn('jenis',['jual','custom'])->where('aktif',true)->whereHas('kategori',fn($q)=>$q->where('aktif',true))
+            ->withCount('varianProduk')->with(['varianProduk'=>fn($q)=>$q->where('aktif',true)->orderBy('id'),'opsiProduk'=>fn($q)=>$q->orderBy('urutan'),'opsiProduk.nilaiOpsi'=>fn($q)=>$q->where('aktif',true)])->get()->keyBy('id');
+        abort_unless($others->count()===count($ids),404);
+        return $this->form($product,null,$customer,collect($ids)->map(fn($id)=>$others[$id]));
     }
 
     public function manualSubmit(Request $request, int $pelanggan, string $slug)
@@ -58,10 +63,10 @@ final class ProductCheckoutController extends Controller
         return $this->submit($request,$product,$customer,true);
     }
 
-    private function form(Produk $product, ?string $day, ?Pelanggan $manualCustomer=null)
+    private function form(Produk $product, ?string $day, ?Pelanggan $manualCustomer=null, $others=null)
     {
         return response()->view('pelanggan.checkout.produk', [
-            'manualCustomer' => $manualCustomer, 'product' => $product, 'variants' => $product->varianProduk()->where('aktif', true)->orderBy('id')->get(),
+            'others' => $others ?? collect(), 'manualCustomer' => $manualCustomer, 'product' => $product, 'variants' => $product->varianProduk()->where('aktif', true)->orderBy('id')->get(),
             'needsVariant' => $product->jenis !== 'custom' || $product->varianProduk()->exists(),
             'options' => $product->opsiProduk()->with(['nilaiOpsi' => fn ($q) => $q->where('aktif', true)])->orderBy('urutan')->get(),
             'zones' => DB::table('zona_antar')->where('aktif', true)->where('jarak_maks_km', '<=', 15)->orderBy('ongkir')->get(),
@@ -94,7 +99,19 @@ final class ProductCheckoutController extends Controller
                         $line['opsi'][] = ['id' => $id] + $choice;
                     }
                 }
-                $order = app(CreateBouquetOrder::class)->create($customer, $d + ['items' => [$line]], $manual ? $request->user('staff') : null);
+                $lines = [$line];
+                if ($manual) {
+                    $extra = $request->validate(['tambahan'=>'sometimes|array|list|max:24','tambahan.*'=>'array:produk_id,varian_id,jumlah,opsi','tambahan.*.produk_id'=>'required|integer|min:1|distinct|not_in:'.$product->id,'tambahan.*.opsi'=>'sometimes|array|max:20','tambahan.*.opsi.*'=>'array:teks,nilai_id,satuan'])['tambahan'] ?? [];
+                    foreach ($extra as $entry) {
+                        $choices = $entry['opsi'] ?? [];
+                        unset($entry['opsi']);
+                        foreach ($choices as $id=>$choice) {
+                            if (filled($choice['teks'] ?? null) || filled($choice['nilai_id'] ?? null)) { $entry['opsi'][] = ['id'=>$id] + $choice; }
+                        }
+                        $lines[] = $entry;
+                    }
+                }
+                $order = app(CreateBouquetOrder::class)->create($customer, $d + ['items' => $lines], $manual ? $request->user('staff') : null);
             }
         } catch (\DomainException $e) {
             return back()->withInput()->withErrors(['checkout' => $e->getMessage()]);

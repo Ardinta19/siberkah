@@ -17,25 +17,24 @@ if(form){
       const today=date===form.dataset.today;
       field('jam_serah').disabled=!today;field('jam_serah').required=today;form.querySelector('#slot').hidden=!today;
     }
-    const base=field('varian_id')?price(field('varian_id')):Number(form.dataset.price);
-    let extras=0, selectedExtra=false;
-    let valid=field('jumlah').validity.valid;
-    for(const opt of form.querySelectorAll('[data-extra]')){
-      const units=field(`opsi[${opt.dataset.extra}][satuan]`);
-      if(units){
-        units.disabled=!opt.value;units.required=Boolean(opt.value);
-        units.closest('label').hidden=!opt.value;
+    let subtotal=0, base=0, extras=0, selectedExtra=false, valid=true;
+    const lines=form.querySelectorAll('[data-checkout-line]');
+    for(const line of lines){
+      const variant=line.querySelector('[data-line-variant]'), qty=line.querySelector('[data-stepper] input');
+      base=variant?price(variant):Number(line.dataset.price);extras=0;
+      for(const opt of line.querySelectorAll('[data-extra]')){
+        const units=field(opt.name.replace(/\[nilai_id\]$/, '[satuan]'));
+        if(units){units.disabled=!opt.value;units.required=Boolean(opt.value);units.closest('label').hidden=!opt.value;}
+        if(!opt.value){if(opt.required)valid=false;continue;}
+        selectedExtra=true;if(units && !units.validity.valid)valid=false;
+        extras+=price(opt)*Number(units?.value ?? 1);
       }
-      if(!opt.value){if(opt.required)valid=false;continue;}
-      selectedExtra=true;
-      if(units && !units.validity.valid)valid=false;
-      extras+=price(opt)*Number(units?.value ?? 1);
-
+      valid=valid && qty.validity.valid && base+extras>0;
+      subtotal+=(base+extras)*qty.valueAsNumber;
     }
-    const unit=base+extras;
-    const subtotal=unit*field('jumlah').valueAsNumber, fee=deliver?price(field('zona_antar_id')):0;
+    const fee=deliver?price(field('zona_antar_id')):0;
     const total=Math.ceil((subtotal+fee)/1000)*1000, rounding=total-subtotal-fee;
-    valid=valid && unit>0 && Number.isSafeInteger(total) && total<=2147482648;
+    valid=valid && Number.isSafeInteger(total) && total<=2147482648;
     const now=Number(form.dataset.renderedAt)*1000+performance.now()-started;
     const deadline=Date.parse(`${date}T18:00:00+07:00`)-86400000;
     const timeLeft=deadline-now;
@@ -45,8 +44,8 @@ if(form){
       if(timeLeft>0 && timeLeft<2147483000)timer=setTimeout(update,timeLeft+50);
     }
     box.hidden=false;
-    box.querySelector('[data-base-row]').hidden=!selectedExtra;
-    box.querySelector('[data-extra-row]').hidden=!selectedExtra;
+    box.querySelector('[data-base-row]').hidden=!selectedExtra || lines.length!==1;
+    box.querySelector('[data-extra-row]').hidden=!selectedExtra || lines.length!==1;
     write('[data-base]',rp(base));write('[data-extra-cost]',valid?rp(extras):'—');
     write('[data-subtotal]',valid?rp(subtotal):'—');write('[data-fee]',deliver?rp(fee):'Ambil di toko · Rp0');
     box.querySelector('[data-rounding-row]').hidden=!valid || rounding===0;
