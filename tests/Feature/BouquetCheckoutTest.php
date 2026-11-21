@@ -280,6 +280,9 @@ class BouquetCheckoutTest extends TestCase
         foreach (['SHORT' => $bill->tagihan - 1, 'NO-CODE' => $bill->tagihan] as $ref => $nominal) {
             $this->postJson(route('admin.pesanan.verify-payment', $order->id), ['referensi' => $ref, 'pembayaran_id' => $bill->id, 'nominal' => $nominal])->assertAccepted();
         }
+        $queue = route('admin.rekonsiliasi.index');
+        $html = ['Accept'=>'text/html'];
+        $this->get($queue,$html)->assertOk()->assertSee('Terima selisih kode unik · NO-CODE')->assertDontSee('Terima selisih kode unik · SHORT')->assertSee('Tolak selisih · SHORT');
         $short = DB::table('mutasi_masuk')->where('referensi', 'SHORT')->value('id');
         $data = ['mutasi_id' => $short, 'action' => 'terima', 'catatan' => 'Periksa pokok tagihan'];
         $this->postJson($url, $data)->assertConflict();
@@ -291,6 +294,7 @@ class BouquetCheckoutTest extends TestCase
         $this->postJson($url, $data)->assertOk();
         $this->postJson($url, array_replace($data, ['action' => 'tolak']))->assertConflict();
         $this->assertDatabaseCount('mutasi_masuk', 2);
+        $this->get($queue.'?kelompok=dikreditkan',$html)->assertOk()->assertSee('NO-CODE')->assertSee('Periksa pokok tagihan')->assertDontSee('SHORT');
         $this->assertDatabaseCount('keputusan_selisih', 2);
         $this->assertDatabaseCount('pembayaran', 2);
         $this->assertSame((int) $bill->tagihan, $order->fresh()->jumlah_dibayar);

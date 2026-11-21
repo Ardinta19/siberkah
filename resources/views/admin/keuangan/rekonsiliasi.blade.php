@@ -9,6 +9,7 @@
 @forelse($rows as $r)<article class="bk-task"><header><h2>{{ $r->nomor }}</h2><span class="bk-order-status">Mutasi #{{ $r->id }}</span></header>
 <p>Referensi masuk: {{ $r->referensi }} · Rp{{ number_format($r->nominal,0,',','.') }}</p><p>{{ $r->dicatat_pada }} WIB · {{ $r->alasan }}</p>
 <p>Pokok tagihan Rp{{ number_format($r->tagihan,0,',','.') }} · Nominal dengan kode unik Rp{{ number_format($r->nominal_diharapkan,0,',','.') }}</p>
+@if($r->catatan_selisih)<p>Keputusan petugas #{{ $r->peninjau }} · {{ $r->diputuskan_pada }} WIB: {{ $r->catatan_selisih }}</p>@endif
 @if($credited)<h3>Mutasi sudah dikreditkan</h3><p>{{ $r->alasan==='reaktivasi_t13' ? 'Pesanan diaktifkan kembali setelah pemeriksaan ketersediaan.' : 'Selisih kode unik diterima.' }}</p>
 @elseif($history)<h3>Pengembalian tercatat</h3><p>Referensi keluar: {{ $r->referensi_keluar }} · {{ $r->waktu_keluar }} WIB</p><p>{{ $r->alasan_keluar }}</p>
 @else

@@ -24,8 +24,9 @@ final class TransferReconciliationController extends Controller
             ->join('checkout_bank as c','c.pesanan_id','=','p.pesanan_id');
         $columns = ['m.id','p.pesanan_id','m.pembayaran_id','m.referensi','m.nominal','m.alasan','m.dicatat_pada'];
         if ($browser) {
-            $query->join('pesanan as o','o.id','=','p.pesanan_id');
-            array_push($columns,'o.nomor','o.status as status_pesanan','p.status as status_tagihan','p.jenis','p.tagihan','p.nominal_diharapkan');
+            $query->join('pesanan as o','o.id','=','p.pesanan_id')
+                ->leftJoin('keputusan_selisih as d','d.mutasi_id','=','m.id');
+            array_push($columns,'o.nomor','o.status as status_pesanan','p.status as status_tagihan','p.jenis','p.tagihan','p.nominal_diharapkan','d.catatan as catatan_selisih','d.diputuskan_pada','d.pengguna_id as peninjau');
         }
         if ($history) {
             $query->join('pengembalian_mutasi as k','k.mutasi_masuk_id','=','m.id')->where('m.hasil','dikembalikan')
