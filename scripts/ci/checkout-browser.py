@@ -254,6 +254,15 @@ with sync_playwright() as playwright:
         page.locator('[name=metode_pelunasan]').select_option('tunai_saat_serah')
         page.locator('[name=setuju_privasi]').check()
     checkout()
+    for width in (320,768,1440):
+        page.set_viewport_size({'width':width,'height':900})
+        assert page.locator('#checkout').evaluate('(f)=>f.scrollWidth <= f.clientWidth+1')
+    page.get_by_role('navigation',name='Bagian checkout').get_by_role('link',name='Pembayaran').click()
+    expect(page.locator('#bayar-produk')).to_be_focused()
+    page.get_by_role('button',name='Tambah jumlah').click()
+    expect(page.locator('[data-total]')).to_have_text('Rp260.000')
+    page.get_by_role('button',name='Kurangi jumlah').click()
+    expect(page.get_by_role('button',name='Kurangi jumlah')).to_be_disabled()
     ribbon=page.locator('#checkout [data-extra]').first
     units=page.get_by_label('Jumlah Pita per produk')
     expect(units).to_be_disabled()

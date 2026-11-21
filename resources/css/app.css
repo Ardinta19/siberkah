@@ -2,6 +2,7 @@
 @import './katalog.css';
 @import './choices.css';
 @import './storefront-navigation.css';
+@import './checkout.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

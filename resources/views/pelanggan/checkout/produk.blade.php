@@ -1,26 +1,30 @@
 @extends('layouts.customer')
+@section('title', 'Pesan '.$product->nama.' · SIBERKAH')
 @section('content')
-<section class="mx-auto max-w-xl space-y-4 p-6">
+<section class="bk-checkout-page">
     @if(request()->boolean('dari_keranjang'))
         <x-back-link href="{{ route('cart.index') }}#keranjang-{{ $product->id }}">Kembali ke keranjang</x-back-link>
     @else
         @php($koleksi = collect((array)request('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])->filter(fn ($v) => is_scalar($v))->all())
         <x-back-link :href="route('catalog.show', ['slug'=>$product->slug,'tanggal'=>$day,'koleksi'=>$koleksi])">Kembali ke detail produk</x-back-link>
     @endif
-    <h1 class="text-2xl font-bold">Pesan {{ $product->nama }}</h1>
+    <p class="kc-kicker">Berkah Kreatif · Checkout</p><h1>Pesan {{ $product->nama }}</h1>
     @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
     @if($options->contains(fn ($option) => $option->wajib && $option->tipe !== 'teks' && $option->nilaiOpsi->isEmpty()))
         <p role="status">Pilihan wajib produk ini belum tersedia. Hubungi Admin sebelum memesan.</p>
     @elseif(($needsVariant && $variants->isEmpty()) || ($product->jenis === 'sewa' && ($options->isNotEmpty() || $zones->isEmpty())))
         <p>Produk belum dapat dipesan melalui formulir ini. Hubungi Admin.</p>
     @else
+    <nav class="bk-checkout-jumps" aria-label="Bagian checkout"><a href="#pilihan-produk">Pilihan produk</a><a href="#serah-produk">Serah terima</a><a href="#bayar-produk">Pembayaran</a></nav>
     <form data-pending="Membuat pesanan…" method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-rendered-at="{{ now()->timestamp }}" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
         @csrf
         @if(request()->boolean('dari_keranjang'))<input type="hidden" name="dari_keranjang" value="1">@endif
         <input type="hidden" name="kunci" value="{{ old('kunci', $key) }}">
         <input type="hidden" name="versi_privasi" value="{{ config('checkout.privacy_version') }}">
+        <div class="bk-checkout-fields">
+        <section class="bk-checkout-card" aria-labelledby="pilihan-produk"><h2 id="pilihan-produk" tabindex="-1">Pilihan produk</h2>
         @if($needsVariant)<label>Varian <select name="varian_id" required>@foreach($variants as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga }}" @selected(old('varian_id') == $v->id)>{{ $v->nama }} · Rp{{ number_format($v->harga,0,',','.') }}</option>@endforeach</select></label>@endif
-        <label>Jumlah <input required name="jumlah" type="number" min="1" max="100" value="{{ old('jumlah',request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1) }}"></label>
+        @include('partials.quantity',['itemId'=>'checkout-'.$product->id,'quantity'=>old('jumlah',request()->boolean('dari_keranjang') ? session('cart.'.$product->id,1) : 1)])
         @foreach($options as $o)
             <label>{{ $o->nama }} @if($o->wajib)(wajib)@endif
             @if($o->tipe === 'teks')<input maxlength="300" name="opsi[{{ $o->id }}][teks]" value="{{ old('opsi.'.$o->id.'.teks') }}" @required($o->wajib)>
@@ -29,6 +33,7 @@
             @endif</label>
             @if($o->tipe === 'satuan')<label>Jumlah {{ $o->nama }} per produk <input type="number" name="opsi[{{ $o->id }}][satuan]" min="1" max="100" value="{{ old('opsi.'.$o->id.'.satuan',1) }}"></label>@endif
         @endforeach
+        </section><section class="bk-checkout-card" aria-labelledby="serah-produk"><h2 id="serah-produk" tabindex="-1">Serah terima</h2>
         <label>Tanggal serah <input type="date" required name="tanggal" min="{{ today()->toDateString() }}" value="{{ old('tanggal',$day) }}"></label>
         @if($product->jenis === 'sewa')
             <label>Metode teks <select name="metode_teks">@foreach(['spidol','templat','cutting'] as $m)<option @selected(old('metode_teks') === $m)>{{ $m }}</option>@endforeach</select></label>
@@ -39,9 +44,12 @@
             <label>Zona <select name="zona_antar_id">@foreach($zones as $z)<option value="{{ $z->id }}" data-price="{{ $z->ongkir }}" @selected(old('zona_antar_id') == $z->id)>{{ $z->nama }} · Rp{{ number_format($z->ongkir,0,',','.') }}</option>@endforeach</select></label>
             <label>Alamat <textarea maxlength="500" name="alamat_antar">{{ old('alamat_antar') }}</textarea></label>
         </fieldset>
+        </section><section class="bk-checkout-card" aria-labelledby="bayar-produk"><h2 id="bayar-produk" tabindex="-1">Pembayaran</h2>
         <label>Skema pembayaran <select name="pembayaran"><option value="penuh">Penuh</option>@if($bank)<option value="dp" @selected(old('pembayaran') === 'dp')>DP 50% di muka</option>@endif</select></label>
         <p>DP tersedia mulai Rp{{ number_format($threshold,0,',','.') }} bila tenggat H-1 pukul 18.00 WIB belum lewat.</p>
         <label>Metode pelunasan <select name="metode_pelunasan">@if($bank)<option value="bank">Transfer / QRIS sesuai tujuan aktif</option>@endif<option value="tunai_saat_serah" @selected(old('metode_pelunasan') === 'tunai_saat_serah')>Tunai saat ambil atau diantar</option></select></label>
+        </section></div>
+        <div class="bk-checkout-review">
         <section hidden id="estimate" class="bk-estimate" aria-labelledby="estimate-title">
             <p class="kc-kicker">Sebelum memesan</p><h2 id="estimate-title">Ringkasan biaya</h2>
             <dl><div hidden data-base-row><dt>Harga sebelum tambahan (per produk)</dt><dd data-base></dd></div>
@@ -53,7 +61,8 @@
         </section>
         <p>Total akhir dan ketersediaan diperiksa server saat memesan. Jangan membayar sebelum melihat tagihan.</p>
         <label><input type="checkbox" required name="setuju_privasi" value="1"> Saya menyetujui <a href="{{ route('privasi') }}" target="_blank" rel="noopener">kebijakan privasi</a> versi {{ config('checkout.privacy_version') }}.</label>
-        <button class="btn-primary">Buat pesanan</button>
+        <button type="submit" class="btn-primary">Buat pesanan</button>
+        </div>
     </form>
 
     @endif

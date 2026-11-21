@@ -11,3 +11,13 @@ if (hero) {
       }, 0);
   });
 }
+
+// Reveal checkout surfaces once. No tween touches control values, prices or submit state.
+const checkout=document.querySelector('.bk-checkout-page #checkout');
+if(checkout){
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)',()=>{
+    gsap.from(checkout.querySelectorAll('.bk-checkout-card,.bk-checkout-review'),{
+      y:10,opacity:.8,duration:.46,stagger:.06,ease:'power2.out',clearProps:'transform,opacity'
+    });
+  });
+}

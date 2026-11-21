@@ -15,7 +15,7 @@ import "./floral-feedback.js";
 /* eslint-disable */
 // Load the editorial timeline only on the catalog, and only when motion is welcome.
 const motion = matchMedia('(prefers-reduced-motion: no-preference)');
-if (document.querySelector('.kc-hero-reveal')) {
+if (document.querySelector('.kc-hero-reveal, .bk-checkout-page #checkout')) {
   const loadMotion = () => { if (motion.matches) import('./catalog-motion.js'); };
   motion.addEventListener('change', loadMotion);
   loadMotion();
