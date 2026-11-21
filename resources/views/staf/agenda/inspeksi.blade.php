@@ -1,0 +1,15 @@
+@php($returning = $p->tugas === 'jemput')
+@if(!$returning && (!$p->tanggal_serah->isToday() || ($p->jadwal && now('Asia/Jakarta')->lt($p->jadwal))))<p>Inspeksi serah tersedia pada hari dan jam serah.</p>
+@elseif(!$returning && $pending->contains($p->id))<p>Tunggu keputusan pembatalan sebelum serah.</p>
+@elseif(!$returning && !$p->tunai_saat_serah && $p->saldo!==0)<p>Saldo belum lunas. Minta Admin memeriksa pembayaran sebelum serah.</p>
+@else<details class="bk-confirm"><summary>Inspeksi {{ $returning?'kembali':'serah' }} · {{ $p->nomor }}</summary>
+<form data-ledger data-inspection enctype="multipart/form-data" method="post" class="bk-product-editor grid gap-3 p-4" action="{{ route($returning?'staf.kurir.receive-return':'staf.kurir.handover') }}">@csrf
+<input type="hidden" name="pesanan_id" value="{{ $p->id }}"><p>Periksa setiap unit fisik. Sertakan total 1–6 foto kondisi barang untuk tahap ini. Jangan unggah foto identitas pelanggan.</p>
+@foreach($units as $i=>$unit)<fieldset data-inspection-unit><legend>{{ $unit->kode }} · {{ $unit->nama_produk }} {{ $unit->nama_varian }}</legend><input type="hidden" name="inspeksi[{{ $i }}][item_id]" value="{{ $unit->id }}">
+@foreach(['permukaan'=>'Permukaan akrilik','easel'=>'Kaki atau easel','bunga'=>'Rangkaian bunga','led'=>'Lampu LED'] as $key=>$label)<label>{{ $label }}<select data-part required name="inspeksi[{{ $i }}][cek][{{ $key }}]"><option value="">Pilih hasil pemeriksaan</option><option value="baik">Baik</option><option value="cacat">Cacat</option><option value="tidak_ada">Tidak ada</option></select></label>@endforeach
+<label>Kondisi unit<select data-condition name="inspeksi[{{ $i }}][kondisi]" required><option value="">Pilih kondisi</option><option value="baik">Baik</option><option value="cacat_ringan">Cacat ringan</option>@if($returning)<option value="rusak">Rusak</option>@endif</select></label>
+<label>Catatan kondisi<textarea data-note maxlength="300" name="inspeksi[{{ $i }}][catatan]"></textarea></label><label>Foto kondisi unit (JPEG, PNG atau WebP; maks. 3 MB per foto)<input data-photos type="file" accept="image/jpeg,image/png,image/webp" multiple name="inspeksi[{{ $i }}][foto][]"></label></fieldset>@endforeach
+<p data-photo-count role="status"></p>
+@unless($returning)<label>Jaminan yang diterima<select name="jenis_jaminan" required><option value="">Pilih jaminan</option><option value="ktp">KTP diperiksa</option><option value="ktm">KTM diperiksa</option><option value="deposit">Deposit tunai</option></select></label><label data-deposit-field>Nominal deposit (Rp100.000–Rp150.000)<input type="number" name="nominal_jaminan" min="100000" max="150000"></label>
+@if($p->tunai_saat_serah)<label>Pembayaran tunai aktual (saldo Rp{{ number_format($p->saldo,0,',','.') }})<input required type="number" min="1" name="nominal_tunai"></label><label><input type="checkbox" name="tunai_diterima" required value="1"> Pembayaran pelanggan sudah diterima, terpisah dari deposit.</label>@endif @endunless
+<button class="btn-primary">Simpan inspeksi {{ $returning?'kembali':'serah' }}</button>@include('partials.ledger-feedback')</form></details>@endif

@@ -901,5 +901,28 @@ with sync_playwright() as playwright:
     assigned=courier.locator('.bk-task').filter(has_text='CI-PRODUKSI')
     expect(assigned).to_contain_text('14:00 WIB')
     expect(assigned).to_contain_text('Alamat papan CI')
+    expect(assigned).to_contain_text('Inspeksi serah tersedia pada hari dan jam serah')
+    clock.write_text(f'{delivery_day} 14:00:00')
+    courier.reload()
+    for stage in ('serah','kembali'):
+        if stage=='kembali':
+            courier.get_by_role('link',name='Jemput',exact=True).click()
+        assigned.get_by_text('Inspeksi '+stage+' · CI-PRODUKSI',exact=True).click()
+        inspect=assigned.locator('form[data-inspection]')
+        for part in ('Permukaan akrilik','Kaki atau easel','Rangkaian bunga','Lampu LED'):
+            inspect.get_by_label(part).select_option('cacat' if stage=='kembali' and part=='Permukaan akrilik' else 'baik')
+        inspect.get_by_label('Kondisi unit',exact=True).select_option('baik')
+        if stage=='kembali':
+            assert not inspect.get_by_label('Kondisi unit',exact=True).evaluate('el=>el.checkValidity()')
+            inspect.get_by_label('Kondisi unit',exact=True).select_option('rusak')
+            inspect.get_by_label('Catatan kondisi').fill('Permukaan retak saat dijemput CI')
+        else:
+            inspect.get_by_label('Jaminan yang diterima').select_option('ktp')
+            expect(inspect.locator('[name=nominal_jaminan]')).to_be_disabled()
+        inspect.locator('[type=file]').set_input_files('public/images/berkah-kreatif.webp')
+        expect(inspect.locator('[data-photo-count]')).to_contain_text('1 dari maksimal 6')
+        inspect.get_by_role('button',name='Simpan inspeksi '+stage).click()
+        expect(assigned).to_have_count(0)
+
     screen.close()
     browser.close()

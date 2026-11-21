@@ -153,3 +153,5 @@ import './return-estimate';
 import './deposit-preview';
 
 import './counter-sale';
+
+import './inspection-form';

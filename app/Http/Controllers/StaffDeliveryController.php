@@ -40,8 +40,17 @@ class StaffDeliveryController extends BaseController
             $order->peta = $order->tugas !== 'ambil' && filled($order->alamat_antar)
                 ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($order->alamat_antar) : null;
         }
+        $rentalUnits = collect();
+        $pending = collect();
+        if (!$request->expectsJson() && config('checkout.staging') && app()->environment('local','testing','staging')) {
+            $ids = $orders->pluck('id');
+            $rentalUnits = DB::table('item_pesanan as i')->join('checkout_sewa as c','c.pesanan_id','=','i.pesanan_id')
+                ->join('unit_sewa as u','u.id','=','i.unit_sewa_id')->whereIn('i.pesanan_id',$ids)->orderBy('i.id')
+                ->get(['i.pesanan_id','i.id','i.nama_produk','i.nama_varian','u.kode'])->groupBy('pesanan_id');
+            $pending = DB::table('permohonan_batal')->whereIn('pesanan_id',$ids)->where('status','menunggu')->pluck('pesanan_id');
+        }
         $data = ['judul' => 'Agenda serah terima', 'tanggal' => $date, 'pesanan' => $orders];
-        return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda.index', $data))->header('Cache-Control','private, no-store');
+        return ($request->expectsJson() ? response()->json($data) : response()->view('staf.agenda.index', $data+compact('rentalUnits','pending')))->header('Cache-Control','private, no-store');
     }
 
     public function handover(Request $request, \App\Actions\InspectRental $inspection)

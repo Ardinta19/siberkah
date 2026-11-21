@@ -79,3 +79,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Staf Produksi — antrean:** masuk sebagai staf_produksi, saring nomor/tanggal serah/tahap, periksa rincian item dan sunting teks papan pada pesanan dikonfirmasi. Simpan mengembalikan konteks antrean; revisi basi ditolak dan teks terkunci setelah produksi dimulai. Chrome menguji alur siap jual → siap dengan akses Admin ditolak.
 
 **Produksi → Kurir:** konfirmasi tiga baris papan sebelum T05. Formulir membawa versi yang dibaca; bila teks berubah di tab lain, tolak mulai produksi dalam transaksi dan minta pemeriksaan ulang. Chrome mengedit papan, menguji konflik, mengunci, menandai siap dan menemukan tugas antar bertanggal/jam sama dalam sesi Kurir.
+
+**Kurir — inspeksi sewa:** kartu agenda memuat checklist setiap unit, foto privat 1–6 per tahap, kondisi/catatan, pemeriksaan identitas tanpa unggah identitas atau deposit tunai. Saat jemput jangan ulangi penerimaan jaminan. Chrome menguji jadwal, penyerahan dan jemput melalui akun Kurir.
