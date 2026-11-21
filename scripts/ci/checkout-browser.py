@@ -629,6 +629,7 @@ with sync_playwright() as playwright:
     subprocess.run(audit, check=True)
     # Exercise the real hand-off from Owner personalization to customer checkout and saved receipt.
     checkout()
+    page.locator("main [name=tanggal]").fill(str(delivery_day+timedelta(days=2)))
     ribbon=page.locator('#checkout [data-extra]').first
     ribbon.select_option(label='Perak (+Rp3.500)')
     page.get_by_label('Jumlah Pita per produk').fill('2')
