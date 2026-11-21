@@ -72,17 +72,29 @@ class AdminSettingsController extends BaseController
 
     private function updateRate(Request $request, int $id, string $table, string $field, string $action)
     {
-        $data = $request->validate(['sebelum' => 'required|integer|min:0', $field => 'required|integer|between:0,10000000']);
-        DB::transaction(function () use ($data, $id, $table, $field, $action) {
+        $browser = $request->input('asal') === 'pengaturan' && !$request->expectsJson();
+        $anchor = "$field-$id";
+        $url = route('admin.pengaturan.index').'#'.$anchor;
+        $validator = validator($request->all(), ['sebelum' => 'required|integer|min:0', $field => 'required|integer|between:0,10000000']);
+        if ($browser && $validator->fails()) {
+            return redirect($url)->with('rate_warning',[$anchor=>'Masukkan nominal rupiah bulat antara 0 dan 10.000.000; muat ulang bila nilai acuan tidak tersedia.']);
+        }
+        $data = $validator->validate();
+        $saved = DB::transaction(function () use ($data, $id, $table, $field, $action) {
             $row = DB::table($table)->where('id', $id)->lockForUpdate()->first();
             abort_unless($row, 404);
             $fee = (int) $data[$field];
-            if ((int) $row->$field === $fee) { return; }
-            abort_unless((int) $data['sebelum'] === (int) $row->$field, 409, 'Tarif sudah berubah, muat ulang.');
+            if ((int) $row->$field === $fee) { return true; }
+            if ((int) $data['sebelum'] !== (int) $row->$field) { return false; }
             DB::table($table)->where('id', $id)->update([$field => $fee, 'diubah_pada' => now()]);
             \App\Support\StaffAudit::record($action,$table,$id,[$field=>(int)$row->$field],[$field=>$fee]);
+            return true;
         }, 3);
-        return response()->noContent();
+        if (!$saved) {
+            abort_unless($browser,409,'Tarif sudah berubah, muat ulang.');
+            return redirect($url)->with('rate_warning',[$anchor=>'Tarif sudah berubah. Periksa nilai terbaru sebelum menyimpan kembali.']);
+        }
+        return $browser ? redirect($url)->with('rate_saved',$anchor) : response()->noContent();
     }
 
     /**
