@@ -15,6 +15,7 @@
 @include('admin.pesanan.perpanjangan')@endif
 <h2 id="pembayaran">Posisi pembayaran</h2><p>Total Rp{{ number_format($order->total,0,',','.') }} · Saldo Rp{{ number_format($order->saldo,0,',','.') }}</p>
 @forelse($order->pembayaran as $bill)<article class="bk-task"><h3>{{ ucfirst($bill->getRawOriginal('jenis')) }}</h3><p>Status: {{ str_replace('_',' ',$bill->getRawOriginal('status')) }} · Pokok Rp{{ number_format($bill->tagihan,0,',','.') }}</p></article>@empty<p>Belum ada baris pembayaran.</p>@endforelse
+@if($action)@include('admin.pesanan.aksi-status')@endif
 @if($refund)@include('admin.pesanan.refund')@endif
 @if(config('checkout.staging') && app()->environment('local','testing','staging'))<a class="bk-secondary" href="{{ route('kas-antar.index',['tanggal'=>now('Asia/Jakarta')->toDateString()]) }}">Buka antrean verifikasi dan setoran hari ini</a>@endif
 <details class="bk-confirm" id="riwayat-status"><summary>Riwayat status · {{ $history->count() }} catatan</summary>

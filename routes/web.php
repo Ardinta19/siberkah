@@ -173,6 +173,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::get('permohonan-batal', [CancellationRequestController::class, 'index'])->name('admin.permohonan-batal.index');
         Route::post('pesanan/{id}/approve-cancellation', [PaidRentalCancellationController::class, 'approve'])->whereNumber('id')->name('admin.pesanan.approve-cancellation');
         Route::post('pesanan/{id}/reject-cancellation', [CancellationRequestController::class, 'reject'])->whereNumber('id')->name('admin.pesanan.reject-cancellation');
+        Route::post('pesanan/{id}/cancel-unpaid', [AdminOrderController::class,'cancelUnpaid'])->whereNumber('id')->middleware(RentalStaging::class)->name('admin.pesanan.cancel-unpaid');
         Route::post('pesanan/{id}/cancel-paid', [PaidRentalCancellationController::class, 'cancel'])->whereNumber('id')->name('admin.pesanan.cancel-paid');
         Route::post('pesanan/{id}/record-refund', [PaidRentalCancellationController::class, 'record'])->whereNumber('id')->name('admin.pesanan.record-refund');
         Route::post('pesanan/{id}/perpanjangan', [BoardOperationsController::class, 'extend'])->whereNumber('id')->middleware(RentalStaging::class)->name('papan.perpanjang');

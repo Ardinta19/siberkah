@@ -33,3 +33,5 @@
 **UC-21 buket:** dari daftar pesanan, cari pelanggan, pilih produk siap jual/custom dan isi checkout satu produk (beberapa unit, varian, opsi dan catatan). Harga serta kapasitas dihitung ulang oleh aksi bersama; POST manual terpisah dari sesi pelanggan dan keranjang. Keranjang manual multi-produk belum tersedia di UI.
 
 **UC-22 kalender Admin:** akses staging terpisah dari Pengaturan Owner. Dari dasbor → tanggal → kapasitas custom/blokir produk atau toko, atau kode unit persis untuk membaca reservasi dan blokir harian. Admin boleh melepas blokir unit, bukan blokir produk/toko Owner. Perubahan blokir tidak memindahkan reservasi.
+
+**Aksi pada rincian:** T04 memakai pelepasan inventaris transaksional dan audit staf, ditahan bila konfirmasi atau mutasi belum tuntas. T12 memakai keputusan refund sistem (permohonan aktif diarahkan ke antrean). T10 hanya untuk buket/toko sudah diserahkan dan lunas. Bukan dropdown status generik.

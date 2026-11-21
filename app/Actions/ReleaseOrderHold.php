@@ -37,7 +37,25 @@ final class ReleaseOrderHold
         }, 3);
     }
 
-    private function release(Pesanan $order, bool $expired): void
+    public static function needsReview(int $id): bool
+    {
+        return DB::table('pembayaran')->where('pesanan_id',$id)->where('status','menunggu')->whereNotNull('dikonfirmasi_pelanggan_pada')->exists()
+            || DB::table('mutasi_masuk as m')->join('pembayaran as p','p.id','=','m.pembayaran_id')->where('p.pesanan_id',$id)->where('m.hasil','perlu_rekonsiliasi')->exists();
+    }
+
+    public function staffCancel(\App\Models\Pengguna $staff, int $id, string $reason): void
+    {
+        abort_unless($staff->aktif && $staff->canVerifyPayment(),403);
+        DB::transaction(function () use ($staff,$id,$reason) {
+            $order = Pesanan::lockForUpdate()->findOrFail($id);
+            abort_unless(DB::table('checkout_bank')->where('pesanan_id',$id)->exists(),404);
+            if ($order->status === 'dibatalkan' && DB::table('riwayat_status_pesanan')->where(['pesanan_id'=>$id,'kode_transisi'=>'T04','pengguna_id'=>$staff->id,'catatan'=>$reason])->exists()) { return; }
+            abort_unless($order->status === 'menunggu_pembayaran' && !self::needsReview($id),409,'Periksa status pesanan dan mutasi terbaru sebelum membatalkan.');
+            $this->release($order,false,$staff->id,$reason);
+        },3);
+    }
+
+    private function release(Pesanan $order, bool $expired, ?int $staffId=null, ?string $reason=null): void
     {
         if ($order->jumlah_dibayar !== 0 || $order->pembayaran()->where('status', 'terverifikasi')->exists()) {
             throw new DomainException('Pembayaran sudah tercatat. Perlu rekonsiliasi sebelum unit dilepas.');
@@ -51,11 +69,12 @@ final class ReleaseOrderHold
         $order->status = $expired ? OrderStatus::KEDALUWARSA->value : OrderStatus::DIBATALKAN->value;
         if (! $expired) {
             $order->dibatalkan_pada = now();
+            if ($reason !== null) { $order->alasan_batal = $reason; }
         }
         $order->save();
         DB::table('riwayat_status_pesanan')->insert([
             'pesanan_id' => $order->id, 'status_lama' => $before, 'status_baru' => $order->status,
-            'kode_transisi' => $expired ? 'T03' : 'T04', 'pelaku' => $expired ? 'sistem' : 'pelanggan', 'dibuat_pada' => now(),
+            'kode_transisi' => $expired ? 'T03' : 'T04', 'pelaku' => $expired ? 'sistem' : ($staffId ? 'staf' : 'pelanggan'), 'pengguna_id'=>$staffId, 'catatan'=>$reason, 'dibuat_pada' => now(),
         ]);
     }
 }

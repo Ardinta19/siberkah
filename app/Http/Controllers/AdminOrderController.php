@@ -73,11 +73,31 @@ class AdminOrderController extends BaseController
                 $entries = DB::table('perpanjangan_sewa')->where('pesanan_id',$id)->orderByDesc('id')->get(['jam','nominal','alasan','batas_baru']);
                 $extension = \App\Support\RentalExtension::terms($order,(int)$entries->sum('jam')) + ['entries'=>$entries];
             }
+            $action = null;
+            if (config('checkout.staging') && app()->environment('local','testing','staging')) {
+                $online = DB::table('checkout_bank')->where('pesanan_id',$id)->exists();
+                if ($online && $order->status === 'menunggu_pembayaran' && $order->jumlah_dibayar === 0) {
+                    $action = \App\Actions\ReleaseOrderHold::needsReview($id) ? 'periksa' : 'T04';
+                } elseif ($online && in_array($order->status,['dikonfirmasi','sedang_diproduksi','siap'],true)) {
+                    $action = DB::table('permohonan_batal')->where(['pesanan_id'=>$id,'status'=>'menunggu'])->exists() ? 'permohonan' : 'T12';
+                } elseif ($order->status === 'sudah_diserahkan' && $order->saldo === 0 && $order->jumlah_dibayar === $order->total
+                    && (DB::table('checkout_buket')->where('pesanan_id',$id)->exists() || DB::table('penjualan_toko')->where('pesanan_id',$id)->exists())) {
+                    $action = 'T10';
+                }
+            }
             $history = $order->riwayatStatus()->orderByDesc('id')->get();
             $opsiPerItem = $order->snapshotOpsiPerItem();
-            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem','board','history','extension'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem','board','history','extension','action'))->header('Cache-Control','private, no-store');
         }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
+    }
+
+    public function cancelUnpaid(Request $request, int $id, \App\Actions\ReleaseOrderHold $holds)
+    {
+        $data = $request->validate(['alasan'=>'required|string|max:300','konfirmasi'=>'accepted']);
+        try { $holds->staffCancel($request->user('staff'),$id,$data['alasan']); }
+        catch (\DomainException $e) { abort(409,$e->getMessage()); }
+        return response()->json(['status'=>'dibatalkan']);
     }
 
     private function manualCustomers()

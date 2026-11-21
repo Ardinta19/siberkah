@@ -258,6 +258,7 @@ class RentalCheckoutTest extends TestCase
         $cancel = route('admin.pesanan.cancel-paid', $order->id);
         $input = ['alasan' => 'Acara dibatalkan pelanggan.'];
         $this->actingAs($admin, 'staff')->postJson($cancel, $input + ['nominal_override' => 1, 'alasan_override' => 'Penyesuaian'])->assertForbidden();
+        $this->get(route('admin.pesanan.show',$order->id),['Accept'=>'text/html'])->assertOk()->assertSee('Batalkan setelah konfirmasi');
         $this->postJson($cancel, $input)->assertOk()->assertJsonPath('nominal_refund', $expected);
         $this->postJson($cancel, $input)->assertOk();
         $this->postJson($cancel, ['alasan' => 'Berubah'])->assertConflict();
@@ -605,7 +606,9 @@ class RentalCheckoutTest extends TestCase
         $this->postJson(route('toko.selesai', $id))->assertConflict();
         $this->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $id])->assertRedirect();
         $this->postJson(route('toko.serah', $id), ['barang_diperiksa' => true, 'diterima_pembeli' => true])->assertOk();
+        $this->get(route('admin.pesanan.show',$id),['Accept'=>'text/html'])->assertOk()->assertSee('Selesaikan pesanan nonsewa');
         $this->postJson(route('toko.selesai', $id))->assertOk();
+        $this->get(route('admin.pesanan.show',$id),['Accept'=>'text/html'])->assertOk()->assertDontSee('Selesaikan pesanan nonsewa');
         $this->postJson(route('toko.selesai', $id))->assertOk();
         $this->assertDatabaseCount('riwayat_status_pesanan', 5);
         $this->assertDatabaseHas('pesanan', ['id' => $id, 'saldo' => 0, 'status' => 'selesai', 'jumlah_dibayar' => 26000]);
