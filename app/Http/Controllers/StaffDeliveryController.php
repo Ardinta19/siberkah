@@ -49,7 +49,7 @@ class StaffDeliveryController extends BaseController
                 ->join('unit_sewa as u','u.id','=','i.unit_sewa_id')
                 ->leftJoin('inspeksi_sewa as awal',fn($join)=>$join->on('awal.item_pesanan_id','=','i.id')->where('awal.tahap','serah'))
                 ->whereIn('i.pesanan_id',$ids)->orderBy('i.id')
-                ->get(['i.pesanan_id','i.id','i.nama_produk','i.nama_varian','u.kode','awal.kondisi as kondisi_serah','awal.catatan as catatan_serah','awal.daftar_periksa as cek_serah'])->groupBy('pesanan_id');
+                ->get(['i.pesanan_id','i.id','i.unit_sewa_id','i.nama_produk','i.nama_varian','u.kode','awal.kondisi as kondisi_serah','awal.catatan as catatan_serah','awal.daftar_periksa as cek_serah'])->groupBy('pesanan_id');
             $pending = DB::table('permohonan_batal')->whereIn('pesanan_id',$ids)->where('status','menunggu')->pluck('pesanan_id');
         }
         $data = ['judul' => 'Agenda serah terima', 'tanggal' => $date, 'pesanan' => $orders];

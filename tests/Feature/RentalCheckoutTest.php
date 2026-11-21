@@ -440,7 +440,7 @@ class RentalCheckoutTest extends TestCase
         $this->actingAs($admin, 'staff')->post(route('staf.produksi.mark-ready'), ['pesanan_id' => $order->id])->assertRedirect();
         $item = $order->items()->firstOrFail();
         $picture = fn () => \Illuminate\Http\UploadedFile::fake()->createWithContent('unit.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlWjQAAAABJRU5ErkJggg=='));
-        $row = ['item_id' => $item->id, 'kondisi' => 'baik', 'cek' => ['permukaan' => 'baik', 'bunga' => 'tidak_ada', 'easel' => 'baik', 'led' => 'tidak_ada']];
+        $row = ['item_id' => $item->id, 'unit_sewa_id' => $item->unit_sewa_id, 'kondisi' => 'baik', 'cek' => ['permukaan' => 'baik', 'bunga' => 'tidak_ada', 'easel' => 'baik', 'led' => 'tidak_ada']];
         $handover = fn () => ['pesanan_id' => $order->id, 'jenis_jaminan' => 'deposit', 'nominal_jaminan' => 100000, 'inspeksi' => [$row + ['foto' => [$picture()]]]];
         $this->travelTo($order->tanggal_serah->copy()->setTime(9, 0));
         $this->actingAs($courier, 'staff')->post(route('staf.kurir.handover'), $handover())->assertConflict();
@@ -448,6 +448,12 @@ class RentalCheckoutTest extends TestCase
         $bill = DB::table('pembayaran')->where('jenis','pelunasan')->sole();
         $verify->record($admin, $order->id, ['pembayaran_id' => $bill->id, 'nominal' => $bill->nominal_diharapkan, 'referensi' => 'BANK:BAL']);
         $this->travelTo($order->tanggal_serah->copy()->setTime(9, 0));
+        $stale = $handover();
+        $stale['inspeksi'][0]['unit_sewa_id']++;
+        $this->postJson(route('staf.kurir.handover'), $stale)->assertConflict();
+        $this->assertDatabaseCount('penguasaan_unit', 0);
+        $this->assertDatabaseCount('inspeksi_sewa', 0);
+        $this->assertSame('siap', $order->fresh()->status);
         $this->post(route('staf.kurir.handover'), $handover())->assertOk();
         $this->post(route('staf.kurir.handover'), $handover())->assertConflict();
         $this->getJson(route('staf.kurir.index', ['tugas' => 'jemput']))->assertOk()->assertJsonPath('pesanan.data.0.nomor', $order->nomor)->assertJsonPath('pesanan.data.0.tugas','jemput');

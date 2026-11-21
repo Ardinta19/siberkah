@@ -6,6 +6,7 @@
 <form data-ledger data-inspection enctype="multipart/form-data" method="post" class="bk-product-editor grid gap-3 p-4" action="{{ route($returning?'staf.kurir.receive-return':'staf.kurir.handover') }}">@csrf
 <input type="hidden" name="pesanan_id" value="{{ $p->id }}"><p>Periksa setiap unit fisik. Sertakan total 1–6 foto kondisi barang untuk tahap ini. Jangan unggah foto identitas pelanggan.</p>
 @foreach($units as $i=>$unit)<fieldset data-inspection-unit><legend>{{ $unit->kode }} · {{ $unit->nama_produk }} {{ $unit->nama_varian }}</legend><input type="hidden" name="inspeksi[{{ $i }}][item_id]" value="{{ $unit->id }}">
+<input type="hidden" name="inspeksi[{{ $i }}][unit_sewa_id]" value="{{ $unit->unit_sewa_id }}">
 @if($returning)<p data-handover-baseline>Kondisi saat diserahkan: {{ $unit->kondisi_serah ? str_replace('_',' ',$unit->kondisi_serah) : 'tidak tercatat' }}@if(filled($unit->catatan_serah)) · {{ $unit->catatan_serah }}@endif. Periksa kembali unit ini sebelum mengisi hasil jemput.</p>@endif
 @php($awal = $returning ? json_decode($unit->cek_serah ?? '{}',true) : [])
 @foreach(['permukaan'=>'Permukaan akrilik','easel'=>'Kaki atau easel','bunga'=>'Rangkaian bunga','led'=>'Lampu LED'] as $key=>$label)<label>{{ $label }}<select data-part @if($returning) aria-describedby="awal-{{ $unit->id }}-{{ $key }}" @endif required name="inspeksi[{{ $i }}][cek][{{ $key }}]"><option value="">Pilih hasil pemeriksaan</option><option value="baik">Baik</option><option value="cacat">Cacat</option><option value="tidak_ada">Tidak ada</option></select></label>

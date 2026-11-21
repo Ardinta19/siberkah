@@ -13,7 +13,8 @@ final class InspectRental
     public function handle(Request $request, bool $return): array
     {
         $rules = ['pesanan_id' => 'required|integer|min:1', 'inspeksi' => 'required|array|list|min:1|max:100',
-            'inspeksi.*' => 'array:item_id,kondisi,catatan,cek,foto', 'inspeksi.*.item_id' => 'required|integer|distinct',
+            'inspeksi.*' => 'array:item_id,unit_sewa_id,kondisi,catatan,cek,foto', 'inspeksi.*.item_id' => 'required|integer|distinct',
+            'inspeksi.*.unit_sewa_id' => 'required|integer|min:1|distinct',
             'inspeksi.*.kondisi' => $return ? 'required|in:baik,cacat_ringan,rusak' : 'required|in:baik,cacat_ringan',
             'inspeksi.*.catatan' => 'nullable|string|max:300', 'inspeksi.*.cek' => 'required|array:permukaan,easel,bunga,led|required_array_keys:permukaan,easel,bunga,led',
             'inspeksi.*.cek.*' => 'required|in:baik,cacat,tidak_ada', 'inspeksi.*.foto' => 'sometimes|array|list|min:1|max:6',
@@ -33,6 +34,11 @@ final class InspectRental
                 abort_if($hourly === null, 404);
                 $from = $return ? 'sudah_diserahkan' : 'siap';
                 abort_unless($order->status === $from, 409, 'Tahap inspeksi tidak sesuai status pesanan.');
+                $items = $order->items()->orderBy('unit_sewa_id')->lockForUpdate()->get();
+                $rows = collect($data['inspeksi'])->keyBy('item_id');
+                abort_unless($items->count() === $rows->count() && $items->every(fn ($i) => $i->unit_sewa_id && $rows->has($i->id)), 422, 'Periksa seluruh unit milik pesanan ini.');
+                abort_unless($items->every(fn ($item) => (int)$rows[$item->id]['unit_sewa_id'] === (int)$item->unit_sewa_id),
+                    409, 'Penugasan unit berubah. Muat ulang agenda dan periksa kode unit fisik sebelum melanjutkan.');
                 $now = now('Asia/Jakarta');
                 if (! $return) {
                     $slot = DB::table('desain_papan')->where('pesanan_id', $order->id)->value('jadwal_serah');
@@ -41,9 +47,6 @@ final class InspectRental
                     app(HandoverCash::class)->collect($request, $order);
                     abort_unless($order->saldo === 0 && $order->jumlah_dibayar === $order->total && $order->tanggal_serah->isSameDay($now), 409, 'Serah hanya pada hari acara setelah lunas.');
                 }
-                $items = $order->items()->orderBy('unit_sewa_id')->get();
-                $rows = collect($data['inspeksi'])->keyBy('item_id');
-                abort_unless($items->count() === $rows->count() && $items->every(fn ($i) => $i->unit_sewa_id && $rows->has($i->id)), 422, 'Periksa seluruh unit milik pesanan ini.');
                 $late = 0;
                 $extraHours = $return ? (int) DB::table('perpanjangan_sewa')->where('pesanan_id', $order->id)->sum('jam') : 0;
                 foreach ($items as $item) {
