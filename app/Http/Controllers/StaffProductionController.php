@@ -71,6 +71,9 @@ class StaffProductionController extends Controller
             $from = $order->status;
             $step = $this->nextStep($from, $types, $snapshot, $board);
             $code = $step['kode'];
+            if ($start && $board && $request->has('versi_papan') && $request->input('versi_papan') !== \App\Support\BoardTextVersion::of($board)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['versi_papan'=>'Teks papan berubah setelah antrean dibuka. Periksa kembali ketiga baris sebelum mulai produksi.']);
+            }
             abort_unless($code && ($start === ($code === 'T05')), 409, $step['alasan'] ?? 'Status atau jenis item tidak sesuai untuk aksi ini.');
             $order->update(['status' => $start ? 'sedang_diproduksi' : 'siap']);
             DB::table('riwayat_status_pesanan')->insert([

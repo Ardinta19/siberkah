@@ -77,3 +77,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Gerbang Admin:** lihat [audit SRS dan celah akses Admin](audit-admin.md); cakupan layar lintas ukuran tidak menutup celah UC-21/22/24.
 
 **Staf Produksi — antrean:** masuk sebagai staf_produksi, saring nomor/tanggal serah/tahap, periksa rincian item dan sunting teks papan pada pesanan dikonfirmasi. Simpan mengembalikan konteks antrean; revisi basi ditolak dan teks terkunci setelah produksi dimulai. Chrome menguji alur siap jual → siap dengan akses Admin ditolak.
+
+**Produksi → Kurir:** konfirmasi tiga baris papan sebelum T05. Formulir membawa versi yang dibaca; bila teks berubah di tab lain, tolak mulai produksi dalam transaksi dan minta pemeriksaan ulang. Chrome mengedit papan, menguji konflik, mengunci, menandai siap dan menemukan tugas antar bertanggal/jam sama dalam sesi Kurir.

@@ -65,6 +65,7 @@
             @if($kode = $p->langkah['kode'])
                 <form data-pending="Memperbarui produksi…" method="post" action="{{ route($kode==='T05'?'staf.produksi.start':'staf.produksi.mark-ready') }}" class="py-2">
                     @csrf <input type="hidden" name="pesanan_id" value="{{ $p->id }}">
+                    @if($kode==='T05' && $p->papan)<input type="hidden" name="versi_papan" value="{{ \App\Support\BoardTextVersion::of($p->papan) }}"><label><input type="checkbox" required> Saya sudah mencocokkan judul, penerima dan pengirim sebelum mengunci teks.</label>@endif
                     <button class="btn-primary">{{ $kode==='T05' ? 'Mulai produksi custom' : 'Tandai siap' }}</button>
                 </form>
             @else<p class="bk-notice">{{ $p->langkah['alasan'] }}</p>@endif

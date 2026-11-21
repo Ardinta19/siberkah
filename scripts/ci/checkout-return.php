@@ -21,5 +21,12 @@ echo DB::transaction(function () {
     // Separate free unit for the Admin same-day booking scenario.
     DB::table('produk')->where('id',$variant->produk_id)->update(['aktif'=>true,'izin_hari_sama'=>true]);
     DB::table('unit_sewa')->insert(['varian_produk_id'=>$variant->id,'kode'=>'CI-MANUAL','status'=>'aktif']);
+    // Confirmed board with a separate unit, ready for the production-role scenario.
+    $day = substr(trim(file_get_contents(getenv('CHECKOUT_CI_CLOCK'))),0,10);
+    $boardUnit = DB::table('unit_sewa')->insertGetId(['varian_produk_id'=>$variant->id,'kode'=>'CI-PROD','status'=>'aktif']);
+    $board = DB::table('pesanan')->insertGetId(['nomor'=>'CI-PRODUKSI','pelanggan_id'=>$customer->id,'status'=>'dikonfirmasi','asal'=>'situs','nama_pemesan'=>'Produksi CI','nomor_wa_pemesan'=>$customer->nomor_wa,'cara_serah'=>'antar','alamat_antar'=>'Alamat papan CI','tanggal_serah'=>$day,'subtotal'=>50000,'total'=>50000,'jumlah_dibayar'=>50000]);
+    DB::table('desain_papan')->insert(['pesanan_id'=>$board,'metode'=>'spidol','jadwal_serah'=>$day.' 14:00:00']);
+    $line = DB::table('item_pesanan')->insertGetId(['pesanan_id'=>$board,'produk_id'=>$variant->produk_id,'varian_produk_id'=>$variant->id,'unit_sewa_id'=>$boardUnit,'nama_produk'=>'Papan produksi CI','nama_varian'=>'Kayu','harga_satuan'=>50000,'subtotal'=>50000]);
+    DB::table('hari_reservasi')->insert(['pesanan_id'=>$board,'item_pesanan_id'=>$line,'unit_sewa_id'=>$boardUnit,'tanggal'=>$day,'dibuat_pada'=>now()]);
     return $order;
 });
