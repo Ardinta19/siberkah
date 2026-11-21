@@ -332,5 +332,25 @@ with sync_playwright() as playwright:
     expect(sheet.locator('[name=jenis]')).to_have_value('')
     sheet.locator('[data-dismiss]').tap()
     expect(sheet).to_be_hidden()
+    phone.goto(base+'/katalog/buket-browser')
+    gestures = touch.new_cdp_session(phone)
+    def swipe(surface, dx):
+        surface.scroll_into_view_if_needed()
+        box = surface.bounding_box()
+        x, y = box['x']+box['width']/2, box['y']+box['height']/2
+        for kind, offset in [('touchStart',0),('touchMove',dx/2),('touchMove',dx),('touchEnd',dx)]:
+            points = [] if kind=='touchEnd' else [{'x':x+offset,'y':y}]
+            gestures.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':points})
+    mobile_gallery = phone.locator('[data-gallery]')
+    swipe(mobile_gallery.locator('[data-photo]:visible'),-90)
+    expect(mobile_gallery.locator('[data-gallery-bar]')).to_contain_text('Foto 2 dari 2')
+    lightbox = mobile_gallery.locator('dialog')
+    expect(lightbox).to_be_hidden()
+    mobile_gallery.locator('[data-photo]:visible a').tap()
+    expect(lightbox).to_be_visible()
+    swipe(lightbox.locator('[data-large]'),90)
+    expect(lightbox.locator('[data-count]')).to_have_text('Foto 1 dari 2')
+    lightbox.get_by_role('button',name='Tutup foto').tap()
+    expect(mobile_gallery.locator('[data-photo]:visible a')).to_be_focused()
     touch.close()
     browser.close()

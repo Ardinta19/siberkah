@@ -1,3 +1,4 @@
+import { enableGallerySwipe } from './gallery-swipe.js';
 // With no dialog support every photo remains a normal link to the full image.
 for (const gallery of document.querySelectorAll('[data-gallery]')) {
   const photos=[...gallery.querySelectorAll('[data-photo]')], dialog=gallery.querySelector('dialog');
@@ -31,6 +32,15 @@ for (const gallery of document.querySelectorAll('[data-gallery]')) {
     if(photos.length<2 || e.altKey||e.ctrlKey||e.metaKey || !['ArrowLeft','ArrowRight'].includes(e.key))return;
     e.preventDefault();const onPhoto=e.target.closest('[data-photo]');show(index+(e.key==='ArrowRight'?1:-1));
     if(onPhoto)photos[index].querySelector('a').focus({preventScroll:true});
+  });
+  if(photos.length>1){
+    gallery.classList.add('bk-swipe-ready');
+    for(const surface of [...photos,large])enableGallerySwipe(surface,delta=>show(index+delta));
+  }
+  dialog.addEventListener('click',e=>{
+    if(e.target!==dialog)return;
+    const r=dialog.getBoundingClientRect();
+    if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom)dialog.close();
   });
   gallery.querySelector('[data-gallery-bar]').hidden=false;show(0,false);
 }
