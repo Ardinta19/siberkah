@@ -69,3 +69,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Retur — pemakaian deposit oleh Owner:** pisahkan aksi finansial sekali pakai dari konfirmasi setoran oleh Admin. Tampilkan plafon, estimasi saldo dan sisa deposit sebelum konfirmasi; gunakan kriteria tagihan yang sama pada GET dan transaksi terkunci. Sesudah keputusan, hanya jejak nominal, alasan, waktu dan petugas yang tampil.
 
 **Regresi Chrome retur:** mulai dari fixture inspeksi kembali sintetis. Periksa izin Admin/Owner, estimasi dan konfirmasi tarif, setoran fisik, proyeksi deposit/saldo dan hasil sesudah simpan. Nominal konfirmasi tidak cocok dicegah di browser serta divalidasi kembali di server.
+
+**Admin — keputusan rekonsiliasi bank:** bedakan keputusan selisih kode unik, reaktivasi nyata dengan pemeriksaan stok, dan bukti transfer keluar. Kelompok dikreditkan setelah pemeriksaan hanya memuat selisih yang diterima dan reaktivasi sukses, bukan semua transfer bank biasa.

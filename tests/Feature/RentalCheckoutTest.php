@@ -543,12 +543,17 @@ class RentalCheckoutTest extends TestCase
         }
         $receipt = DB::table('mutasi_masuk')->sole();
         $this->actingAs($admin, 'staff');
+        $queue = route('admin.rekonsiliasi.index');
+        $html = ['Accept'=>'text/html'];
+        $this->get($queue,$html)->assertOk()->assertSee('Proses reaktivasi');
         for ($i = 0; $i < 2; $i++) {
             $this->postJson(route('admin.pesanan.reactivate-expired', $order->id), ['mutasi_id' => $receipt->id])->assertOk()
                 ->assertJsonPath('hasil', $taken ? 'perlu_pengembalian' : 'dikonfirmasi');
         }
         $this->assertDatabaseCount('hari_reservasi', 1);
         $this->assertDatabaseHas('hari_reservasi', ['pesanan_id' => $taken ? $other->id : $order->id]);
+        $this->get($taken ? $queue : $queue.'?kelompok=dikreditkan',$html)->assertOk()->assertSee('LATE')->assertDontSee('Proses reaktivasi')
+            ->assertSee($taken ? 'Periksa pengembalian penuh' : 'Mutasi sudah dikreditkan');
         $this->assertSame($taken ? 0 : 130500, $order->fresh()->jumlah_dibayar);
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi', $taken ? 'T14' : 'T13')->count());
         $this->assertSame($taken ? 0 : 1, DB::table('pembayaran')->where('jenis', 'pelunasan')->count());

@@ -19,22 +19,25 @@ final class TransferReconciliationController extends Controller
         $this->requireStaging();
         $browser = !$request->expectsJson() && !$request->acceptsAnyContentType() && $request->getPreferredFormat()==='html';
         $history = $browser && $request->query('kelompok') === 'dikembalikan';
+        $credited = $browser && $request->query('kelompok') === 'dikreditkan';
         $query = DB::table('mutasi_masuk as m')->join('pembayaran as p','p.id','=','m.pembayaran_id')
             ->join('checkout_bank as c','c.pesanan_id','=','p.pesanan_id');
         $columns = ['m.id','p.pesanan_id','m.pembayaran_id','m.referensi','m.nominal','m.alasan','m.dicatat_pada'];
         if ($browser) {
             $query->join('pesanan as o','o.id','=','p.pesanan_id');
-            $columns[] = 'o.nomor';
+            array_push($columns,'o.nomor','o.status as status_pesanan','p.status as status_tagihan','p.jenis','p.tagihan','p.nominal_diharapkan');
         }
         if ($history) {
             $query->join('pengembalian_mutasi as k','k.mutasi_masuk_id','=','m.id')->where('m.hasil','dikembalikan')
                 ->orderByDesc('k.dicatat_pada')->orderByDesc('m.id');
             array_push($columns,'k.referensi_keluar','k.alasan as alasan_keluar','k.dicatat_pada as waktu_keluar');
+        } elseif ($credited) {
+            $query->where('m.hasil','terverifikasi')->whereIn('m.alasan',['selisih_diterima','reaktivasi_t13'])->orderByDesc('m.id');
         } else {
             $query->where('m.hasil','perlu_rekonsiliasi')->orderBy('m.id');
         }
-        $rows = $query->paginate(25,$columns)->appends($history ? ['kelompok'=>'dikembalikan'] : []);
-        return ($browser ? response()->view('admin.keuangan.rekonsiliasi',compact('rows','history')) : response()->json($rows))->header('Cache-Control','private, no-store');
+        $rows = $query->paginate(25,$columns)->appends($history ? ['kelompok'=>'dikembalikan'] : ($credited ? ['kelompok'=>'dikreditkan'] : []));
+        return ($browser ? response()->view('admin.keuangan.rekonsiliasi',compact('rows','history','credited')) : response()->json($rows))->header('Cache-Control','private, no-store');
     }
 
     public function recordReturn(Request $request, int $mutasi)
