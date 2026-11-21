@@ -3,7 +3,7 @@
 @section('content')
 <section class="bk-owner-list"><x-back-link :href="route('dashboard.hari-ini')">Kembali ke dasbor</x-back-link>
 <header><p class="kc-kicker">Operasional · Pesanan</p><h1>Daftar pesanan</h1><p>Cari nomor pesanan atau nama pemesan. Filter tanggal menggunakan tanggal serah, bukan tanggal pembayaran.</p></header>
-@if(config('checkout.staging') && app()->environment('local','testing','staging'))<a class="bk-secondary" href="{{ route('admin.permohonan-batal.index') }}">Tinjau permohonan pembatalan</a>@endif
+@if(config('checkout.staging') && app()->environment('local','testing','staging'))<a class="bk-secondary" href="{{ route('admin.permohonan-batal.index') }}">Tinjau permohonan pembatalan</a> <a class="bk-secondary" href="{{ route('admin.pesanan.manual-sewa') }}">Buat pesanan sewa manual</a>@endif
 <form class="bk-product-editor grid gap-3 p-4" method="get" action="{{ route('admin.pesanan.index') }}#hasil-pesanan" role="search" aria-label="Cari pesanan">
 <label>Nomor atau nama pemesan <input type="search" name="q" maxlength="150" value="{{ $filters['q'] ?? '' }}"></label>
 @isset($filters['q'])<a href="{{ route('admin.pesanan.index',array_diff_key($filters,['q'=>true])) }}#hasil-pesanan">Hapus pencarian</a>@endisset

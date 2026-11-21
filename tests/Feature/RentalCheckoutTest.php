@@ -617,7 +617,14 @@ class RentalCheckoutTest extends TestCase
         $this->actingAs(Pengguna::factory()->create(['peran' => 'staf_produksi']), 'staff')->postJson($url, $data)->assertForbidden();
         $admin = Pengguna::factory()->create(['peran' => 'admin']);
         $this->actingAs($admin, 'staff')->postJson($url, $data + ['alasan_pengecualian' => 'Lewati stok'])->assertUnprocessable();
-        $id = $this->postJson($url, $data)->assertOk()->json('pesanan_id');
+        $formUrl = route('admin.pesanan.manual-sewa',['pelanggan'=>$customer->id]);
+        $this->post(route('admin.pesanan.manual-pelanggan'),['nomor_wa'=>'0'.substr($customer->nomor_wa,2)])->assertRedirect($formUrl);
+        $this->get($formUrl)->assertOk()->assertSee('Pilih varian sewa');
+        $input = $data + ['asal_form'=>'manual-sewa'];
+        unset($input['produk_id']);
+        $this->from($formUrl)->post($url,$input)->assertSessionHas('manual_success');
+        $id = DB::table('pesanan')->sole()->id;
+        $this->post($url,$input)->assertRedirect(route('admin.pesanan.show',$id));
         $this->postJson($url, $data)->assertOk()->assertJsonPath('pesanan_id', $id);
         $this->getJson(route('admin.pesanan.index'))->assertOk()->assertJsonPath('total', 1);
         $this->getJson(route('admin.pesanan.show', $id))->assertOk()->assertJsonPath('asal', 'admin');

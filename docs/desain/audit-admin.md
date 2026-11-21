@@ -23,3 +23,5 @@
 1. UC-21: buat satu pesanan manual dari browser hingga dapat dilacak; uji permintaan ganda, akses, consent dan kegagalan ketersediaan.
 2. UC-22 dan UC-24: putuskan/terapkan batas Admin vs Owner, uji navigasi dan larangan lintas peran.
 3. Cocokkan aksi status terkait (terutama T04, T10, T12) dengan tombol kontekstual; bedakan server-only dari UI yang dapat digunakan. Tambahkan layar baru ke gerbang sebelum sign-off. Lanjut Produksi dan Kurir setelah celah diselesaikan atau penundaan disepakati.
+
+**Kemajuan UC-21:** daftar pesanan → pencarian pelanggan terverifikasi dengan nomor persis → formulir sewa antar tanggal mendatang → rincian pesanan. Aturan transaksi/replay sama dengan API. Buket, transaksi langsung dan sewa hari yang sama bukan bagian formulir ini.

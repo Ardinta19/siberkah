@@ -138,6 +138,8 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::post('penjualan-toko/{id}/selesai', [StoreSaleController::class, 'complete'])->whereNumber('id')->middleware(RentalStaging::class)->name('toko.selesai');
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('admin.pesanan.index');
         Route::get('pesanan/{id}', [AdminOrderController::class, 'show'])->whereNumber('id')->name('admin.pesanan.show');
+        Route::get('pesanan/manual/sewa', [AdminOrderController::class, 'manualRentalForm'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-sewa');
+        Route::post('pesanan/manual/pelanggan', [AdminOrderController::class, 'manualCustomer'])->middleware([RentalStaging::class,'throttle:30,1'])->name('admin.pesanan.manual-pelanggan');
         Route::post('pesanan/manual/buket', [AdminOrderController::class, 'manualBouquet'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-buket');
         Route::post('pesanan/manual/sewa', [AdminOrderController::class, 'manualStore'])->middleware(RentalStaging::class)->name('admin.pesanan.manual-store');
         Route::post('pesanan/{id}/transition', [AdminOrderController::class, 'transitionStatus'])->middleware('pending.transaction')->name('admin.pesanan.transition');

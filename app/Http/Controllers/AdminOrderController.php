@@ -80,15 +80,52 @@ class AdminOrderController extends BaseController
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
 
+    private function manualCustomers()
+    {
+        return DB::table('pelanggan')->where('aktif',true)->whereNull('dihapus_pada')->whereNotNull('nomor_terverifikasi_pada');
+    }
+
+    public function manualCustomer(Request $request)
+    {
+        $phone = $request->validate(['nomor_wa'=>'required|string|regex:/^(?:0|\+?62)[0-9]{8,13}$/D'])['nomor_wa'];
+        $phone = preg_replace('/^0/','62',ltrim($phone,'+'));
+        $id = $this->manualCustomers()->where('nomor_wa',$phone)->value('id');
+        return $id ? redirect()->route('admin.pesanan.manual-sewa',['pelanggan'=>$id])
+            : redirect()->route('admin.pesanan.manual-sewa')->withErrors(['nomor_wa'=>'Tidak ditemukan pelanggan aktif terverifikasi dengan nomor tersebut.']);
+    }
+
+    public function manualRentalForm(Request $request)
+    {
+        $customer = null;
+        $variants = $zones = collect();
+        if ($request->filled('pelanggan')) {
+            $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
+            $variants = DB::table('varian_produk as v')->join('produk as p','p.id','=','v.produk_id')->join('kategori as k','k.id','=','p.kategori_id')
+                ->where('v.aktif',true)->where('p.aktif',true)->where('k.aktif',true)->where('p.jenis','sewa')->where('v.harga','>',0)
+                ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('opsi_produk as o')->whereColumn('o.produk_id','p.id'))
+                ->orderBy('p.nama')->orderBy('v.nama')->get(['v.id','v.nama','v.harga','p.nama as produk']);
+            $zones = DB::table('zona_antar')->where('aktif',true)->where('jarak_maks_km','<=',15)->orderBy('nama')->get(['id','nama','ongkir']);
+        }
+        return response()->view('admin.pesanan.manual-sewa',compact('customer','variants','zones'))->header('Cache-Control','private, no-store');
+    }
+
     public function manualStore(Request $request, \App\Actions\CreateRentalOrder $checkout)
     {
         $data = $request->validate(['pelanggan_id' => 'required|integer|min:1', 'persetujuan_pelanggan_diperiksa' => 'accepted', 'alasan_pengecualian' => 'prohibited']);
         $customer = \App\Models\Pelanggan::findOrFail($data['pelanggan_id']);
+        $form = $request->input('asal_form') === 'manual-sewa' && !$request->expectsJson();
+        $input = $request->all();
+        if ($form) {
+            $request->validate(['varian_id'=>'required|integer|min:1']);
+            $input['produk_id'] = DB::table('varian_produk')->where('id',$input['varian_id'])->value('produk_id');
+        }
         try {
-            $order = $checkout->create($customer, $request->all(), $request->user('staff'));
+            $order = $checkout->create($customer, $input, $request->user('staff'));
         } catch (\DomainException $exception) {
+            if ($form) { return back()->withInput($request->except(['persetujuan_pelanggan_diperiksa','setuju_privasi']))->withErrors(['pesanan'=>$exception->getMessage()]); }
             abort(409, $exception->getMessage());
         }
+        if ($form) { return redirect()->route('admin.pesanan.show',$order->id)->with('manual_success','Pesanan sewa manual tercatat.'); }
         return response()->json(['pesanan_id' => $order->id, 'nomor' => $order->nomor]);
     }
 
