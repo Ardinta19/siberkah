@@ -9,7 +9,7 @@
     <h1 class="text-2xl font-bold">Pesanan {{ $pesanan->nomor }}</h1>
     <p class="bk-order-status">{{ str_replace('_', ' ', $pesanan->status) }}</p>
     <p>{{ $pesanan->cara_serah === 'ambil' ? 'Ambil di toko' : 'Pengantaran' }}@if($pesanan->tanggal_serah) · {{ $pesanan->tanggal_serah->locale('id')->translatedFormat('d F Y') }}@endif</p>
-    <ul class="my-4">@foreach($pesanan->items as $item)<li>{{ $item->jumlah }} × {{ $item->nama_produk }}</li>@endforeach</ul>
+    @include('pelanggan.pesanan.rincian-biaya')
     @if($pesanan->tunai_saat_serah && !in_array($pesanan->status, ['kedaluwarsa', 'dibatalkan']))
         @if($pesanan->status === 'menunggu_pembayaran')<p>Bayar DP terlebih dahulu. Sisa tagihan dibayar tunai saat serah.</p>
         @elseif(in_array($pesanan->status, ['dikonfirmasi', 'sedang_diproduksi', 'siap']))<p>Bayar tunai saat {{ $pesanan->cara_serah === 'ambil' ? 'ambil di toko' : 'pesanan diantar' }}: Rp{{ number_format($pesanan->saldo, 0, ',', '.') }}.</p>@endif
@@ -28,7 +28,6 @@
     @endif
     <h2>Riwayat status</h2>
     <ol class="bk-order-timeline">@foreach($riwayat as $perubahan)<li @if($loop->last) aria-current="step" @endif>{{ $perubahan->dibuat_pada }} WIB · {{ str_replace('_', ' ', $perubahan->status_baru) }}</li>@endforeach</ol>
-    <strong>Total Rp{{ number_format($pesanan->total, 0, ',', '.') }}</strong>
     @if(config('checkout.staging') && in_array($pesanan->asal, ['situs','admin']))
         <a href="{{ route('payment.show',['nomor'=>$pesanan->nomor]+$riwayatContext) }}">Lihat tagihan dan petunjuk pembayaran</a>
     @endif

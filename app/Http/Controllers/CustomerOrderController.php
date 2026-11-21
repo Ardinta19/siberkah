@@ -80,6 +80,9 @@ class CustomerOrderController extends BaseController
             ->firstOrFail();
 
         return response()->view('pelanggan.pesanan.show', [
+            'opsiPerItem' => \Illuminate\Support\Facades\DB::table('opsi_item_pesanan')
+                ->whereIn('item_pesanan_id', $pesanan->items->modelKeys())->orderBy('id')->get()
+                ->groupBy('item_pesanan_id'),
             'permohonan' => \Illuminate\Support\Facades\DB::table('permohonan_batal')->where('pesanan_id', $pesanan->id)->first(['status','alasan','diajukan_pada','diputuskan_pada','catatan_keputusan']),
             'papan' => \Illuminate\Support\Facades\DB::table('desain_papan')->where('pesanan_id',$pesanan->id)->first(['judul','penerima','pengirim']),
             'riwayat' => \Illuminate\Support\Facades\DB::table('riwayat_status_pesanan')->where('pesanan_id', $pesanan->id)->orderBy('id')->get(['status_baru','dibuat_pada']),
