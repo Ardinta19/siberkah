@@ -24,7 +24,8 @@
 <dl>@foreach(['tagihan_setor'=>'Tagihan setor','disetor'=>'Tercatat disetor','kurang'=>'Kurang','lebih'=>'Lebih'] as $key=>$caption)<div><dt>{{ $caption }}</dt><dd>Rp{{ number_format($recap->$key,0,',','.') }}</dd></div>@endforeach</dl></section>@endforeach</details>
 @endif
 @forelse($rincian as $r)
-<article class="grid gap-2 border p-3"><p>{{ $r->nomor }} · Petugas #{{ $r->petugas_id }} · {{ ucfirst(str_replace('_',' ',$r->status_setoran)) }} · Tagihan setor Rp{{ number_format($r->tagihan_setor,0,',','.') }} · Sudah disetor Rp{{ number_format($r->sudah_disetor,0,',','.') }}</p>
+<article id="setoran-{{ $r->pembayaran_id }}" class="grid gap-2 border p-3"><p>{{ $r->nomor }} · Petugas #{{ $r->petugas_id }} · {{ ucfirst(str_replace('_',' ',$r->status_setoran)) }} · Tagihan setor Rp{{ number_format($r->tagihan_setor,0,',','.') }} · Sudah disetor Rp{{ number_format($r->sudah_disetor,0,',','.') }}</p>
+<a class="bk-secondary" href="{{ route('kas-antar.history',['id'=>$r->pembayaran_id,'halaman_setoran'=>$rincian->currentPage(),'antrean'=>$queue->currentPage()] + request()->only('petugas_id')) }}">Riwayat hitung dan koreksi · {{ $r->nomor }}</a>
 @if((int)$r->petugas_id !== auth('staff')->id())
 <form method="post" action="{{ route('kas-antar.record',$r->pembayaran_id) }}" data-ledger data-cash-count data-expected="{{ $r->tagihan_setor }}" data-recorded="{{ $r->status_setoran === 'belum_disetor' ? 0 : 1 }}" class="grid gap-2">@csrf
     <input type="hidden" name="kunci" value="{{ \Illuminate\Support\Str::uuid() }}"><input type="hidden" name="sebelum" value="{{ $r->sudah_disetor }}">

@@ -161,6 +161,9 @@ class BouquetCheckoutTest extends TestCase
         $this->postJson($url, array_replace($data, ['kunci' => (string) Str::uuid(), 'sebelum' => 141000, 'sesudah' => 140000, 'catatan' => 'Kelebihan dikembalikan']))->assertCreated();
         $this->getJson($list)->assertJsonPath('rincian.data.0.status_setoran', 'cocok');
         $this->getJson(route('kas-antar.history', $cashId))->assertJsonPath('total', 3);
+        $this->get(route('kas-antar.history', $cashId), ['Accept'=>'text/html'])->assertOk()
+            ->assertSeeInOrder(['Hitung #3','−Rp1.000','Kelebihan dikembalikan','Hitung #2','+Rp6.000','Setoran tambahan','Hitung #1','Kurang saat hitung pertama'])
+            ->assertSee('#setoran-'.$cashId);
         $this->assertDatabaseCount('pembayaran', 2);
         $this->assertSame(0, $order->fresh()->saldo);
         $this->assertDatabaseCount('mutasi_masuk', 1);

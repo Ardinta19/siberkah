@@ -49,10 +49,18 @@ final class DeliveryCashController extends Controller
         return response($bytes)->withHeaders(['Content-Type'=>'image/webp','Cache-Control'=>'private, no-store','X-Content-Type-Options'=>'nosniff']);
     }
 
-    public function history(int $id)
+    public function history(Request $request, int $id)
     {
-        abort_unless($this->receipts()->where('b.id', $id)->exists(), 404);
-        return response()->json(DB::table('setoran_kas_antar')->where('pembayaran_id', $id)->orderBy('id')->paginate(50))->header('Cache-Control', 'private, no-store');
+        $receipt = $this->receipts()->where('b.id', $id)->first(['p.nomor', 'b.pengguna_id', 'b.diterima_pada', 'b.nominal_diterima']);
+        abort_unless($receipt, 404);
+        $ledger = DB::table('setoran_kas_antar')->where('pembayaran_id', $id);
+        if ($request->expectsJson() || $request->acceptsAnyContentType() || $request->getPreferredFormat() !== 'html') {
+            return response()->json($ledger->orderBy('id')->paginate(50))->header('Cache-Control', 'private, no-store');
+        }
+        $context = $request->validate(['petugas_id'=>'sometimes|integer|min:1','halaman_setoran'=>'sometimes|integer|min:1','antrean'=>'sometimes|integer|min:1']);
+        $entries = $ledger->orderByDesc('id')->paginate(50, ['kasir_id','sebelum','sesudah','dicatat_pada','catatan'])->appends($context);
+        $back = ['tanggal'=>substr($receipt->diterima_pada,0,10),'page'=>$context['halaman_setoran'] ?? 1] + array_intersect_key($context,array_flip(['antrean','petugas_id']));
+        return response()->view('admin.keuangan.riwayat-setoran', compact('receipt','entries','back','id'))->header('Cache-Control', 'private, no-store');
     }
 
     public function record(Request $request, int $id)

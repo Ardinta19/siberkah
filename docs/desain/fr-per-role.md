@@ -45,3 +45,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — permohonan pembatalan:** tampilkan antrean menunggu, alasan pelanggan dan tautan rincian dengan tujuan kembali. Setujui dan Tolak adalah dua formulir berbeda, masing-masing mengikat nomor pesanan dan catatan keputusan. Persetujuan menentukan kewajiban refund, tidak mencatat uang keluar. Penolakan tidak mengubah status pesanan.
 
 **Admin — rekonsiliasi bank:** pisahkan mutasi belum dikreditkan dari pengembalian yang sudah dicatat. Verifikasi nominal masuk penuh dan referensi keluar aktual; jangan memulai transfer dan jangan menyebut pengembalian mutasi sebagai pelunasan atau refund pembatalan. Setelah respons jaringan tidak pasti, periksa antrean/riwayat melalui GET, bukan kirim POST ulang otomatis.
+
+**Admin — audit kas antar:** dari baris setoran, buka riwayat baca-saja untuk melihat kasir, waktu, perubahan dan alasan koreksi. Kembali ke tanggal, filter petugas, halaman dan baris asal. Saldo setoran tidak menambah pembayaran pelanggan.
