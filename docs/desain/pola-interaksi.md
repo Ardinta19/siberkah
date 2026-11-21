@@ -41,3 +41,5 @@ Saat logo ringkas dibuka jauh di bawah halaman, fokus masuk ke kontrol navigasi 
 **Galeri detail:** tampilkan foto utama sekali di depan; pertahankan urutan foto lain dan teks alternatif. Jangan memutar foto otomatis. Sediakan kontrol sentuh, panah keyboard, penghitung, serta pembesaran tanpa meninggalkan produk. Escape mengembalikan fokus; tanpa JS setiap foto tetap dapat dibuka lewat tautan biasa. Jangan tampilkan navigasi foto untuk monogram kosong.
 
 Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat jari dilepas, baik di kartu detail maupun panel perbesar. Ketuk tetap membuka foto; gerak vertikal, pembatalan, dan cubit untuk zoom bukan perintah pindah. Jangan hilangkan tombol panah ketika gesture tersedia.
+
+**Memilih foto tertentu:** untuk dua foto atau lebih, tampilkan deret pratinjau dengan satu penanda aktif yang juga terbaca tanpa warna. Klik/ketuk langsung memilih foto; Tab cukup sekali memasuki deret. Panah berpindah pilihan, Home/End menuju ujung. Sinkronkan pilihan dengan tombol, geser, dan lightbox. Jika deret melampaui lebar layar, geser deret itu saja, bukan halaman di bawahnya.

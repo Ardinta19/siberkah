@@ -17,6 +17,13 @@
             @if($photos->count()>1)<button type="button" data-next aria-label="Foto berikutnya">›</button>@endif
             <button type="button" data-enlarge aria-haspopup="dialog">Perbesar</button>
         </div>
+        @if($photos->count()>1)
+            <div hidden class="bk-filmstrip" data-filmstrip role="group" aria-label="Pilih foto produk">
+                @foreach($photos as $path => $alt)
+                    <button type="button" data-photo-index="{{ $loop->index }}" aria-label="Pilih foto {{ $loop->iteration }}: {{ $alt ?: $produk->nama }}"><img loading="lazy" width="56" height="56" alt="" src="{{ asset('storage/'.$path) }}"></button>
+                @endforeach
+            </div>
+        @endif
         @if($photos->count()>1)<p class="bk-swipe-tip">Geser foto ke kiri atau kanan untuk menjelajah.</p>@endif
         <dialog class="bk-lightbox" aria-label="Foto {{ $produk->nama }}">
             <header><p class="kc-kicker">Galeri produk</p><button type="button" data-close aria-label="Tutup foto">×</button></header>
