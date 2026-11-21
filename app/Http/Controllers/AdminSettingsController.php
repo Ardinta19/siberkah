@@ -111,6 +111,23 @@ class AdminSettingsController extends BaseController
         return response()->view('owner.pengaturan.kalender',compact('day','capacity','blocks','products'))->header('Cache-Control','private, no-store');
     }
 
+    public function releaseCalendarBlock(Request $request, int $id)
+    {
+        $data = $request->validate(['tanggal'=>'required|date_format:Y-m-d|after_or_equal:today',
+            'konfirmasi'=>'accepted','alasan_buka'=>'required|string|max:160']);
+        $removed = DB::transaction(function () use ($id, $data) {
+            $block = DB::table('blokir_kalender')->where('tanggal',$data['tanggal'])->where('id',$id)->lockForUpdate()->first();
+            if (!$block) { return false; }
+            DB::table('blokir_kalender')->where('id',$id)->delete();
+            \App\Support\StaffAudit::record('buka_blokir_kalender','blokir_kalender',$id,
+                ['tanggal'=>$block->tanggal,'produk_id'=>$block->produk_id,'alasan'=>$block->alasan],
+                ['aktif'=>false,'alasan_buka'=>$data['alasan_buka']]);
+            return true;
+        },3);
+        return redirect()->route('admin.pengaturan.kalender',['tanggal'=>$data['tanggal']])->with('success',
+            $removed ? 'Blokir terpilih telah dibuka. Blokir lain dan kapasitas tanggal ini tetap berlaku.' : 'Blokir tidak ditemukan pada tanggal ini. Tidak ada perubahan.');
+    }
+
     public function manageCalendarBlocks(Request $request)
     {
         if ($request->input('asal') === 'kalender') {

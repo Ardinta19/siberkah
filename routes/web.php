@@ -204,6 +204,7 @@ Route::middleware(['auth:staff', 'auth.session', 'role:owner,admin'])->group(fun
         Route::patch('kerusakan/{id}/tarif', [AdminSettingsController::class, 'damageRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.tarif-kerusakan');
         Route::patch('zona/{id}/ongkir', [AdminSettingsController::class, 'zoneRate'])->whereNumber('id')->middleware(['role:owner', RentalStaging::class])->name('pengaturan.ongkir');
         Route::get('kalender', [AdminSettingsController::class, 'calendar'])->middleware('role:owner')->name('admin.pengaturan.kalender');
+        Route::delete('kalender/{id}', [AdminSettingsController::class, 'releaseCalendarBlock'])->whereNumber('id')->middleware('role:owner')->name('admin.pengaturan.kalender.buka');
         Route::post('manage-calendar-blocks', [AdminSettingsController::class, 'manageCalendarBlocks'])->name('admin.pengaturan.manage-calendar-blocks');
         Route::post('manage-production-capacity', [AdminSettingsController::class, 'manageProductionCapacity'])->name('admin.pengaturan.manage-production-capacity');
     });

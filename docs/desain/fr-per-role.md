@@ -33,3 +33,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Owner — tujuan pembayaran:** dari Pengaturan, pisahkan form rekening bank dan QRIS agar kolom yang tidak relevan tidak pernah ikut terkirim. Simpan nonaktif terlebih dahulu, periksa penerima, lalu aktifkan lewat konfirmasi. Penggantian detail membuat tujuan baru; jangan menimpa identitas tujuan lama. Pemeriksaan merchant QRIS sungguhan tetap memerlukan operator.
 
 **Owner — kalender operasional:** pilih tanggal dengan GET sebelum menulis. Bedakan kuota custom (bawaan 15) dari blokir toko/produk. Lihat tanggal lampau tanpa formulir mutasi. Blokir memerlukan alasan dan konfirmasi; nomor pesanan aktif yang terdampak adalah peringatan, bukan pembatalan. Validasi batas terbaru di bawah lock saat menyimpan kapasitas.
+
+**Membuka blokir kalender:** Owner melepas satu entri spesifik pada tanggal sekarang/mendatang dengan alasan dan konfirmasi. Jangan menghapus semua entri tanggal, mengubah kuota, atau menjanjikan produk pasti tersedia. Simpan audit sebelum/sesudah; pengiriman ulang tidak menambah audit.
