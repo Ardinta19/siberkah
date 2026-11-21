@@ -17,13 +17,22 @@ if(form){
       const today=date===form.dataset.today;
       field('jam_serah').disabled=!today;field('jam_serah').required=today;form.querySelector('#slot').hidden=!today;
     }
-    let unit=field('varian_id')?price(field('varian_id')):Number(form.dataset.price);
+    const base=field('varian_id')?price(field('varian_id')):Number(form.dataset.price);
+    let extras=0, selectedExtra=false;
     let valid=field('jumlah').validity.valid;
     for(const opt of form.querySelectorAll('[data-extra]')){
       const units=field(`opsi[${opt.dataset.extra}][satuan]`);
-      if(opt.value && units && !units.validity.valid)valid=false;
-      unit+=price(opt)*Number(units?.value ?? 1);
+      if(units){
+        units.disabled=!opt.value;units.required=Boolean(opt.value);
+        units.closest('label').hidden=!opt.value;
+      }
+      if(!opt.value){if(opt.required)valid=false;continue;}
+      selectedExtra=true;
+      if(units && !units.validity.valid)valid=false;
+      extras+=price(opt)*Number(units?.value ?? 1);
+
     }
+    const unit=base+extras;
     const subtotal=unit*field('jumlah').valueAsNumber, fee=deliver?price(field('zona_antar_id')):0;
     const total=Math.ceil((subtotal+fee)/1000)*1000, rounding=total-subtotal-fee;
     valid=valid && unit>0 && Number.isSafeInteger(total) && total<=2147482648;
@@ -36,6 +45,9 @@ if(form){
       if(timeLeft>0 && timeLeft<2147483000)timer=setTimeout(update,timeLeft+50);
     }
     box.hidden=false;
+    box.querySelector('[data-base-row]').hidden=!selectedExtra;
+    box.querySelector('[data-extra-row]').hidden=!selectedExtra;
+    write('[data-base]',rp(base));write('[data-extra-cost]',valid?rp(extras):'—');
     write('[data-subtotal]',valid?rp(subtotal):'—');write('[data-fee]',deliver?rp(fee):'Ambil di toko · Rp0');
     box.querySelector('[data-rounding-row]').hidden=!valid || rounding===0;
     write('[data-rounding]',valid?rp(rounding):'—');write('[data-total]',valid?rp(total):'—');

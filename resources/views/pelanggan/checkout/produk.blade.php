@@ -9,7 +9,9 @@
     @endif
     <h1 class="text-2xl font-bold">Pesan {{ $product->nama }}</h1>
     @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
-    @if(($needsVariant && $variants->isEmpty()) || ($product->jenis === 'sewa' && ($options->isNotEmpty() || $zones->isEmpty())))
+    @if($options->contains(fn ($option) => $option->wajib && $option->tipe !== 'teks' && $option->nilaiOpsi->isEmpty()))
+        <p role="status">Pilihan wajib produk ini belum tersedia. Hubungi Admin sebelum memesan.</p>
+    @elseif(($needsVariant && $variants->isEmpty()) || ($product->jenis === 'sewa' && ($options->isNotEmpty() || $zones->isEmpty())))
         <p>Produk belum dapat dipesan melalui formulir ini. Hubungi Admin.</p>
     @else
     <form data-pending="Membuat pesanan…" method="POST" action="{{ route('checkout.submit', $product->slug) }}" id="checkout" class="grid gap-4" data-rendered-at="{{ now()->timestamp }}" data-price="{{ $product->harga_dasar }}" data-threshold="{{ $threshold }}" data-today="{{ today()->toDateString() }}">
@@ -23,9 +25,9 @@
             <label>{{ $o->nama }} @if($o->wajib)(wajib)@endif
             @if($o->tipe === 'teks')<input maxlength="300" name="opsi[{{ $o->id }}][teks]" value="{{ old('opsi.'.$o->id.'.teks') }}" @required($o->wajib)>
             @else
-                <select data-extra="{{ $o->id }}" name="opsi[{{ $o->id }}][nilai_id]" @required($o->wajib)><option value="">Pilih opsi</option>@foreach($o->nilaiOpsi as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga_tambahan }}" @selected(old('opsi.'.$o->id.'.nilai_id') == $v->id)>{{ $v->label }} (+Rp{{ number_format($v->harga_tambahan,0,',','.') }})</option>@endforeach</select>
+                <select data-extra="{{ $o->id }}" name="opsi[{{ $o->id }}][nilai_id]" @required($o->wajib)><option value="">{{ $o->wajib ? 'Pilih opsi' : 'Tanpa tambahan' }}</option>@foreach($o->nilaiOpsi as $v)<option value="{{ $v->id }}" data-price="{{ $v->harga_tambahan }}" @selected(old('opsi.'.$o->id.'.nilai_id') == $v->id)>{{ $v->label }} (+Rp{{ number_format($v->harga_tambahan,0,',','.') }})</option>@endforeach</select>
             @endif</label>
-            @if($o->tipe === 'satuan')<label>Satuan {{ $o->nama }} <input type="number" name="opsi[{{ $o->id }}][satuan]" min="1" max="100" required value="{{ old('opsi.'.$o->id.'.satuan',1) }}"></label>@endif
+            @if($o->tipe === 'satuan')<label>Jumlah {{ $o->nama }} per produk <input type="number" name="opsi[{{ $o->id }}][satuan]" min="1" max="100" value="{{ old('opsi.'.$o->id.'.satuan',1) }}"></label>@endif
         @endforeach
         <label>Tanggal serah <input type="date" required name="tanggal" min="{{ today()->toDateString() }}" value="{{ old('tanggal',$day) }}"></label>
         @if($product->jenis === 'sewa')
@@ -42,7 +44,9 @@
         <label>Metode pelunasan <select name="metode_pelunasan">@if($bank)<option value="bank">Transfer / QRIS sesuai tujuan aktif</option>@endif<option value="tunai_saat_serah" @selected(old('metode_pelunasan') === 'tunai_saat_serah')>Tunai saat ambil atau diantar</option></select></label>
         <section hidden id="estimate" class="bk-estimate" aria-labelledby="estimate-title">
             <p class="kc-kicker">Sebelum memesan</p><h2 id="estimate-title">Ringkasan biaya</h2>
-            <dl><div><dt>Subtotal produk</dt><dd data-subtotal></dd></div><div><dt>Ongkos antar</dt><dd data-fee></dd></div>
+            <dl><div hidden data-base-row><dt>Harga sebelum tambahan (per produk)</dt><dd data-base></dd></div>
+                <div hidden data-extra-row><dt>Tambahan pilihan (per produk)</dt><dd data-extra-cost></dd></div>
+                <div><dt>Subtotal produk</dt><dd data-subtotal></dd></div><div><dt>Ongkos antar</dt><dd data-fee></dd></div>
                 <div hidden data-rounding-row><dt>Pembulatan</dt><dd data-rounding></dd></div>
                 <div class="bk-estimate-total"><dt>Perkiraan total</dt><dd data-total></dd></div></dl>
             <p data-payment-note role="status"></p>

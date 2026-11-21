@@ -89,3 +89,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Inventaris sewa Owner:** kelola unit hanya dari produk sewa. Identitas unit (kode dan varian) tetap setelah dibuat; status fisik dibedakan dari ketersediaan tanggal. Buka suntingan terbaru saat terjadi konflik, tanpa menerapkan status atau catatan dari tab lama. Daftar unit memiliki paginasi tersendiri, terpisah dari halaman daftar produk.
 
 Pada inventaris, pencarian kode fisik dan filter kondisi berlaku hanya di daftar unit produk terpilih. Pertahankan konteks katalog induk secara terpisah. Jika status baru tidak memenuhi filter, tetap konfirmasikan penyimpanan dan jelaskan hasil kosong. Reset kondisi tidak menghapus kode, hapus pencarian kode tidak menghapus kondisi.
+
+**Tambahan checkout:** harga opsi satuan berlaku per produk, bukan per pesanan. Saat dipilih, tampilkan harga awal dan tambahan per produk sebelum subtotal. Jangan mewajibkan jumlah tambahan jika opsi tidak dipilih; pilihan kosong tidak boleh menahan pembayaran tunai. Jika opsi harga wajib tidak memiliki nilai aktif, jelaskan alasan pemesanan belum tersedia alih-alih menampilkan formulir buntu.

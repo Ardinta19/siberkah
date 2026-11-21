@@ -13,6 +13,8 @@ $product = DB::table('produk')->insertGetId(['nama' => 'Buket Browser', 'slug' =
 $rental = DB::table('produk')->insertGetId(['nama'=>'Papan Inventaris','slug'=>'papan-inventaris','jenis'=>'sewa','aktif'=>false,'kategori_id'=>$category]);
 $physical = DB::table('varian_produk')->insertGetId(['produk_id'=>$rental,'nama'=>'Kayu','harga'=>50000]);
 DB::table('unit_sewa')->insert(['varian_produk_id'=>$physical,'kode'=>'CI-R01','status'=>'aktif']);
+$extra = DB::table('opsi_produk')->insertGetId(['produk_id'=>$product,'nama'=>'Pita','tipe'=>'satuan','wajib'=>false]);
+DB::table('nilai_opsi')->insert(['opsi_produk_id'=>$extra,'label'=>'Emas','harga_tambahan'=>2500,'aktif'=>true]);
 $fixtureDir = public_path('storage/ci-gallery');
 if (!is_dir($fixtureDir)) { mkdir($fixtureDir, 0755, true); }
 foreach (['berkah-kreatif','katalog-editorial'] as $order => $name) {
