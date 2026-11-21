@@ -783,4 +783,22 @@ with sync_playwright() as playwright:
     expect(admin.locator('form[data-ledger]')).to_have_count(0)
     admin.get_by_role('link',name='Hapus pencarian').click()
     expect(admin.get_by_role('link',name='Sudah dikembalikan')).to_have_attribute('aria-current','page')
+    # Admin acceptance gate: use the Admin session, not the broader Owner session.
+    from urllib.parse import urlsplit
+    screen=admin.context.new_page()
+    cash_url=base+f'/admin/setoran-kas-antar?tanggal={delivery_day}'
+    assert screen.goto(cash_url).ok
+    ledger_url=screen.get_by_role('link',name='Riwayat hitung dan koreksi · '+number,exact=True).get_attribute('href')
+    order_url=base+f'/admin/pesanan/{rental_id}'
+    assert screen.goto(order_url).ok
+    unit_url=screen.get_by_role('link',name='Periksa unit ·').get_attribute('href')
+    urls=[base+'/owner',base+'/admin/pesanan',order_url,base+'/admin/permohonan-batal',cash_url,ledger_url,
+          base+'/admin/rekonsiliasi',unit_url,evidence_url]
+    for url in urls:
+        assert screen.goto(url).ok and urlsplit(screen.url).path==urlsplit(url).path, f'Admin destination: {url}'
+        expect(screen.locator('main h1')).to_have_count(1)
+        for width in (320,768,1440):
+            screen.set_viewport_size({'width':width,'height':850})
+            assert screen.locator('main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'), f'Admin overflow: {url}, {width}'
+    screen.close()
     browser.close()

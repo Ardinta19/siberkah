@@ -73,3 +73,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — keputusan rekonsiliasi bank:** bedakan keputusan selisih kode unik, reaktivasi nyata dengan pemeriksaan stok, dan bukti transfer keluar. Kelompok dikreditkan setelah pemeriksaan hanya memuat selisih yang diterima dan reaktivasi sukses, bukan semua transfer bank biasa.
 
 **Admin — telusur mutasi:** pencarian literal dalam kelompok menurut nomor pesanan/referensi masuk, serta referensi keluar untuk pengembalian. Perpindahan kelompok mempertahankan pencarian; menghapus pencarian mempertahankan kelompok. Chrome menelusuri satu transfer tambahan hingga bukti keluar tanpa kredit ganda.
+
+**Gerbang Admin:** lihat [audit SRS dan celah akses Admin](audit-admin.md); cakupan layar lintas ukuran tidak menutup celah UC-21/22/24.
