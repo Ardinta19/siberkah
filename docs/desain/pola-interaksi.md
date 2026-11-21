@@ -87,3 +87,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Daftar kelola katalog Owner:** cari hanya nama produk (termasuk draf). Hapus pencarian mempertahankan filter visibilitas; Reset filter mempertahankan nama. Keduanya memulai ulang halaman daftar. Data produk, varian dan galeri menyediakan navigasi langsung antarbagiannya dan membawa konteks daftar. Tautan publik hanya untuk produk terbit dalam kategori aktif.
 
 **Inventaris sewa Owner:** kelola unit hanya dari produk sewa. Identitas unit (kode dan varian) tetap setelah dibuat; status fisik dibedakan dari ketersediaan tanggal. Buka suntingan terbaru saat terjadi konflik, tanpa menerapkan status atau catatan dari tab lama. Daftar unit memiliki paginasi tersendiri, terpisah dari halaman daftar produk.
+
+Pada inventaris, pencarian kode fisik dan filter kondisi berlaku hanya di daftar unit produk terpilih. Pertahankan konteks katalog induk secara terpisah. Jika status baru tidak memenuhi filter, tetap konfirmasikan penyimpanan dan jelaskan hasil kosong. Reset kondisi tidak menghapus kode, hapus pencarian kode tidak menghapus kondisi.

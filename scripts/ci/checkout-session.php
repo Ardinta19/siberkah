@@ -10,6 +10,9 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $customer = DB::table('pelanggan')->insertGetId(['nomor_wa' => '628111111199', 'nama' => 'Browser CI', 'aktif' => true, 'nomor_terverifikasi_pada' => now(), 'versi_kebijakan' => config('checkout.privacy_version'), 'disetujui_pada' => now()]);
 $category = DB::table('kategori')->insertGetId(['nama' => 'Buket CI', 'slug' => 'buket-ci']);
 $product = DB::table('produk')->insertGetId(['nama' => 'Buket Browser', 'slug' => 'buket-browser', 'jenis' => 'jual', 'kategori_id' => $category]);
+$rental = DB::table('produk')->insertGetId(['nama'=>'Papan Inventaris','slug'=>'papan-inventaris','jenis'=>'sewa','aktif'=>false,'kategori_id'=>$category]);
+$physical = DB::table('varian_produk')->insertGetId(['produk_id'=>$rental,'nama'=>'Kayu','harga'=>50000]);
+DB::table('unit_sewa')->insert(['varian_produk_id'=>$physical,'kode'=>'CI-R01','status'=>'aktif']);
 $fixtureDir = public_path('storage/ci-gallery');
 if (!is_dir($fixtureDir)) { mkdir($fixtureDir, 0755, true); }
 foreach (['berkah-kreatif','katalog-editorial'] as $order => $name) {

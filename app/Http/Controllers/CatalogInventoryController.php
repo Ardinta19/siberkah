@@ -66,6 +66,17 @@ final class CatalogInventoryController extends Controller
         }, 3);
     }
 
+    private const UNIT_STATES = ['aktif','perawatan','rusak','pensiun'];
+
+    private function unitFilters(Request $request): array
+    {
+        $query = $request->query();
+        $code = is_string($query['cari_kode'] ?? null) ? mb_substr(trim($query['cari_kode']),0,20) : '';
+        $state = $query['status_unit'] ?? null;
+        return array_filter(['cari_kode'=>$code !== '' ? $code : null,
+            'status_unit'=>in_array($state,self::UNIT_STATES,true) ? $state : null], static fn ($v) => $v !== null);
+    }
+
     private function unitStamp(object $unit): string
     {
         return hash('sha256', json_encode([$unit->id, $unit->varian_produk_id, $unit->kode, $unit->status, $unit->catatan], JSON_THROW_ON_ERROR));
@@ -81,9 +92,16 @@ final class CatalogInventoryController extends Controller
         $selected = $request->has('edit') ? (clone $query)->where('u.id',$request->integer('edit'))->first() : null;
         abort_if($request->has('edit') && !$selected,404);
         $context = OwnerCatalogContext::from($request);
-        $units = $query->orderBy('u.kode')->paginate(20,['*'],'unit_page')->appends($context)->fragment('daftar-unit');
-        $unitContext = $context + ($units->currentPage()>1 ? ['unit_page'=>$units->currentPage()] : []);
-        return response()->view('owner.katalog.units', compact('product','variants','selected','units','context','unitContext') +
+        $filters = $this->unitFilters($request);
+        if (isset($filters['cari_kode'])) {
+            $term = strtr($filters['cari_kode'],['!'=>'!!','%'=>'!%','_'=>'!_']);
+            $query->whereRaw("u.kode LIKE ? ESCAPE '!'", ['%'.$term.'%']);
+        }
+        if (isset($filters['status_unit'])) { $query->where('u.status',$filters['status_unit']); }
+        $units = $query->orderBy('u.kode')->paginate(20,['*'],'unit_page')->appends($context+$filters)->fragment('daftar-unit');
+        if ($units->currentPage() > $units->lastPage() && !$selected) { return redirect($units->url($units->lastPage())); }
+        $unitContext = $context + $filters + ($units->currentPage()>1 ? ['unit_page'=>$units->currentPage()] : []);
+        return response()->view('owner.katalog.units', compact('product','variants','selected','units','context','unitContext','filters') + ['states'=>self::UNIT_STATES] +
             ['stamp'=>$selected ? $this->unitStamp($selected) : null])->header('Cache-Control','private, no-store');
     }
 
@@ -115,7 +133,7 @@ final class CatalogInventoryController extends Controller
             $result = ['conflict'=>'Kode unit sudah digunakan. Pilih kode fisik lain.'];
         }
         $html = !$request->expectsJson() && $request->input('asal') === 'unit';
-        $context = OwnerCatalogContext::from($request);
+        $context = OwnerCatalogContext::from($request) + $this->unitFilters($request);
         if ($request->integer('unit_page') > 1) { $context['unit_page'] = $request->integer('unit_page'); }
         if (isset($result['conflict'])) {
             abort_unless($html,409,$result['conflict']);

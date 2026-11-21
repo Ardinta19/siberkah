@@ -20,16 +20,24 @@
             <label>Kode fisik unik <input name="kode" required maxlength="20" value="{{ old('kode') }}"></label>
             <label>Varian <select name="varian_produk_id" required>@foreach($variants as $v)<option value="{{ $v->id }}" @selected(old('varian_produk_id')==$v->id)>{{ $v->nama }}{{ $v->aktif ? '' : ' (nonaktif)' }}</option>@endforeach</select></label>
         @endif
-        <label>Status unit <select name="status">@foreach(['aktif','perawatan','rusak','pensiun'] as $state)<option value="{{ $state }}" @selected(old('status',$selected->status ?? 'aktif')===$state)>{{ ucfirst($state) }}</option>@endforeach</select></label>
+        <label>Status unit <select name="status">@foreach($states as $state)<option value="{{ $state }}" @selected(old('status',$selected->status ?? 'aktif')===$state)>{{ ucfirst($state) }}</option>@endforeach</select></label>
         <label>Catatan kondisi (opsional) <textarea name="catatan" maxlength="200">{{ old('catatan',$selected->catatan ?? '') }}</textarea></label>
         <button class="btn-primary">Simpan unit</button>
         @if($selected)<a href="{{ route('admin.katalog.units',['id'=>$product->id]+$unitContext) }}#daftar-unit">Tutup editor unit</a>@endif
     </form>@endif
     <div id="daftar-unit"><h2>Daftar unit ({{ $units->total() }})</h2>
+    <form method="get" role="search" aria-label="Pencarian unit fisik" class="bk-product-editor grid gap-3 p-4" action="{{ route('admin.katalog.units',$product->id) }}#daftar-unit">
+        @foreach($context as $key=>$value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+        <label>Cari kode fisik <input type="search" name="cari_kode" maxlength="20" value="{{ $filters['cari_kode'] ?? '' }}"></label>
+        @isset($filters['cari_kode'])<a href="{{ route('admin.katalog.units',['id'=>$product->id]+$context+array_intersect_key($filters,['status_unit'=>true])) }}#daftar-unit">Hapus pencarian kode</a>@endisset
+        <label>Filter kondisi <select name="status_unit"><option value="">Semua kondisi</option>@foreach($states as $state)<option value="{{ $state }}" @selected(($filters['status_unit'] ?? '')===$state)>{{ ucfirst($state) }}</option>@endforeach</select></label>
+        <button class="bk-secondary">Tampilkan unit</button>
+        @isset($filters['status_unit'])<a href="{{ route('admin.katalog.units',['id'=>$product->id]+$context+array_intersect_key($filters,['cari_kode'=>true])) }}#daftar-unit">Reset filter kondisi</a>@endisset
+    </form>
     @forelse($units as $unit)<article class="bk-task"><header><h3>{{ $unit->kode }}</h3><span class="bk-order-status">{{ ucfirst($unit->status) }}</span></header><p>{{ $unit->varian }}</p>
         @if($unit->catatan)<p>{{ $unit->catatan }}</p>@endif
         <a class="bk-secondary" href="{{ route('admin.katalog.units',['id'=>$product->id,'edit'=>$unit->id]+$unitContext) }}#editor-unit">Edit unit {{ $unit->kode }}</a>
-    </article>@empty<p>Belum ada unit pada halaman ini.</p>@endforelse
+    </article>@empty<p>{{ $filters ? 'Tidak ada unit yang cocok dengan pencarian atau filter.' : 'Belum ada unit terdaftar.' }}</p>@endforelse
     {{ $units->links('partials.pagination') }}</div>
 </section>
 @endsection
