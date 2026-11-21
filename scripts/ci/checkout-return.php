@@ -18,5 +18,8 @@ echo DB::transaction(function () {
     foreach (['serah'=>'baik','kembali'=>'rusak'] as $stage=>$condition) {
         DB::table('inspeksi_sewa')->insert(['item_pesanan_id'=>$item,'tahap'=>$stage,'kondisi'=>$condition,'daftar_periksa'=>json_encode(['permukaan'=>$condition]),'pengguna_id'=>DB::table('pengguna')->where('surel','staf_kurir@example.test')->value('id'),'dilakukan_pada'=>now()]);
     }
+    // Separate free unit for the Admin same-day booking scenario.
+    DB::table('produk')->where('id',$variant->produk_id)->update(['aktif'=>true,'izin_hari_sama'=>true]);
+    DB::table('unit_sewa')->insert(['varian_produk_id'=>$variant->id,'kode'=>'CI-MANUAL','status'=>'aktif']);
     return $order;
 });

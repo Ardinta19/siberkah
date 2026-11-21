@@ -96,17 +96,25 @@ class AdminOrderController extends BaseController
 
     public function manualRentalForm(Request $request)
     {
+        $now = \Carbon\CarbonImmutable::now('Asia/Jakarta');
+        $sameDay = $request->query('jadwal') === 'hari-ini';
+        $today = $now->toDateString();
+        $earliest = $now->addHours(3)->ceilMinute()->max($now->setTime(7,0));
+        $closed = $earliest->gt($now->setTime(17,0));
+        $minDate = $now->addDay();
+        if (!\App\Support\RentalSchedule::permits($minDate->toDateString(),null,null,$now)) { $minDate = $minDate->addDay(); }
         $customer = null;
         $variants = $zones = collect();
         if ($request->filled('pelanggan')) {
             $customer = $this->manualCustomers()->where('id',$request->integer('pelanggan'))->firstOrFail(['id','nama','nomor_wa']);
             $variants = DB::table('varian_produk as v')->join('produk as p','p.id','=','v.produk_id')->join('kategori as k','k.id','=','p.kategori_id')
                 ->where('v.aktif',true)->where('p.aktif',true)->where('k.aktif',true)->where('p.jenis','sewa')->where('v.harga','>',0)
+                ->when($sameDay,fn($q)=>$q->where('p.izin_hari_sama',true))
                 ->whereNotExists(fn($q)=>$q->selectRaw('1')->from('opsi_produk as o')->whereColumn('o.produk_id','p.id'))
                 ->orderBy('p.nama')->orderBy('v.nama')->get(['v.id','v.nama','v.harga','p.nama as produk']);
             $zones = DB::table('zona_antar')->where('aktif',true)->where('jarak_maks_km','<=',15)->orderBy('nama')->get(['id','nama','ongkir']);
         }
-        return response()->view('admin.pesanan.manual-sewa',compact('customer','variants','zones'))->header('Cache-Control','private, no-store');
+        return response()->view('admin.pesanan.manual-sewa',compact('customer','variants','zones','sameDay','today','closed','earliest','minDate'))->header('Cache-Control','private, no-store');
     }
 
     public function manualStore(Request $request, \App\Actions\CreateRentalOrder $checkout)
