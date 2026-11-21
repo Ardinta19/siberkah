@@ -386,11 +386,16 @@ class RentalCheckoutTest extends TestCase
         $payload = ['pesanan_id' => $order->id];
         $this->actingAs($admin, 'staff')->postJson(route('staf.produksi.start'), $payload)->assertConflict();
         $this->putJson($edit, array_replace($text, ['judul' => str_repeat('a', 26)]))->assertUnprocessable();
-        $this->putJson($edit, $text)->assertNoContent();
+        $detail = route('admin.pesanan.show',$order->id);
+        $page = $this->get($detail,['Accept'=>'text/html'])->assertOk()->assertSee('Sunting teks papan')->assertSee('Spidol');
+        preg_match('/name="versi" value="([a-f0-9]{64})"/', $page->getContent(), $match);
+        $this->from($detail)->put($edit,$text+['versi'=>$match[1],'asal'=>'rincian-admin'])->assertRedirect($detail.'#teks-papan');
+        $this->putJson($edit,array_replace($text,['judul'=>'Lama','versi'=>$match[1]]))->assertConflict();
         $this->postJson(route('staf.produksi.mark-ready'), $payload)->assertConflict();
         $this->post(route('staf.produksi.start'), $payload)->assertRedirect();
         $this->putJson($edit, $text)->assertConflict();
         $this->post(route('staf.produksi.mark-ready'), $payload)->assertRedirect();
+        $this->get($detail,['Accept'=>'text/html'])->assertOk()->assertSee('Nadia')->assertSee('Teks terkunci')->assertDontSee('Sunting teks papan')->assertSee('Riwayat status');
     }
 
     public static function depositCases(): array

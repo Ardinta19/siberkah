@@ -21,12 +21,19 @@ final class BoardOperationsController extends Controller
         DB::transaction(function () use ($request, $id, $data) {
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             $design = DB::table('desain_papan')->where('pesanan_id', $id);
-            abort_unless($design->exists(), 404);
+            $current = $design->first();
+            abort_unless($current, 404);
             abort_unless(in_array($order->status, ['menunggu_pembayaran','dikonfirmasi'], true), 409, 'Teks sudah terkunci.');
+            if ($request->has('versi')) {
+                abort_unless($request->input('versi') === \App\Support\BoardTextVersion::of($current), 409, 'Teks papan sudah berubah. Muat ulang rincian sebelum menyunting.');
+            }
             $design->update($data + ['editor_id' => $request->user('staff')->id, 'diubah_pada' => now()]);
             DB::table('log_aktivitas')->insert(['aksi' => 'ubah_teks_papan', 'pengguna_id' => $request->user('staff')->id,
                 'subjek_tabel' => 'pesanan', 'subjek_id' => $id, 'dibuat_pada' => now()]);
         }, 3);
+        if (!$request->expectsJson() && $request->input('asal') === 'rincian-admin') {
+            return back()->withFragment('teks-papan')->with('status_papan','Teks papan tersimpan.');
+        }
         return response()->noContent();
     }
 

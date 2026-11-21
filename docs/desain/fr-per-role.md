@@ -53,3 +53,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — refund pembatalan:** rincian pesanan membedakan keputusan bernilai nol, kewajiban menunggu pencatatan dan transfer keluar terverifikasi. Hanya kewajiban menunggu yang membuka formulir ledger; keputusan tidak mengirim uang. Setelah tercatat, tampilkan referensi dan waktu verifikasi tanpa tombol kirim ulang.
 
 **Admin — rincian personalisasi:** Admin dan pelanggan membaca snapshot item/opsi dan komponen biaya yang sama; jangan hitung ulang memakai katalog terkini. Chrome melacak pesanan Pita/Perak dan Kartu pesan dari checkout hingga pemeriksaan operasional.
+
+**Admin — pemeriksaan papan dan riwayat:** navigasi bagian rincian, teks sesuai metode/jadwal, edit tiga baris hanya sebelum produksi, deteksi teks kedaluwarsa saat simpan. Riwayat status baca-saja menampilkan tahap lama/baru, pelaku, waktu dan catatan terbaru lebih dahulu.

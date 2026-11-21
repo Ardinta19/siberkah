@@ -67,8 +67,10 @@ class AdminOrderController extends BaseController
                     ->where('k.pesanan_id',$id)->first(['k.nominal_final','k.nominal_sistem','k.alasan_override','k.diputuskan_pada',
                         'p.status','p.diverifikasi_pada','r.referensi_keluar']);
             }
+            $board = DB::table('desain_papan')->where('pesanan_id',$id)->first(['metode','jadwal_serah','judul','penerima','pengirim']);
+            $history = $order->riwayatStatus()->orderByDesc('id')->get();
             $opsiPerItem = $order->snapshotOpsiPerItem();
-            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem','board','history'))->header('Cache-Control','private, no-store');
         }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }
