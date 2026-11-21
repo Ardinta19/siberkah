@@ -257,6 +257,16 @@ with sync_playwright() as playwright:
     page.get_by_role('button', name='Buat pesanan').click()
     expect(page.get_by_text('Bayar DP terlebih dahulu.', exact=False)).to_be_visible()
     page.get_by_role('link', name='Lihat tagihan dan petunjuk pembayaran').click()
+    bill=page.locator('[data-payment-window]')
+    expect(bill.locator('[data-principal]')).to_have_text('Rp135.000')
+    code=int(bill.locator('[data-code]').inner_text().split('Rp')[1])
+    expected=135000+code
+    assert 1<=code<=999
+    expect(bill.locator('[data-exact]')).to_have_text('Rp'+f'{expected:,}'.replace(',','.'))
+    context.grant_permissions(['clipboard-read','clipboard-write'],origin=base)
+    bill.get_by_role('button',name='Salin nominal transfer').click()
+    expect(bill.locator('[data-copy-status]')).to_contain_text('Nominal tersalin')
+    assert page.evaluate('navigator.clipboard.readText()')==str(expected)
     page.locator('[name=tujuan_id]').check()
     page.get_by_role('button', name='Saya sudah membayar ke tujuan yang dipilih').click()
     expect(page.get_by_text('Konfirmasi diterima, menunggu pemeriksaan Admin.', exact=False)).to_be_visible()
