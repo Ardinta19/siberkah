@@ -251,7 +251,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#estimate')).to_contain_text('DP Rp135.000 melalui bank; sisa Rp135.000 tunai saat diantar')
     page.locator('main [name=tanggal]').fill(str(booking_day))
     expect(page.locator('[name=pembayaran]')).to_have_value('penuh')
-    expect(page.locator('[name=pembayaran] option[value=dp]')).to_be_disabled()
+    expect(page.locator('[name=pembayaran] option[value=dp]')).to_have_js_property('disabled', True)
     page.locator('main [name=tanggal]').fill(str(delivery_day))
     page.locator('[name=pembayaran]').select_option('dp')
     page.get_by_role('button', name='Buat pesanan').click()
