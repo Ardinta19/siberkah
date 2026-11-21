@@ -822,12 +822,14 @@ with sync_playwright() as playwright:
     unit_url=screen.get_by_role('link',name='Periksa unit ·').get_attribute('href')
     urls=[base+'/owner',base+'/admin/pesanan',order_url,base+'/admin/permohonan-batal',cash_url,ledger_url,
           base+'/admin/rekonsiliasi',unit_url,evidence_url]
-    for url in urls:
-        assert screen.goto(url).ok and urlsplit(screen.url).path==urlsplit(url).path, f'Admin destination: {url}'
+    def admin_layout():
         expect(screen.locator('main h1')).to_have_count(1)
         for width in (320,768,1440):
             screen.set_viewport_size({'width':width,'height':850})
-            assert screen.locator('main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'), f'Admin overflow: {url}, {width}'
+            assert screen.locator('main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'), f'Admin overflow: {screen.url}, {width}'
+    for url in urls:
+        assert screen.goto(url).ok and urlsplit(screen.url).path==urlsplit(url).path, f'Admin destination: {url}'
+        admin_layout()
     screen.goto(base+'/owner')
     screen.get_by_role('link',name='Periksa kalender dan kapasitas').click()
     target_day=str(delivery_day+timedelta(days=8))
@@ -840,6 +842,7 @@ with sync_playwright() as playwright:
     screen.get_by_label('Kode unit persis').fill('CI-MANUAL')
     screen.get_by_role('button',name='Periksa unit pada tanggal ini').click()
     unit_panel=screen.locator('#unit-harian')
+    admin_layout()
     unit_panel.get_by_label('Alasan blokir unit').fill('Pemeriksaan fisik CI')
     unit_panel.get_by_role('checkbox').check()
     unit_panel.get_by_role('button',name='Blokir unit CI-MANUAL').click()
@@ -850,6 +853,17 @@ with sync_playwright() as playwright:
     expect(screen.get_by_text('Blokir unit dibuka.',exact=True)).to_be_visible()
     expect(unit_panel).not_to_contain_text('Blokir tercatat:')
     screen.goto(base+'/admin/pesanan')
+    screen.get_by_role('link',name='Catat penjualan tunai toko').click()
+    admin_layout()
+    screen.get_by_label('Nomor WhatsApp pelanggan terverifikasi').fill('0'+'628111111199'[2:])
+    screen.get_by_role('button',name='Temukan pelanggan').click()
+    product=screen.get_by_label('Varian siap jual')
+    value=product.locator('option').filter(has_text='Buket standar kasir CI').get_attribute('value')
+    product.select_option(value)
+    screen.get_by_label('Jumlah barang').fill('3')
+    expect(screen.locator('[data-counter-total]')).to_contain_text('Rp38.000')
+    admin_layout()
+    screen.get_by_role('link',name='Kembali ke daftar pesanan').click()
     screen.get_by_role('link',name='Buat pesanan sewa manual').click()
     screen.get_by_label('Nomor WhatsApp pelanggan terverifikasi').fill('0'+'628111111199'[2:])
     screen.get_by_role('button',name='Temukan pelanggan').click()
@@ -864,6 +878,7 @@ with sync_playwright() as playwright:
     screen.get_by_label('Alamat antar').fill('Alamat antar sintetis CI')
     screen.get_by_label('Pelanggan menyetujui kebijakan').check()
     screen.get_by_label('Saya telah memeriksa persetujuan').check()
+    admin_layout()
     screen.get_by_role('button',name='Buat pesanan sewa',exact=True).click()
     expect(screen.get_by_text('Pesanan sewa manual tercatat.',exact=True)).to_be_visible()
     expect(screen.locator('main')).to_contain_text('Spidol')
@@ -878,10 +893,12 @@ with sync_playwright() as playwright:
     screen.get_by_role('link',name='Kelola inventaris unit sewa').click()
     screen.get_by_label('Nama produk sewa').fill('Inventaris')
     screen.get_by_role('button',name='Cari produk sewa').click()
+    admin_layout()
     screen.get_by_role('link',name='Kelola unit Papan Inventaris').click()
     screen.get_by_label('Kode fisik unik').fill('CI-FISIK-02')
     screen.get_by_role('button',name='Simpan unit').click()
     expect(screen.get_by_role('heading',name='Edit unit CI-FISIK-02')).to_be_visible()
+    admin_layout()
     screen.get_by_label('Status unit').select_option('perawatan')
     screen.get_by_role('button',name='Simpan unit').click()
     expect(screen.get_by_label('Status unit')).to_have_value('perawatan')

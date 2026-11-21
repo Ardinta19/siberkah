@@ -42,11 +42,11 @@
 | `admin.rekonsiliasi.index` | Rekonsiliasi mutasi | Lulus ukuran |
 | `admin.pesanan.unit` | Penggantian unit | Lulus ukuran |
 | `retur.inspeksi` | Inspeksi dan penutupan retur | Lulus ukuran |
-| `admin.kalender` | Kalender operasional | Alur saja |
-| `admin.inventaris` | Inventaris sewa | Alur saja |
-| `admin.inventaris.units` | Pengelolaan unit | Alur saja |
-| `admin.pesanan.manual-sewa` | Sewa manual | Alur saja |
-| `toko.form` | Penjualan tunai di toko | Belum diverifikasi lintas ukuran |
+| `admin.kalender` | Kalender operasional | Lulus ukuran |
+| `admin.inventaris` | Inventaris sewa | Lulus ukuran |
+| `admin.inventaris.units` | Pengelolaan unit | Lulus ukuran |
+| `admin.pesanan.manual-sewa` | Sewa manual | Lulus ukuran |
+| `toko.form` | Penjualan tunai di toko | Lulus ukuran |
 | `admin.buket.pilih` | Pilih buket manual | Perlu perbaikan: alur multi-produk belum tersedia |
 | `admin.buket.form` | Checkout buket manual | Perlu perbaikan: satu produk per pesanan |
 
@@ -83,5 +83,5 @@
 
 1. Untuk setiap baris: uji keyboard (Tab, Shift+Tab, Escape, fokus setelah dialog), nama kontrol dengan pembaca layar, kontras teks/fokus, zoom 200%, serta pesan kesalahan yang dapat ditemukan tanpa warna. **Belum ada sign-off menyeluruh** untuk butir ini.
 2. Uji kondisi relevan: kosong, terisi, memuat, input salah, respons hilang, sesi berakhir dan akses peran lain. Catat rute, peran, kondisi, langkah, perangkat/browser dan hasil; jangan gunakan data pelanggan nyata.
-3. Tutup celah buket manual multi-produk dan perluas gerbang ukuran ke formulir Admin. Verifikasi kamera, jaringan seluler dan serah fisik mengikuti [lembar Kurir](penerimaan-kurir.md).
+3. Tutup celah buket manual multi-produk. Gerbang `admin_layout` mencakup kalender dengan unit dipilih, inventaris terfilter, editor unit, formulir sewa hari ini terisi, serta pencarian pelanggan kasir dan pratinjau penjualan tanpa menyimpan transaksi. Verifikasi kamera, jaringan seluler dan serah fisik mengikuti [lembar Kurir](penerimaan-kurir.md).
 4. Halaman error framework, state modal, panel dan variasi produk bukan rute terpisah; audit sebagai keadaan halaman asal. Tambah baris bila tujuan HTML baru ditambahkan.

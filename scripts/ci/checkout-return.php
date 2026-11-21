@@ -18,6 +18,9 @@ echo DB::transaction(function () {
     foreach (['serah'=>'baik','kembali'=>'rusak'] as $stage=>$condition) {
         DB::table('inspeksi_sewa')->insert(['item_pesanan_id'=>$item,'tahap'=>$stage,'kondisi'=>$condition,'daftar_periksa'=>json_encode(['permukaan'=>$condition]),'pengguna_id'=>DB::table('pengguna')->where('surel','staf_kurir@example.test')->value('id'),'dilakukan_pada'=>now()]);
     }
+    // Standard, unpersonalized sale: inspect the filled counter form without recording money.
+    $counter = DB::table('produk')->insertGetId(['nama'=>'Buket standar kasir CI','slug'=>'buket-standar-kasir-ci','jenis'=>'jual','aktif'=>true,'kategori_id'=>DB::table('produk')->where('id',$variant->produk_id)->value('kategori_id')]);
+    DB::table('varian_produk')->insert(['produk_id'=>$counter,'nama'=>'Standar','harga'=>12500,'stok'=>4,'aktif'=>true]);
     // Separate free unit for the Admin same-day booking scenario.
     DB::table('produk')->where('id',$variant->produk_id)->update(['aktif'=>true,'izin_hari_sama'=>true]);
     DB::table('unit_sewa')->insert(['varian_produk_id'=>$variant->id,'kode'=>'CI-MANUAL','status'=>'aktif']);
