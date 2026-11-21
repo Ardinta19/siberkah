@@ -481,6 +481,8 @@ class RentalCheckoutTest extends TestCase
         $this->postJson(route('retur.nilai', $order->id), $assessment)->assertForbidden();
         $this->actingAs($owner, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertCreated();
         $invoice = $this->postJson(route('retur.nilai', $order->id), $assessment)->assertOk()->json('tagihan_id');
+        $html = ['Accept'=>'text/html'];
+        $this->get($evidence,$html)->assertOk()->assertSee('Catat penerimaan setoran deposit')->assertSee('Foto menunjukkan akrilik pecah')->assertDontSee('Catat penutupan pesanan');
         $this->assertSame(250000 + $delta, $order->fresh()->saldo);
         $complete = ['jaminan_dikembalikan' => true, 'nominal_kembali' => 100000, 'catatan' => 'Deposit dikembalikan penuh.'];
         $this->actingAs($admin, 'staff')->postJson(route('retur.selesai', $order->id), $complete)->assertConflict();
@@ -507,7 +509,9 @@ class RentalCheckoutTest extends TestCase
         } else {
             $this->postJson(route('retur.selesai', $order->id), array_replace($complete, ['nominal_kembali' => 100000]))->assertConflict();
         }
+        $this->get($evidence,$html)->assertOk()->assertSee('Setoran deposit tercatat')->assertSee('Catat penutupan pesanan')->assertSee('Rp'.number_format(100000-$used,0,',','.'));
         $this->postJson(route('retur.selesai', $order->id), $complete)->assertOk();
+        $this->get($evidence,$html)->assertOk()->assertSee('Penutupan tercatat')->assertSee($complete['catatan'])->assertDontSee('Catat penutupan pesanan');
         $this->postJson(route('retur.selesai', $order->id), $complete)->assertOk();
         $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'status' => 'selesai', 'saldo' => 0, 'jumlah_dibayar' => 511000 + $delta]);
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi','T11')->count());

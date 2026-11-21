@@ -21,8 +21,10 @@ class RentalCloseoutController extends Controller
             $items = $order->items()->leftJoin('unit_sewa as u','u.id','=','item_pesanan.unit_sewa_id')
                 ->orderBy('item_pesanan.id')->get(['item_pesanan.id','nama_produk','nama_varian','u.kode']);
             $inspections = $query->get(['item.id as item_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','i.dilakukan_pada','i.pengguna_id','f.id as foto_id','f.urutan'])->groupBy(['item_id','tahap']);
+            $review = DB::table('penutupan_sewa')->where('pesanan_id',$id)->first();
+            $deposit = $review ? DB::table('pemakaian_deposit')->where('pesanan_id',$id)->first(['nominal','alasan']) : null;
             $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
-            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','review','deposit'))->header('Cache-Control','private, no-store');
         }
         $rows = $query->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
         return response()->json($rows)->header('Cache-Control', 'private, no-store');

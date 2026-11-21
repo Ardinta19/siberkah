@@ -61,3 +61,5 @@ Penghapusan akun merupakan aksi terpisah dari menyimpan nama. Di lingkungan stag
 **Admin — durasi sewa:** tampilkan batas kembali WIB, sisa kuota dan biaya tiap pilihan sebelum menyimpan. Riwayat menyimpan alasan, biaya dan batas baru. Tolak formulir dengan batas lama; replay identik tidak menambah saldo lagi.
 
 **Admin — bukti inspeksi per unit:** bandingkan serah/kembali berdampingan bila ruang cukup. Foto hanya dibuka melalui rute privat pesanan; tahap kosong tidak berarti kondisi baik. Inspeksi tidak otomatis menetapkan tarif atau memotong deposit.
+
+**Admin — setelah penilaian retur:** tampilkan tarif yang dibekukan, saldo dan posisi deposit. Pisahkan penerimaan setoran fisik dari pemakaian deposit oleh Owner. Formulir penutupan hanya setelah unit kembali, saldo nol dan konfirmasi setoran jika tunai; minta hasil aktual dan catatan, bukan mengisi bukti pengembalian secara otomatis.

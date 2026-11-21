@@ -8,8 +8,10 @@
 <div class="bk-inspection-pair">@foreach(['serah'=>'Saat diserahkan','kembali'=>'Saat dikembalikan'] as $key=>$label)
 @php($rows=$inspections->get($item->id,collect())->get($key,collect()))
 <section><h3>{{ $label }}</h3>@if($event=$rows->first())<p><strong>Kondisi: {{ ucfirst($event->kondisi) }}</strong></p><p>{{ $event->dilakukan_pada }} WIB · Petugas #{{ $event->pengguna_id }}</p>
-<dl>@foreach(json_decode($event->daftar_periksa ?? '[]',true) ?? [] as $part=>$value)<div><dt>{{ ucfirst(str_replace('_',' ',$part)) }}</dt><dd>{{ ucfirst($value) }}</dd></div>@endforeach</dl>
+<dl>@foreach(json_decode($event->daftar_periksa ?? '[]',true) ?? [] as $part=>$value)<div><dt>{{ ucfirst(str_replace('_',' ',$part)) }}</dt><dd>{{ ucfirst(str_replace('_',' ',$value)) }}</dd></div>@endforeach</dl>
 <p>Catatan: {{ $event->catatan ?? 'Tidak ada catatan.' }}</p>
 @forelse($rows->whereNotNull('foto_id') as $photo)<a class="bk-secondary" href="{{ route('retur.foto',[$order->id,$photo->foto_id]) }}" target="_blank" rel="noopener noreferrer">Foto {{ $photo->urutan }} · {{ $label }} (tab baru)</a>@empty<p>Tidak ada foto pada pemeriksaan ini.</p>@endforelse
-@else<p>Belum ada inspeksi pada tahap ini.</p>@endif</section>@endforeach</div></article>@endforeach</section>
+@else<p>Belum ada inspeksi pada tahap ini.</p>@endif</section>@endforeach</div></article>@endforeach
+@include('admin.pesanan.penutupan')
+</section>
 @endsection
