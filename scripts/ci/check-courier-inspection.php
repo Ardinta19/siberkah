@@ -13,8 +13,8 @@ function verify(bool $ok, string $label): void {
 }
 verify(DB::connection()->getDatabaseName() === 'siberkah_checkout_ci', 'database salah');
 $stage = $argv[1] ?? '';
-verify(in_array($stage,['serah','kembali'],true), 'tahap salah');
-$returned = $stage === 'kembali';
+verify(in_array($stage,['serah','kembali','setoran'],true), 'tahap salah');
+$returned = $stage !== 'serah';
 $order = DB::table('pesanan')->where('nomor','CI-PRODUKSI')->firstOrFail();
 $rows = fn(string $table) => DB::table($table)->where('pesanan_id',$order->id);
 verify($order->status === ($returned ? 'sudah_dikembalikan' : 'sudah_diserahkan'), 'status pesanan');
@@ -24,6 +24,12 @@ $cash = $rows('pembayaran')->sole();
 verify($cash->jenis === 'penuh' && $cash->status === 'terverifikasi' && (bool)$cash->tunai_saat_serah, 'jenis atau status penerimaan tunai');
 verify((int)$cash->nominal_diterima === 100000 && (int)$cash->tagihan === 100000, 'penerimaan tunai harus tepat tanpa deposit');
 verify((int)$cash->pengguna_id === (int)$rows('riwayat_status_pesanan')->where('kode_transisi','T08')->sole()->pengguna_id, 'petugas penerima tunai berbeda dari petugas serah');
+$counts = DB::table('setoran_kas_antar')->where('pembayaran_id',$cash->id);
+verify($counts->count() === ($stage === 'setoran' ? 1 : 0), 'jumlah hitung fisik kas antar');
+if ($stage === 'setoran') {
+    $count = $counts->sole();
+    verify((int)$count->sebelum === 0 && (int)$count->sesudah === 100000 && (int)$count->kasir_id !== (int)$cash->pengguna_id, 'setoran tidak boleh mencakup deposit atau diperiksa penerima sendiri');
+}
 $adjust = $rows('penyesuaian_pesanan');
 verify($adjust->count() === ($returned ? 1 : 0), 'jumlah penyesuaian');
 if ($returned) { verify((int)$adjust->where('jenis','denda_telat')->value('nominal') === 20000,'denda dua unit'); }

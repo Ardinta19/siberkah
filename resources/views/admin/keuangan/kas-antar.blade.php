@@ -30,6 +30,10 @@
 @endif
 @forelse($rincian as $r)
 <article id="setoran-{{ $r->pembayaran_id }}" class="bk-task grid gap-2"><header><h3>{{ $r->nomor }}</h3><span class="bk-order-status">{{ ucfirst(str_replace('_',' ',$r->status_setoran)) }}</span></header><p>Petugas #{{ $r->petugas_id }} · Tagihan setor Rp{{ number_format($r->tagihan_setor,0,',','.') }} · Sudah disetor Rp{{ number_format($r->sudah_disetor,0,',','.') }}</p>
+@if($r->jenis_jaminan === 'deposit')
+<p>Deposit Rp{{ number_format($r->nominal_jaminan,0,',','.') }} adalah jaminan terpisah. Jangan masukkan deposit ke hitungan setoran pembayaran ini.</p>
+<a class="bk-secondary" href="{{ route('retur.inspeksi',$r->pesanan_id) }}#penutupan">Periksa jaminan sewa · {{ $r->nomor }}</a>
+@endif
 <a class="bk-secondary" href="{{ route('kas-antar.history',['id'=>$r->pembayaran_id,'halaman_setoran'=>$rincian->currentPage(),'antrean'=>$queue->currentPage()] + request()->only('petugas_id')) }}">Riwayat hitung dan koreksi · {{ $r->nomor }}</a>
 @if((int)$r->petugas_id !== auth('staff')->id())
 <form method="post" action="{{ route('kas-antar.record',$r->pembayaran_id) }}" data-ledger data-cash-count data-expected="{{ $r->tagihan_setor }}" data-recorded="{{ $r->status_setoran === 'belum_disetor' ? 0 : 1 }}" class="grid gap-2">@csrf
