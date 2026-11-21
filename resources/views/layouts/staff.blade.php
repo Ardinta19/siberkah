@@ -91,9 +91,7 @@
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center gap-4">
                             <button type="button" class="lg:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150" aria-label="Buka sidebar" aria-controls="role-sidebar" aria-expanded="false" data-sidebar-toggle>
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                                </svg>
+                                @include('partials.burger-icon')
                             </button>
                             <h1 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">@yield('page-title', 'Dashboard Staf')</h1>
                         </div>

@@ -97,3 +97,6 @@
 .bk-rail-brand{width:3.25rem;height:auto;object-fit:contain}
 @media(prefers-reduced-transparency:reduce){#main-header::before,.kc-dock{background:#fff9f6;backdrop-filter:none}}
 @media(prefers-reduced-motion:reduce){.bk-full-nav{transition:none}}
+#bk-expand-pill .bk-seal-trace{position:absolute;inset:0;width:100%;height:100%;color:#a65b73;opacity:.55;pointer-events:none}
+[data-sidebar-toggle]{min-width:44px;min-height:44px}
+@media(forced-colors:active){.bk-seal-trace{display:none}}

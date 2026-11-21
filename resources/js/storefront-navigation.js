@@ -5,6 +5,17 @@ if (pill && header) {
   const full = header.querySelector('.bk-full-nav');
   const palette = document.querySelector('#bk-palette');
   const launcher = header.querySelector('[data-open-palette]');
+  const allowTrace=matchMedia('(prefers-reduced-motion: no-preference)');
+  let traceVersion=0, traceTween;
+  function traceCompact(visible){
+    const version=++traceVersion;
+    traceTween?.revert();traceTween=null;
+    if(!visible || !allowTrace.matches)return;
+    import('./seal-motion.js').then(({traceSeal})=>{
+      if(version===traceVersion && !pill.hidden && allowTrace.matches)traceTween=traceSeal(pill);
+    }).catch(()=>{}); // The static seal and its button never depend on the plugin.
+  }
+  allowTrace.addEventListener('change',()=>traceCompact(!pill.hidden));
   let beyond = false, pinned = false;
   const overlayOpen = () => document.querySelector('dialog[open],#role-sidebar[aria-modal="true"]') ||
     header.querySelector('#mobile-menu.is-open,[aria-expanded="true"]:not(#bk-expand-pill):not([data-sidebar-toggle])');
@@ -15,6 +26,7 @@ if (pill && header) {
     if(yes === header.classList.contains('bk-compact'))return;
     header.classList.toggle('bk-compact',yes);
     full.inert=yes;pill.hidden=!yes;pill.setAttribute('aria-expanded',String(!yes));
+    traceCompact(yes);
     if(returnFocus && yes)pill.focus({preventScroll:true});
     else if(!yes && focused===pill)firstControl()?.focus({preventScroll:true});
   }
