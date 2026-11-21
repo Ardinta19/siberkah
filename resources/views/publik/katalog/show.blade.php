@@ -3,15 +3,7 @@
 @section('content')
 @php($koleksi = collect((array)request('koleksi', []))->only(['q','jenis','kategori','tanggal','urut','page'])->filter(fn ($value) => is_scalar($value))->all())
 <article data-product-detail class="container-siberkah grid gap-6 py-8 md:grid-cols-2">
-    <div class="bk-gallery">
-        @if($produk->foto_utama && !$gambarProduk->contains('jalur_berkas', $produk->foto_utama))
-            <img src="{{ asset('storage/'.$produk->foto_utama) }}" class="w-full object-cover" alt="{{ $produk->nama }}">
-        @endif
-        @if(!$produk->foto_utama && $gambarProduk->isEmpty())<div class="kc-media"><img class="kc-monogram" src="{{ asset('images/berkah-kreatif.webp') }}" alt="Foto produk belum tersedia"></div>@endif
-        @foreach($gambarProduk as $gambar)
-            <img loading="lazy" alt="{{ $gambar->teks_alternatif ?? $produk->nama }}" src="{{ asset('storage/'.$gambar->jalur_berkas) }}">
-        @endforeach
-    </div>
+    @include('partials.product-gallery')
     <section class="bk-product-panel">
         <a class="text-primary underline" href="{{ route('catalog.index',$koleksi) }}{{ request()->has('koleksi') ? '#produk-'.$produk->id : '#produk-katalog' }}">Kembali ke katalog</a>
         <p class="kc-kicker">{{ $produk->kategori?->nama }} · {{ ucfirst($produk->jenis) }}</p>
