@@ -31,3 +31,5 @@
 **UC-21 transaksi langsung:** Admin dapat memilih pelanggan dan varian siap jual tanpa opsi, mencocokkan total pembulatan dengan tunai fisik, lalu membuka rincian pesanan terbayar. Stok dan harga diperiksa ulang saat menyimpan. Penjualan ini tidak mewakili checkout buket/custom melalui WhatsApp.
 
 **UC-21 buket:** dari daftar pesanan, cari pelanggan, pilih produk siap jual/custom dan isi checkout satu produk (beberapa unit, varian, opsi dan catatan). Harga serta kapasitas dihitung ulang oleh aksi bersama; POST manual terpisah dari sesi pelanggan dan keranjang. Keranjang manual multi-produk belum tersedia di UI.
+
+**UC-22 kalender Admin:** akses staging terpisah dari Pengaturan Owner. Dari dasbor → tanggal → kapasitas custom/blokir produk atau toko, atau kode unit persis untuk membaca reservasi dan blokir harian. Admin boleh melepas blokir unit, bukan blokir produk/toko Owner. Perubahan blokir tidak memindahkan reservasi.

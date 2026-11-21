@@ -108,7 +108,13 @@ class AdminSettingsController extends BaseController
         $capacity = DB::table('kapasitas_produksi_harian')->where(['tanggal'=>$day,'kelompok_kapasitas'=>'buket_custom'])->first();
         $blocks = BlokirKalender::with('produk:id,nama')->where('tanggal',$day)->orderBy('id')->get();
         $products = DB::table('produk')->where('aktif',true)->orderBy('nama')->get(['id','nama']);
-        return response()->view('owner.pengaturan.kalender',compact('day','capacity','blocks','products'))->header('Cache-Control','private, no-store');
+        $operational = $request->routeIs('admin.kalender');
+        $code = $operational ? ($request->validate(['unit'=>'nullable|string|max:100'])['unit'] ?? '') : '';
+        $unit = $code !== '' ? DB::table('unit_sewa')->where('kode',$code)->first(['id','kode','status']) : null;
+        $unitBlock = $unit ? DB::table('blokir_unit_harian')->where(['tanggal'=>$day,'unit_sewa_id'=>$unit->id])->first() : null;
+        $reserved = $unit ? DB::table('hari_reservasi as h')->join('pesanan as p','p.id','=','h.pesanan_id')
+            ->where(['h.tanggal'=>$day,'h.unit_sewa_id'=>$unit->id])->first(['p.id','p.nomor']) : null;
+        return response()->view('owner.pengaturan.kalender',compact('day','capacity','blocks','products','operational','code','unit','unitBlock','reserved'))->header('Cache-Control','private, no-store');
     }
 
     public function releaseCalendarBlock(Request $request, int $id)
@@ -158,7 +164,7 @@ class AdminSettingsController extends BaseController
         if ($request->expectsJson()) {
             return response()->json(['peringatan_pesanan_aktif' => $bentrok], 201);
         }
-        $back = $request->input('asal') === 'kalender' ? redirect()->route('admin.pengaturan.kalender',['tanggal'=>$request->tanggal]) : back();
+        $back = $request->input('asal') === 'kalender' ? redirect()->route($request->user('staff')->isOwner() && !$request->boolean('operasional') ? 'admin.pengaturan.kalender' : 'admin.kalender',['tanggal'=>$request->tanggal]) : back();
         return $back->with('success', 'Kalender berhasil diblokir.')->with('peringatan_pesanan_aktif', $bentrok->all());
     }
 
@@ -196,7 +202,7 @@ class AdminSettingsController extends BaseController
             \App\Support\StaffAudit::record('ubah_kapasitas','kapasitas_produksi_harian',$current->id,$created ? null : $key + ['batas' => (int) $current->batas], $key + ['batas' => $limit]);
         }, 3);
 
-        return ($editor ? redirect()->route('admin.pengaturan.kalender',['tanggal'=>$request->tanggal]) : back())
+        return ($editor ? redirect()->route($request->user('staff')->isOwner() && !$request->boolean('operasional') ? 'admin.pengaturan.kalender' : 'admin.kalender',['tanggal'=>$request->tanggal]) : back())
             ->with('success', 'Kapasitas produksi harian berhasil diupdate.');
     }
 }

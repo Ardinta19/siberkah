@@ -385,6 +385,11 @@ class RentalCheckoutTest extends TestCase
         $bill = DB::table('pembayaran')->sole();
         app(\App\Actions\VerifyRentalTransfer::class)->record($admin, $order->id, ['pembayaran_id' => $bill->id, 'referensi' => 'PAPAN', 'nominal' => $bill->nominal_diharapkan]);
         $this->actingAs($admin, 'staff')->postJson($blockUrl, $block)->assertCreated()->assertJsonPath('peringatan_pesanan_aktif.0', $order->nomor);
+        $calendar = route('admin.kalender',['tanggal'=>$data['tanggal'],'unit'=>'A-01']);
+        $this->get($calendar)->assertOk()->assertSee('Unit memiliki reservasi')->assertSee($order->nomor)->assertSee('Perawatan harian')->assertSee('Buka blokir unit A-01');
+        $this->get(route('admin.pengaturan.index'))->assertForbidden();
+        $blockId = DB::table('blokir_unit_harian')->where('unit_sewa_id',$unit)->value('id');
+        $this->delete(route('papan.buka',[$unit,$blockId]),['asal'=>'kalender-unit','tanggal'=>$data['tanggal'],'konfirmasi'=>1])->assertRedirect($calendar.'#unit-harian');
         $this->assertDatabaseCount('hari_reservasi', 1);
         $text = ['judul' => 'Selamat', 'penerima' => 'Nadia', 'pengirim' => 'Teman'];
         $edit = route('papan.edit', $order->id);

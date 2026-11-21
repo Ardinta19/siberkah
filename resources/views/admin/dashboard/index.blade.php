@@ -27,6 +27,7 @@
     </section>
     <nav aria-label="Buka area kerja" class="bk-ops-links"><h2>Buka area kerja</h2>
         @if(config('checkout.staging') && app()->environment('testing','staging','local'))
+            <a href="{{ route('admin.kalender',['tanggal'=>$tanggal]) }}">Periksa kalender dan kapasitas</a>
             <a href="{{ route('kas-antar.index',['tanggal'=>$tanggal]) }}">Periksa pembayaran dan setoran antar</a>
         @endif
         <a href="{{ route('staf.kurir.index',['tanggal'=>$tanggal,'tugas'=>'antar']) }}">Agenda antar hari ini</a>

@@ -86,7 +86,9 @@ final class BoardOperationsController extends Controller
     public function block(Request $request, int $unit)
     {
         $d = $request->validate(['tanggal' => 'required|date_format:Y-m-d|after_or_equal:today', 'alasan' => 'required|string|max:160']);
-        return DB::transaction(function () use ($request, $unit, $d) {
+        $form = $request->input('asal') === 'kalender-unit';
+        if ($form) { $request->validate(['konfirmasi'=>'accepted']); }
+        $result = DB::transaction(function () use ($request, $unit, $d) {
             abort_unless(DB::table('unit_sewa')->where('id', $unit)->lockForUpdate()->first(), 404);
             $key = ['unit_sewa_id' => $unit, 'tanggal' => $d['tanggal']];
             $old = DB::table('blokir_unit_harian')->where($key)->first();
@@ -101,19 +103,31 @@ final class BoardOperationsController extends Controller
                 ->whereIn('p.status', ['menunggu_pembayaran','dikonfirmasi','sedang_diproduksi','siap','sudah_diserahkan'])->pluck('p.nomor');
             return response()->json(['blokir_id' => $id, 'peringatan_pesanan_aktif' => $conflicts], $old ? 200 : 201);
         }, 3);
+        if ($form && !$request->expectsJson()) {
+            return $this->calendarReturn($unit,$d['tanggal'],'Blokir unit tercatat.')->with('peringatan_pesanan_aktif',$result->getData(true)['peringatan_pesanan_aktif']);
+        }
+        return $result;
     }
 
     public function unblock(Request $request, int $unit, int $blokir)
     {
-        DB::transaction(function () use ($request, $unit, $blokir) {
+        $form = $request->input('asal') === 'kalender-unit';
+        if ($form) { $request->validate(['konfirmasi'=>'accepted','tanggal'=>'required|date_format:Y-m-d|after_or_equal:today']); }
+        DB::transaction(function () use ($request, $unit, $blokir, $form) {
             abort_unless(DB::table('unit_sewa')->where('id', $unit)->lockForUpdate()->first(), 404);
             $query = DB::table('blokir_unit_harian')->where(['id' => $blokir, 'unit_sewa_id' => $unit]);
             $old = $query->first();
-            abort_unless($old, 404);
+            abort_unless($old && (!$form || $old->tanggal === $request->input('tanggal')), 404);
             $query->delete();
             $this->auditBlock($request, $blokir, 'buka_blokir_unit', ['unit_sewa_id' => $unit, 'tanggal' => $old->tanggal]);
         }, 3);
+        if ($form && !$request->expectsJson()) { return $this->calendarReturn($unit,$request->input('tanggal'),'Blokir unit dibuka.'); }
         return response()->noContent();
+    }
+
+    private function calendarReturn(int $unit,string $day,string $message)
+    {
+        return redirect()->route('admin.kalender',['tanggal'=>$day,'unit'=>DB::table('unit_sewa')->where('id',$unit)->value('kode')])->withFragment('unit-harian')->with('success',$message);
     }
 
     private function auditBlock(Request $request, int $id, string $action, array $key): void
