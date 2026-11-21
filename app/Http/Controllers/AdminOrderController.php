@@ -87,7 +87,7 @@ class AdminOrderController extends BaseController
 
     public function manualCustomer(Request $request)
     {
-        $phone = $request->validate(['nomor_wa'=>'required|string|regex:/^(?:0|\+?62)[0-9]{8,13}$/D'])['nomor_wa'];
+        $phone = $request->validate(['nomor_wa'=>['required','string','regex:/^(?:0|\+?62)[0-9]{8,13}$/D']])['nomor_wa'];
         $phone = preg_replace('/^0/','62',ltrim($phone,'+'));
         $id = $this->manualCustomers()->where('nomor_wa',$phone)->value('id');
         return $id ? redirect()->route('admin.pesanan.manual-sewa',['pelanggan'=>$id])
