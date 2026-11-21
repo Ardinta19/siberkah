@@ -110,6 +110,7 @@ class AdminCatalogController extends BaseController
 
         return view('owner.katalog.edit', [
             'produk' => $produk,
+            'jenisTerkunci' => DB::table('item_pesanan')->where('produk_id', $produk->id)->exists(),
             'context' => $this->listContext($request),
             'kategoris' => $kategoris,
         ]);

@@ -1,3 +1,4 @@
+import "./product-editor.js";
 import "./media-preview.js";
 import "./media-order.js";
 import "./ledger-submit.js";
