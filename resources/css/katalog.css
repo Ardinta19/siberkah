@@ -163,3 +163,6 @@
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.bk-filmstrip img{transition:transform .22s ease-out}.bk-filmstrip button:hover img{transform:scale(1.06)}}
 
 .bk-photo-caption{padding:.45rem .8rem;background:#fff8f4;color:#74233f;text-align:center;font-weight:600;font-size:.88rem}.bk-options li:has([data-variant-photo]){display:grid}.bk-options [data-variant-photo]{color:#802044;font-size:.85rem}
+
+/* Keep the tap target aligned with the entire photo rather than an inline text line. */
+.bk-gallery [data-photo] > a{display:block;line-height:0;touch-action:pan-y pinch-zoom}
