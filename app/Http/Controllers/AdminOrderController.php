@@ -86,8 +86,9 @@ class AdminOrderController extends BaseController
                 }
             }
             $history = $order->riwayatStatus()->orderByDesc('id')->get();
+            $rincianPenyesuaian = $order->rincianPenyesuaian();
             $opsiPerItem = $order->snapshotOpsiPerItem();
-            return response()->view('admin.pesanan.show',compact('order','context','refund','opsiPerItem','board','history','extension','action'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.show',compact('order','context','refund','rincianPenyesuaian','opsiPerItem','board','history','extension','action'))->header('Cache-Control','private, no-store');
         }
         return response()->json($order)->header('Cache-Control', 'private, no-store');
     }

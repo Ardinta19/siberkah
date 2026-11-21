@@ -81,6 +81,7 @@ class CustomerOrderController extends BaseController
 
         return response()->view('pelanggan.pesanan.show', [
             'depositDipakai' => $pesanan->jenis_jaminan === 'deposit' ? (int) \Illuminate\Support\Facades\DB::table('pemakaian_deposit')->where('pesanan_id',$pesanan->id)->value('nominal') : 0,
+            'rincianPenyesuaian' => $pesanan->rincianPenyesuaian(),
             'opsiPerItem' => $pesanan->snapshotOpsiPerItem(),
             'permohonan' => \Illuminate\Support\Facades\DB::table('permohonan_batal')->where('pesanan_id', $pesanan->id)->first(['status','alasan','diajukan_pada','diputuskan_pada','catatan_keputusan']),
             'papan' => \Illuminate\Support\Facades\DB::table('desain_papan')->where('pesanan_id',$pesanan->id)->first(['judul','penerima','pengirim']),

@@ -579,7 +579,10 @@ class RentalCheckoutTest extends TestCase
         $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'status' => 'selesai', 'saldo' => 0, 'jumlah_dibayar' => 511000 + $delta]);
         $this->assertSame(1, DB::table('riwayat_status_pesanan')->where('kode_transisi','T11')->count());
         $this->actingAs($owner, 'staff')->getJson(route('admin.laporan.index', ['period'=>'harian']))->assertOk()->assertJsonPath('neto', (int) $bill->nominal_diharapkan);
-        $this->actingAs($customer,'customer')->get(route('pesanan.show',$order->nomor))->assertOk()->assertSee('Deposit saat serah: Rp100.000')->assertSee('Dipakai untuk biaya kerusakan: Rp'.number_format($used,0,',','.'))->assertSee($used === 100000 ? 'Tidak ada sisa untuk dikembalikan' : 'Pengembalian deposit tercatat: Rp'.number_format(100000-$used,0,',','.'))->assertDontSee($complete['catatan']);
+        $receipt = $this->actingAs($customer,'customer')->get(route('pesanan.show',$order->nomor))->assertOk();
+        $receipt->assertSee('Biaya kerusakan: Rp200.000')->assertSee('Denda keterlambatan: '.($used === 40000 ? 'Rp25.000' : 'Rp50.000'))->assertDontSee($assessment['alasan']);
+        if ($used === 40000) { $receipt->assertSee('Perpanjangan sewa: Rp126.000')->assertDontSee($extension['alasan']); }
+        $receipt->assertSee('Deposit saat serah: Rp100.000')->assertSee('Dipakai untuk biaya kerusakan: Rp'.number_format($used,0,',','.'))->assertSee($used === 100000 ? 'Tidak ada sisa untuk dikembalikan' : 'Pengembalian deposit tercatat: Rp'.number_format(100000-$used,0,',','.'))->assertDontSee($complete['catatan']);
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('lateCases')]

@@ -25,4 +25,12 @@
         @if($pesanan->penyesuaian)<div><dt>Penyesuaian pesanan</dt><dd>{{ $rupiah($pesanan->penyesuaian) }}</dd></div>@endif
         <div class="bk-estimate-total"><dt>Total pesanan</dt><dd>{{ $rupiah($pesanan->total) }}</dd></div>
     </dl>
+    @if($rincianPenyesuaian->isNotEmpty())
+        <details><summary>Rincian penyesuaian yang sudah termasuk dalam total</summary>
+            <ul>@foreach($rincianPenyesuaian as $baris)
+                <li>{{ ['perpanjangan'=>'Perpanjangan sewa','denda_telat'=>'Denda keterlambatan','kerusakan'=>'Biaya kerusakan'][$baris->jenis] ?? 'Penyesuaian lain' }}: {{ $rupiah($baris->jumlah) }}</li>
+            @endforeach</ul>
+            @if((int)$rincianPenyesuaian->sum('jumlah') !== (int)$pesanan->penyesuaian)<p>Rincian tercatat berbeda dari total penyesuaian. Hubungi Admin untuk pemeriksaan.</p>@endif
+        </details>
+    @endif
 </section>

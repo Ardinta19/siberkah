@@ -111,6 +111,14 @@ class Pesanan extends Model
             ->groupBy('item_pesanan_id');
     }
 
+    /** Customer-safe breakdown of recorded adjustments; no staff notes or identities. */
+    public function rincianPenyesuaian(): \Illuminate\Support\Collection
+    {
+        return \Illuminate\Support\Facades\DB::table('penyesuaian_pesanan')
+            ->where('pesanan_id', $this->id)->groupBy('jenis')->orderBy('jenis')
+            ->selectRaw('jenis, SUM(nominal) AS jumlah')->get();
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(ItemPesanan::class, 'pesanan_id');
