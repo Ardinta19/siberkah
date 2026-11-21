@@ -147,3 +147,5 @@ for(const form of document.querySelectorAll('[data-bag-form]')) {
   }
   field.addEventListener('input',sync);window.addEventListener('pageshow',sync);sync();
 }
+
+import './return-estimate';

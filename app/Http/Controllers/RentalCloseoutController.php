@@ -22,9 +22,14 @@ class RentalCloseoutController extends Controller
                 ->orderBy('item_pesanan.id')->get(['item_pesanan.id','nama_produk','nama_varian','u.kode']);
             $inspections = $query->get(['item.id as item_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','i.dilakukan_pada','i.pengguna_id','f.id as foto_id','f.urutan'])->groupBy(['item_id','tahap']);
             $review = DB::table('penutupan_sewa')->where('pesanan_id',$id)->first();
+            $returns = $inspections->map(fn ($stages) => $stages->get('kembali')?->first())->filter();
+            $complete = $items->isNotEmpty() && $returns->count() === $items->count();
+            $damaged = $returns->contains(fn ($row) => $row->kondisi !== 'baik');
+            $rates = !$review && $complete && $damaged && $request->user('staff')->isOwner()
+                ? DB::table('tarif_kerusakan')->orderBy('nama')->get(['kode','nama','satuan','tarif']) : collect();
             $deposit = $review ? DB::table('pemakaian_deposit')->where('pesanan_id',$id)->first(['nominal','alasan']) : null;
             $context = $request->only(['q','status','tanggal','pelanggan','page','asal']);
-            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','review','deposit'))->header('Cache-Control','private, no-store');
+            return response()->view('admin.pesanan.inspeksi',compact('order','items','inspections','context','review','deposit','complete','damaged','rates'))->header('Cache-Control','private, no-store');
         }
         $rows = $query->get(['item.unit_sewa_id','i.tahap','i.kondisi','i.daftar_periksa','i.catatan','f.id as foto_id']);
         return response()->json($rows)->header('Cache-Control', 'private, no-store');
@@ -43,6 +48,15 @@ class RentalCloseoutController extends Controller
 
     public function assess(Request $request, int $id, IssueRentalInvoice $invoices)
     {
+        if ($request->input('asal') === 'bukti-retur') {
+            $form = $request->validate(['jumlah'=>'sometimes|array','jumlah.*'=>'nullable|integer|between:0,100',
+                'biaya_kerusakan'=>'required|integer|min:0','diperiksa'=>'accepted']);
+            $lines = [];
+            foreach ($form['jumlah'] ?? [] as $code => $qty) {
+                if ((int)$qty > 0) { $lines[] = ['kode'=>(string)$code,'jumlah'=>(int)$qty]; }
+            }
+            $request->merge(['rincian'=>$lines]);
+        }
         $data = $request->validate(['biaya_kerusakan' => 'sometimes|integer|between:0,2147483647', 'rincian' => 'sometimes|array|list|max:30',
             'rincian.*'=>'array:kode,jumlah','rincian.*.kode'=>'required|string|max:30|distinct','rincian.*.jumlah'=>'required|integer|between:1,100', 'alasan' => 'required|string|max:200']);
         $staff = $request->user('staff');
@@ -57,8 +71,10 @@ class RentalCloseoutController extends Controller
                 return response()->json(['tagihan_id' => $existing->tagihan_id]);
             }
             abort_unless($order->status === 'sudah_dikembalikan' && $order->total === $order->saldo + $order->jumlah_dibayar, 409);
-            $damaged = DB::table('inspeksi_sewa as i')->join('item_pesanan as item', 'item.id', '=', 'i.item_pesanan_id')
-                ->where('item.pesanan_id', $id)->where('i.tahap', 'kembali')->where('i.kondisi', '!=', 'baik')->exists();
+            $returned = DB::table('inspeksi_sewa as i')->join('item_pesanan as item', 'item.id', '=', 'i.item_pesanan_id')
+                ->where('item.pesanan_id', $id)->where('i.tahap', 'kembali')->pluck('i.kondisi');
+            abort_unless($returned->isNotEmpty() && $returned->count() === $order->items()->count(),409,'Inspeksi kembali belum lengkap.');
+            $damaged = $returned->contains(fn ($condition) => $condition !== 'baik');
             $lines = []; $amount = 0;
             foreach ($quantities as $code => $quantity) {
                 $rate = DB::table('tarif_kerusakan')->where('kode',$code)->sharedLock()->first();

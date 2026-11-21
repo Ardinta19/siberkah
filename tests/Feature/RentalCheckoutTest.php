@@ -479,7 +479,11 @@ class RentalCheckoutTest extends TestCase
         $this->getJson($evidence)->assertOk()->assertJsonCount(2);
         $this->get(route('retur.foto',[$order->id,$photo->id]))->assertOk()->assertHeader('X-Content-Type-Options','nosniff');
         $this->postJson(route('retur.nilai', $order->id), $assessment)->assertForbidden();
-        $this->actingAs($owner, 'staff')->postJson(route('retur.nilai', $order->id), $assessment)->assertCreated();
+        $this->get($evidence,['Accept'=>'text/html'])->assertSee('Hanya Owner')->assertDontSee('Simpan penilaian final');
+        $this->actingAs($owner,'staff')->get($evidence,['Accept'=>'text/html'])->assertOk()->assertSee('Simpan penilaian final')->assertSee('Akrilik pecah');
+        $form = ['asal'=>'bukti-retur','jumlah'=>['akrilik_pecah'=>1,'bunga_rusak'=>0],'diperiksa'=>1,'biaya_kerusakan'=>200000,'alasan'=>$assessment['alasan']];
+        $this->postJson(route('retur.nilai',$order->id),array_replace($form,['biaya_kerusakan'=>1]))->assertUnprocessable();
+        $this->postJson(route('retur.nilai',$order->id),$form)->assertCreated();
         $invoice = $this->postJson(route('retur.nilai', $order->id), $assessment)->assertOk()->json('tagihan_id');
         $html = ['Accept'=>'text/html'];
         $this->get($evidence,$html)->assertOk()->assertSee('Catat penerimaan setoran deposit')->assertSee('Foto menunjukkan akrilik pecah')->assertDontSee('Catat penutupan pesanan');

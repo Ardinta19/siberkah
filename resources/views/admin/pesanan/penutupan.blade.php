@@ -6,6 +6,7 @@
 @endphp
 <section class="bk-task" aria-labelledby="penutupan"><h2 id="penutupan">Penilaian dan penutupan sewa</h2>
 @if(!$review)<p>Belum ada penilaian final. Bukti inspeksi saja tidak cukup untuk menutup pesanan.</p>
+@include('admin.pesanan.nilai-retur')
 @else
 <p>Dinilai {{ $review->dinilai_pada }} WIB · Petugas #{{ $review->penilai_id }}</p>
 <p>Biaya kerusakan: <strong>{{ $rupiah($review->biaya_kerusakan) }}</strong> · {{ $review->alasan }}</p>
