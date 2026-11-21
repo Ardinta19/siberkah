@@ -21,11 +21,13 @@
     <div class="kc-results">
     <div class="kc-meta"><p role="status">@if($filterKategori){{ $kategoris->firstWhere('id',$filterKategori)?->nama }} · @endif<strong>{{ $produk->total() }}</strong> produk ditemukan @if($filterTanggal) · Tersedia untuk sewa pada {{ $filterTanggal }} @endif</p>@if(request()->anyFilled(['kategori','jenis','tanggal','urut']))<a href="{{ route('catalog.index',request()->only('q')) }}#produk-katalog">Reset filter ↺</a>@endif</div>
     @if($filterJenis || request('urut'))<p class="kc-applied">Filter aktif: {{ ['jual'=>'Siap jual','sewa'=>'Sewa','custom'=>'Custom'][$filterJenis] ?? 'Semua jenis' }} @if(request('urut')) · {{ request('urut') === 'harga_naik' ? 'Harga terendah' : 'Harga tertinggi' }} @endif</p>@endif
+    @php($collectionContext = request()->only(['q','jenis','kategori','tanggal','urut']) + ['page'=>$produk->currentPage()])
     <div class="kc-grid">
       @forelse($produk as $p)
+        @php($detailUrl = route('catalog.show',['slug'=>$p->slug,'tanggal'=>$filterTanggal,'koleksi'=>$collectionContext]))
         <article class="kc-card" id="produk-{{ $p->id }}" tabindex="-1">
           <div class="kc-media">
-            <a class="kc-photo-link" aria-label="Lihat {{ $p->nama }}" href="{{ route('catalog.show',['slug'=>$p->slug,'tanggal'=>$filterTanggal,'koleksi'=>request()->only(['q','jenis','kategori','tanggal','urut','page'])]) }}"></a>
+            <a class="kc-photo-link" aria-label="Lihat {{ $p->nama }}" href="{{ $detailUrl }}"></a>
             @if($p->foto_utama)<img class="kc-product-photo" src="{{ asset('storage/'.$p->foto_utama) }}" loading="lazy" alt="{{ $p->nama }}">
             @else<img class="kc-monogram" src="{{ asset('images/berkah-kreatif.webp') }}" alt="">@endif
             <span class="kc-type">{{ ['sewa'=>'Sewa','jual'=>'Siap jual','custom'=>'Custom'][$p->jenis] ?? ucfirst($p->jenis) }}</span>
@@ -35,7 +37,7 @@
             @if($p->jenis === 'sewa')<p class="kc-availability">{{ $filterTanggal ? 'Tersedia pada tanggal pilihan' : 'Pilih tanggal untuk cek unit' }}</p>@endif
             <details><summary>Ringkasan · {{ $p->varianProduk->count() }} varian</summary><p>{{ $p->deskripsi ?: 'Belum ada deskripsi.' }}</p></details>
           </div>
-          <div class="kc-foot"><div><small>{{ $p->jenis === 'sewa' ? 'Tarif sewa mulai' : 'Harga mulai' }}</small><strong>{{ $p->harga_tampil !== null ? 'Rp'.number_format($p->harga_tampil,0,',','.') : 'Belum tersedia' }}</strong></div><a class="kc-action" href="{{ route('catalog.show',['slug'=>$p->slug,'tanggal'=>$filterTanggal,'koleksi'=>request()->only(['q','jenis','kategori','tanggal','urut','page'])]) }}">Lihat detail <span aria-hidden="true">↗</span></a></div>
+          <div class="kc-foot"><div><small>{{ $p->jenis === 'sewa' ? 'Tarif sewa mulai' : 'Harga mulai' }}</small><strong>{{ $p->harga_tampil !== null ? 'Rp'.number_format($p->harga_tampil,0,',','.') : 'Belum tersedia' }}</strong></div><a class="kc-action" href="{{ $detailUrl }}">Lihat detail <span aria-hidden="true">↗</span></a></div>
         </article>
       @empty
         <div class="kc-empty"><span aria-hidden="true">✧</span>
