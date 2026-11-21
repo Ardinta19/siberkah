@@ -14,7 +14,7 @@
 
 Jika beda hasil, catat tahap, waktu, jumlah unit/foto dan apakah transaksi tercatat **sekali** di server. Jangan meluluskan skenario hanya karena tombol menghilang. Penguji dan penanggung jawab operasional harus menyepakati hasil sebelum penggunaan nyata.
 
-**Bukti otomatis terpisah:** setelah tiap tahap Chrome dua unit, CI membaca kembali penyimpanan privat dan database uji. Pada jam 18.01 WIB dengan tarif Rp10.000/jam/unit dan tanpa perpanjangan, diharapkan satu denda Rp20.000; deposit Rp100.000 bukan pembayaran denda. Ini bukan hasil uji lapangan.
+**Bukti otomatis terpisah:** setelah tiap tahap Chrome dua unit, CI membaca kembali penyimpanan privat dan database uji. Pada jam 18.01 WIB dengan tarif Rp10.000/jam/unit dan tanpa perpanjangan, diharapkan satu denda Rp20.000; pembayaran tunai Rp100.000 tercatat sekali atas petugas serah, sedangkan deposit Rp120.000 bukan pembayaran sewa atau denda. Ini bukan hasil uji lapangan.
 
 **Luring sebelum Simpan:** jika browser sudah melaporkan luring, Simpan tidak memulai permintaan. Jangan tutup/muat ulang halaman; setelah tersambung kembali, periksa isian lalu tekan Simpan sendiri. Tidak ada antrean kirim otomatis. Jika permintaan sempat dimulai dan hasilnya tidak pasti, tetap gunakan pemeriksaan status, bukan kirim ulang.
 

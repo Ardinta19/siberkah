@@ -18,8 +18,12 @@ $returned = $stage === 'kembali';
 $order = DB::table('pesanan')->where('nomor','CI-PRODUKSI')->firstOrFail();
 $rows = fn(string $table) => DB::table($table)->where('pesanan_id',$order->id);
 verify($order->status === ($returned ? 'sudah_dikembalikan' : 'sudah_diserahkan'), 'status pesanan');
-verify($order->jenis_jaminan === 'deposit' && (int)$order->nominal_jaminan === 100000, 'deposit berubah');
+verify($order->jenis_jaminan === 'deposit' && (int)$order->nominal_jaminan === 120000, 'deposit berubah');
 verify((int)$order->jumlah_dibayar === 100000 && (int)$order->saldo === ($returned ? 20000 : 0), 'deposit tercampur saldo atau denda salah');
+$cash = $rows('pembayaran')->sole();
+verify($cash->jenis === 'penuh' && $cash->status === 'terverifikasi' && (bool)$cash->tunai_saat_serah, 'jenis atau status penerimaan tunai');
+verify((int)$cash->nominal_diterima === 100000 && (int)$cash->tagihan === 100000, 'penerimaan tunai harus tepat tanpa deposit');
+verify((int)$cash->pengguna_id === (int)$rows('riwayat_status_pesanan')->where('kode_transisi','T08')->sole()->pengguna_id, 'petugas penerima tunai berbeda dari petugas serah');
 $adjust = $rows('penyesuaian_pesanan');
 verify($adjust->count() === ($returned ? 1 : 0), 'jumlah penyesuaian');
 if ($returned) { verify((int)$adjust->where('jenis','denda_telat')->value('nominal') === 20000,'denda dua unit'); }

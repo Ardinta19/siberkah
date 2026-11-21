@@ -945,7 +945,16 @@ with sync_playwright() as playwright:
             inspect.get_by_label('Jaminan yang diterima').select_option('ktp')
             expect(inspect.locator('[name=nominal_jaminan]')).to_be_disabled()
             inspect.get_by_label('Jaminan yang diterima').select_option('deposit')
-            inspect.locator('[name=nominal_jaminan]').fill('100000')
+            inspect.locator('[name=nominal_jaminan]').fill('120000')
+            cash=inspect.get_by_label('Pembayaran tunai aktual')
+            for wrong in ('99999','220000'):
+                cash.fill(wrong)
+                assert not cash.evaluate('el=>el.checkValidity()'), 'Tunai harus tepat saldo, tanpa deposit'
+            cash.fill('100000')
+            expect(cash).to_have_value('100000')
+            receipt=inspect.get_by_label('Pembayaran pelanggan sudah diterima')
+            assert not receipt.evaluate('el=>el.checkValidity()')
+            receipt.check()
         if stage=='serah':
             first.locator('[data-photos]').set_input_files({'name':'bukan-foto.txt','mimeType':'text/plain','buffer':b'CI'})
             expect(first.locator('[data-photo-list]')).to_contain_text('Gunakan foto JPEG, PNG atau WebP')

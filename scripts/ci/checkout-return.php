@@ -23,7 +23,7 @@ echo DB::transaction(function () {
     DB::table('unit_sewa')->insert(['varian_produk_id'=>$variant->id,'kode'=>'CI-MANUAL','status'=>'aktif']);
     // Confirmed board with a separate unit, ready for the production-role scenario.
     $day = substr(trim(file_get_contents(getenv('CHECKOUT_CI_CLOCK'))),0,10);
-    $board = DB::table('pesanan')->insertGetId(['nomor'=>'CI-PRODUKSI','pelanggan_id'=>$customer->id,'status'=>'dikonfirmasi','asal'=>'situs','nama_pemesan'=>'Produksi CI','nomor_wa_pemesan'=>$customer->nomor_wa,'cara_serah'=>'antar','alamat_antar'=>'Alamat papan CI','tanggal_serah'=>$day,'subtotal'=>100000,'total'=>100000,'jumlah_dibayar'=>100000]);
+    $board = DB::table('pesanan')->insertGetId(['nomor'=>'CI-PRODUKSI','pelanggan_id'=>$customer->id,'status'=>'dikonfirmasi','asal'=>'situs','nama_pemesan'=>'Produksi CI','nomor_wa_pemesan'=>$customer->nomor_wa,'cara_serah'=>'antar','alamat_antar'=>'Alamat papan CI','tanggal_serah'=>$day,'subtotal'=>100000,'total'=>100000,'jumlah_dibayar'=>0,'saldo'=>100000,'tunai_saat_serah'=>true]);
     DB::table('checkout_sewa')->insert(['pesanan_id'=>$board,'denda_per_jam'=>10000,'pelanggan_id'=>$customer->id,'kunci'=>(string)Str::uuid(),'sidik'=>hash('sha256','ci-produksi'),'versi_privasi'=>config('checkout.privacy_version'),'disetujui_pada'=>now()]);
     DB::table('desain_papan')->insert(['pesanan_id'=>$board,'metode'=>'spidol','jadwal_serah'=>$day.' 14:00:00']);
     foreach (['CI-PROD','CI-PROD-B'] as $code) {
