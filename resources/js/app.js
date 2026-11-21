@@ -104,7 +104,7 @@ for (const form of document.querySelectorAll('form[data-pending]')) {
     if (!submit || event.defaultPrevented) return;
     label = submit.textContent;
     form.setAttribute('aria-busy','true');
-    submit.textContent = form.dataset.pending;
+    submit.textContent = submit.dataset.pendingLabel || form.dataset.pending;
   });
   window.addEventListener('pageshow', () => { form.removeAttribute('aria-busy'); if(submit) submit.textContent = label; });
 }
@@ -124,3 +124,15 @@ for (const jump of jumps) {
 if(jumps.length) document.addEventListener('pointerdown',e=>{
   for(const jump of jumps) if(jump.open && !jump.contains(e.target))jump.open=false;
 });
+
+// Keep the saved count distinct from the draft; checkout submits the visible field even without JS.
+for(const form of document.querySelectorAll('[data-bag-form]')) {
+  const field=form.elements.jumlah, save=form.querySelector('[data-save-quantity]'), note=form.querySelector('[data-quantity-state]');
+  function sync(){
+    const dirty=field.valueAsNumber!==Number(field.defaultValue);
+    save.disabled=!dirty;
+    const text=!field.validity.valid ? 'Masukkan jumlah bulat antara 1 dan 100.' : dirty ? 'Jumlah berubah. Perbarui untuk menyimpan.' : '';
+    if(note.textContent!==text)note.textContent=text;
+  }
+  field.addEventListener('input',sync);window.addEventListener('pageshow',sync);sync();
+}

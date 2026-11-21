@@ -29,6 +29,9 @@ final class CartController extends Controller
             return back()->withErrors(['cart' => 'Keranjang penuh. Hapus satu produk sebelum menambahkan produk lain.']);
         }
         $request->session()->put("cart.$id", (int) $qty);
+        if ($request->boolean('lanjut') && config('checkout.staging') && app()->environment('local', 'testing', 'staging')) {
+            return redirect()->route('checkout.product', ['slug' => $product->slug, 'dari_keranjang' => 1]);
+        }
         return redirect()->route('cart.index')->with('cart_notice', $product->nama.' · '.$qty.' item tersimpan di keranjang.');
     }
 
