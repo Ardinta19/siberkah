@@ -9,8 +9,11 @@
     @if($photos->count()<50)
         <form class="bk-task grid gap-3" data-pending="Mengunggah foto…" method="post" enctype="multipart/form-data" action="{{ route('admin.katalog.manage-images',['id'=>$product->id]+$context) }}">@csrf
             <input type="hidden" name="asal" value="galeri"><h2>Tambah foto</h2>
-            <label>Berkas foto <input required type="file" name="foto" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help"></label>
+            <label>Berkas foto <input required type="file" name="foto" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-inspection" data-photo-file></label>
             <small id="photo-help">JPG, PNG, atau WebP, maksimal 5 MB. Lebar minimal 800 piksel, maksimal 8000 piksel per sisi dan 12 megapiksel.</small>
+            <figure hidden class="bk-media-proof" data-file-preview><img alt="Pratinjau foto pilihan sebelum diunggah"></figure>
+            <p id="photo-inspection" role="status" data-file-status></p>
+            <button hidden type="button" class="bk-secondary" data-clear-file>Batalkan pilihan foto</button>
             <label>Deskripsi foto <input required maxlength="255" name="teks_alternatif" value="{{ old('teks_alternatif') }}" placeholder="Contoh: Buket mawar putih dengan pita merah"></label>
             <label>Varian <select name="varian_produk_id"><option value="">Foto umum produk</option>@foreach($product->varianProduk as $v)<option value="{{ $v->id }}" @selected(old('varian_produk_id')==$v->id)>{{ $v->nama }}</option>@endforeach</select></label>
             <button class="btn-primary">Unggah foto</button>
@@ -28,6 +31,6 @@
             <details class="bk-confirm"><summary>Hapus foto</summary><p>Hapus foto “{{ $photo->teks_alternatif ?: $product->nama }}” dari produk ini?</p><form data-pending="Menghapus foto…" method="post" action="{{ route('admin.katalog.images.delete',['id'=>$product->id,'foto'=>$photo->id]+$context) }}">@csrf @method('delete')<input type="hidden" name="asal" value="galeri"><button>Ya, hapus foto ini</button></form></details>
         </li>@empty<li>Belum ada foto galeri.</li>@endforelse
     </ol>
-    <p role="status" data-order-note></p><button hidden form="media-order" data-save-order class="btn-primary">Simpan urutan</button>
+    <p role="status" data-order-note></p><button hidden type="button" data-reset-order class="bk-secondary">Batalkan perubahan urutan</button> <button hidden form="media-order" data-save-order class="btn-primary">Simpan urutan</button>
 </section>
 @endsection

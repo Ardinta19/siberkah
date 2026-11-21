@@ -69,3 +69,5 @@ Geser horizontal satu jari pada foto (minimal 44 px) berpindah satu foto saat ja
 **Kelola katalog:** bedakan flag produk dari visibilitas aktual. Produk aktif dengan kategori nonaktif tersembunyi dari publik. Jangan tawarkan Terbitkan bila kategori masih nonaktif. Draf dan arsip sama-sama nonaktif; jangan menyimpulkan riwayat penerbitan dari flag itu saja.
 
 **Galeri Owner:** pisahkan unggahan/penghapusan dari editor teks produk. Nama foto utama merujuk keadaan tersimpan. Memindah posisi adalah draf lokal sampai Simpan urutan ditekan; kirim daftar lengkap ke server. Selalu sediakan konfirmasi hapus dan jalan kembali ke kartu asal.
+
+**Persiapan foto:** pratinjau berkas lokal bukan unggahan. Beri tahu ukuran/dimensi dan alasan jika tidak sesuai, tanpa mengganti validasi server. Membatalkan pilihan hanya mengosongkan berkas, bukan deskripsi atau varian. Batalkan perubahan urutan mengembalikan susunan awal tanpa POST dan tanpa mengganti foto utama.
