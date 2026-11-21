@@ -31,3 +31,5 @@ React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade
 **Kalender sewa (katalog dan detail):** sorotan hari dan tanggal yang sudah dipilih adalah dua keadaan berbeda. Panah menjelajahi hari/minggu; Home/End menuju Senin/Minggu; Page Up/Down berpindah bulan (dengan Shift: tahun). Jika tanggal 31 tidak ada di bulan tujuan, sorot hari terakhir yang valid. Hanya aktivasi tanggal atau tombol aksi yang mengubah nilai form. Escape kembali ke pemicu tanpa mengirim pencarian atau menutup sheet induk.
 
 **Keranjang:** bedakan jumlah tersimpan dari suntingan lokal. Perbarui menyimpan tanpa berpindah; Lanjut pesan mengirim jumlah yang terlihat melalui validasi server sebelum membuka checkout produk tersebut, termasuk tanpa JavaScript. Mengubah jumlah tidak berarti memesan stok, menentukan harga akhir, atau membuat pembayaran.
+
+**Logo saat scroll:** satu permukaan kaca untuk satu kontrol. Saat pill merapat, latar dan area tekan bertemu pada lingkaran 52 × 52 px di pusat header. Tombol tidak menggambar oval atau bayangan kedua. Monogram 140:76 dipusatkan tanpa dipotong atau direntangkan; ring fokus hanya muncul untuk navigasi keyboard.

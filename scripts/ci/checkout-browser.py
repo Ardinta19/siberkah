@@ -54,6 +54,16 @@ with sync_playwright() as playwright:
     page.evaluate('window.scrollTo(0,400)')
     pill = page.locator('#bk-expand-pill')
     expect(pill).to_be_visible()
+    # The compact header is one centered glass seal, not two overlapping ovals.
+    for width in (320,768,1440):
+        page.set_viewport_size({'width':width,'height':900})
+        page.wait_for_function("""() => {
+          const header=document.querySelector('#main-header'), button=document.querySelector('#bk-expand-pill');
+          const shell=getComputedStyle(header,'::before'), b=button.getBoundingClientRect(), img=button.querySelector('img').getBoundingClientRect();
+          return Math.abs(parseFloat(shell.width)-b.width)<1 && Math.abs(parseFloat(shell.height)-b.height)<1
+            && b.width===b.height && b.width>=44 && Math.abs(img.x+img.width/2-b.x-b.width/2)<1
+            && Math.abs(img.y+img.height/2-b.y-b.height/2)<1 && Math.abs(img.width/img.height-140/76)<.02;
+        }""")
     pill.click()
     expect(pill).to_be_hidden()
     page.evaluate('window.scrollTo(0,0)')
