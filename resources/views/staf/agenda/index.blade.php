@@ -3,6 +3,9 @@
 @section('page-title', 'Ruang kerja staf')
 @section('content')
 <section class="bk-agenda" aria-labelledby="agenda-title">
+    @if(in_array(auth('staff')->user()->peran,['owner','admin'],true))
+        <x-back-link :href="route('dashboard.hari-ini')">Kembali ke dasbor</x-back-link>
+    @endif
     <p class="kc-kicker">Berkah Kreatif · Operasional</p><h2 id="agenda-title">{{ $judul }}</h2>
     @if(session('status')) <p role="status" class="bk-notice">{{ session('status') }}</p> @endif
     @if($errors->any())<p role="alert" class="bk-notice">{{ $errors->first() }}</p>@endif
