@@ -23,10 +23,7 @@
             <div class="flex flex-col h-full">
                 <!-- Logo -->
                 <div class="flex items-center gap-2 px-4 py-4 border-b border-neutral-200 dark:border-neutral-800">
-                    <svg class="w-8 h-8 text-primary-600" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-                        <rect width="48" height="48" rx="12" fill="currentColor"/>
-                        <path d="M12 24L20 32L36 16" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <img src="{{ asset('images/berkah-kreatif.webp') }}" width="52" height="28" alt="" class="bk-rail-brand">
                     <span class="bk-wordmark font-bold text-xl">SIBERKAH</span>
                 </div>
 

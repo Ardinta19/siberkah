@@ -93,3 +93,8 @@
 @media(prefers-color-scheme:dark){[data-workspace] #main-header:not(.bk-compact)::before{background:#30262bf5;border-color:#69555e}}
 #workspace-command label{display:grid;gap:.3rem}#workspace-command input{width:100%}.bk-command-hint{font-size:.82rem;color:#684653;margin:.65rem 0}#workspace-command nav a:focus-visible{outline:2px solid #8a052b;outline-offset:-2px;background:#f6e6ea;border-radius:.6rem}
 @media(pointer:coarse){.bk-command-hint{display:none}}
+/* The drawer has one reversible radial transition, not two competing entrance effects. */
+@media(max-width:63.99rem){#role-sidebar[aria-modal=true]{animation:none;max-width:calc(100vw - 2rem)}#role-sidebar [data-sidebar-close]{min-height:44px}}
+.bk-rail-brand{width:3.25rem;height:auto;object-fit:contain}
+@media(prefers-reduced-transparency:reduce){#main-header::before,.kc-dock{background:#fff9f6;backdrop-filter:none}}
+@media(prefers-reduced-motion:reduce){.bk-full-nav{transition:none}}

@@ -18,12 +18,28 @@ if (sidebar) {
   const large = matchMedia('(min-width:64rem)'), toggle = document.querySelector('[data-sidebar-toggle]');
   const shade = document.querySelector('[data-shade]'), close = sidebar.querySelector('[data-sidebar-close]');
   const content = sidebar.nextElementSibling;
-  const set = open => {
-    const modal = open && !large.matches;
-    sidebar.hidden = !open && !large.matches; shade.hidden = !modal; content.inert = modal;
-    toggle.setAttribute('aria-expanded', String(!sidebar.hidden));
-    if(modal) { sidebar.setAttribute('role','dialog');sidebar.setAttribute('aria-modal','true');close.focus(); }
+  let panelMotion, shadeMotion;
+  const set = (open, animate=true) => {
+    const modal = open && !large.matches, visible = open || large.matches;
+    const previousClip = sidebar.hidden ? 'circle(0% at 1.5rem 1.5rem)' : getComputedStyle(sidebar).clipPath;
+    const previousOpacity = shade.hidden ? 0 : Number(getComputedStyle(shade).opacity);
+    panelMotion?.cancel(); shadeMotion?.cancel();
+    sidebar.inert = !visible; content.inert = modal;
+    toggle.setAttribute('aria-expanded', String(visible));
+    if(modal) { sidebar.setAttribute('role','dialog');sidebar.setAttribute('aria-modal','true'); }
     else { sidebar.removeAttribute('role'); sidebar.removeAttribute('aria-modal'); }
+    const moving = animate && !large.matches && sidebar.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    sidebar.hidden = !visible && !moving; shade.hidden = !modal && !moving;
+    shade.style.pointerEvents = modal ? '' : 'none';
+    if(moving){
+      const expanded='circle(155% at 1.5rem 1.5rem)', collapsed='circle(0% at 1.5rem 1.5rem)';
+      const timing={duration:modal?380:235,easing:'cubic-bezier(.22,.82,.25,1)'};
+      const current=sidebar.animate([{clipPath:previousClip==='none'?expanded:previousClip},{clipPath:modal?expanded:collapsed}],timing);
+      panelMotion=current;
+      shadeMotion=shade.animate([{opacity:previousOpacity},{opacity:Number(modal)}],timing);
+      current.onfinish=()=>{if(panelMotion===current){sidebar.hidden=!visible;shade.hidden=!modal;}};
+    }
+    if(modal)close.focus({preventScroll:true});
   };
   const dismiss = () => { set(false); toggle.focus(); };
   toggle.onclick = () => set(true); close.onclick = shade.onclick = dismiss;
@@ -37,7 +53,7 @@ if (sidebar) {
       else if(!e.shiftKey && document.activeElement===last) { e.preventDefault(); first.focus(); }
     }
   };
-  large.addEventListener('change',()=>set(false)); set(false);
+  large.addEventListener('change',()=>set(false,false)); set(false,false);
 }
 
 // Only use links actually rendered by Blade for this role (never POST actions).
