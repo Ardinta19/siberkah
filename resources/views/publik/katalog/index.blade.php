@@ -3,6 +3,7 @@
 @section('content')
 <section class="koleksi" aria-labelledby="koleksi-title">
   <div class="kc-wrap">
+    @if(session('status'))<p class="bk-notice" role="status">{{ session('status') }}</p>@endif
     <p class="kc-crumb">Berkah Kreatif <span aria-hidden="true"> / </span> Katalog produk</p>
     <header class="kc-hero kc-hero-reveal">
       <div class="kc-intro">

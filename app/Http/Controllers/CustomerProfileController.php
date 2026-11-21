@@ -8,7 +8,7 @@ class CustomerProfileController extends Controller
 {
     public function edit(Request $request)
     {
-        return view('pelanggan.profil.edit', ['pelanggan' => $request->user('customer')]);
+        return response()->view('pelanggan.profil.edit', ['pelanggan' => $request->user('customer')])->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $request)
