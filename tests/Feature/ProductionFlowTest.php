@@ -25,8 +25,11 @@ class ProductionFlowTest extends TestCase
         $data = ['pesanan_id' => $order->id];
         $this->actingAs($staff, 'staff');
         $this->getJson(route('staf.produksi.index'))->assertOk()->assertJsonPath('pesanan.data.0.rincian.0.nama_produk','Custom')->assertJsonMissingPath('pesanan.data.0.nomor_wa_pemesan');
+        $this->get(route('staf.produksi.index'))->assertOk()->assertSee('Mulai produksi custom')->assertDontSee('Tandai siap');
         $this->post(route('staf.produksi.mark-ready'), $data)->assertConflict();
         $this->post(route('staf.produksi.start'), $data)->assertRedirect();
+        $this->get(route('staf.produksi.index',['tahap'=>'dikonfirmasi']))->assertOk()->assertDontSee($order->nomor)->assertSee('Kembali ke semua tahap');
+        $this->get(route('staf.produksi.index',['tahap'=>'sedang_diproduksi']))->assertOk()->assertSee($order->nomor)->assertSee('Tandai siap')->assertDontSee('Mulai produksi custom');
         $this->post(route('staf.produksi.mark-ready'), $data)->assertRedirect();
         $this->post(route('staf.produksi.mark-ready'), $data)->assertConflict();
         $this->assertSame('siap', $order->fresh()->status);

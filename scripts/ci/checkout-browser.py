@@ -351,6 +351,7 @@ with sync_playwright() as playwright:
     expect(admin.get_by_text('Tidak ada konfirmasi baru.')).to_be_visible()
     admin.goto(base+'/staf/produksi')
     ready = admin.locator('.bk-task').filter(has_text=number)
+    expect(ready.get_by_role('button', name='Mulai produksi custom')).to_have_count(0)
     ready.get_by_role('button', name='Tandai siap').click()
     expect(ready).to_have_count(0)
     clock.write_text(f'{delivery_day} 10:00:00')

@@ -6,6 +6,13 @@
     <p class="kc-kicker">Berkah Kreatif · Operasional</p><h2 id="agenda-title">{{ $judul }}</h2>
     @if(session('status')) <p role="status" class="bk-notice">{{ session('status') }}</p> @endif
     @if($errors->any())<p role="alert" class="bk-notice">{{ $errors->first() }}</p>@endif
+    @if($produksi ?? false)
+        <nav class="bk-history-filters" aria-label="Tahap produksi">
+            @foreach([''=>'Semua tahap','dikonfirmasi'=>'Dikonfirmasi','sedang_diproduksi'=>'Sedang diproduksi'] as $key=>$label)
+                <a href="{{ route('staf.produksi.index',array_filter(['tahap'=>$key])) }}#daftar-tugas" @if((request('tahap') ?? '')===$key) aria-current="page" @endif>{{ $label }}</a>
+            @endforeach
+        </nav>
+    @endif
     @isset($tanggal)
         <form method="get" action="{{ route('staf.kurir.index') }}" class="bk-agenda-tools" data-pending="Memuat agenda…">
             @if(request()->filled('tugas'))<input type="hidden" name="tugas" value="{{ request('tugas') }}">@endif
@@ -45,18 +52,17 @@
             </form>
         @endif
         @if($produksi ?? false)
-            <form data-pending="Memperbarui produksi…" method="post" class="flex gap-2 py-2">
-                @csrf
-                <input type="hidden" name="pesanan_id" value="{{ $p->id }}">
-                @if($p->status === 'dikonfirmasi')
-                    <button formaction="{{ route('staf.produksi.start') }}" class="btn-outline">Mulai produksi custom</button>
-                @endif
-                <button formaction="{{ route('staf.produksi.mark-ready') }}" class="btn-primary">Tandai siap</button>
-            </form>
+            @if($kode = $p->langkah['kode'])
+                <form data-pending="Memperbarui produksi…" method="post" action="{{ route($kode==='T05'?'staf.produksi.start':'staf.produksi.mark-ready') }}" class="py-2">
+                    @csrf <input type="hidden" name="pesanan_id" value="{{ $p->id }}">
+                    <button class="btn-primary">{{ $kode==='T05' ? 'Mulai produksi custom' : 'Tandai siap' }}</button>
+                </form>
+            @else<p class="bk-notice">{{ $p->langkah['alasan'] }}</p>@endif
         @endif
         </article>
     @empty
         <div class="kc-empty"><p>Tidak ada pesanan dalam antrean.</p>
+            @if(($produksi ?? false) && request()->filled('tahap'))<a class="bk-secondary" href="{{ route('staf.produksi.index') }}#daftar-tugas">Kembali ke semua tahap</a>@endif
             @if(isset($tanggal) && request()->filled('tugas'))<a class="bk-secondary" href="{{ route('staf.kurir.index',['tanggal'=>$tanggal]) }}#daftar-tugas">Lihat semua tugas pada tanggal ini</a>@endif
         </div>
     @endforelse
