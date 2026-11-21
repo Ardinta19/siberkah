@@ -385,6 +385,19 @@ with sync_playwright() as playwright:
         operator.get_by_role('button', name='Masuk', exact=True).click()
         return operator
     admin = login('admin')
+    # Inspect both authentication screens without sending credentials or changing a password.
+    login_screen=browser.new_page()
+    password_screen=admin.context.new_page()
+    for auth_page,path,title in [(login_screen,'/staff/login','Masuk staf'),(password_screen,'/staff/password-change','Ganti kata sandi staf')]:
+        assert auth_page.goto(base+path).ok
+        expect(auth_page).to_have_title(re.compile(title))
+        expect(auth_page.locator('main h1')).to_have_text(title)
+        for width in (320,768,1440):
+            auth_page.set_viewport_size({'width':width,'height':850})
+            assert auth_page.evaluate('document.documentElement.scrollWidth <= innerWidth+1'), f'Auth overflow: {path}, {width}'
+        for field in auth_page.locator('main input:not([type=hidden])').all():
+            assert field.evaluate('el=>el.labels.length>0 && el.required && el.autocomplete.length>0')
+        auth_page.close()
     check_drawer(admin)
     check_account(admin)
     admin.goto(base+'/admin/pesanan')
