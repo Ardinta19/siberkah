@@ -932,7 +932,19 @@ with sync_playwright() as playwright:
             submit_inspection.click()
             expect(inspect.locator('output')).to_contain_text('Unggahan terlalu besar')
             expect(submit_inspection).to_be_enabled()
-            courier.route(path,lose_receipt,times=1)
+            # Keep Chrome's original multipart stream (including file handles) intact.
+            # Deliver it once, then simulate loss at the response boundary.
+            courier.evaluate("""url => {
+                const original = window.fetch;
+                window.fetch = async (...args) => {
+                    const response = await original.apply(window,args);
+                    if(args[0] === url && args[1]?.method === 'POST' && response.ok) {
+                        window.fetch = original;
+                        throw new TypeError('CI: response lost after inspection commit');
+                    }
+                    return response;
+                };
+            }""",path)
         submit_inspection.click()
         if stage=='serah':
             expect(inspect.locator('output')).to_contain_text('belum dapat dipastikan')
