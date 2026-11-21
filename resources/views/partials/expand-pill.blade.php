@@ -1,1 +1,1 @@
-<button type="button" id="bk-expand-pill" hidden aria-label="Tampilkan navigasi Berkah Kreatif"><img src="{{ asset('images/berkah-kreatif.webp') }}" width="140" height="76" alt=""></button>
+<button type="button" id="bk-expand-pill" hidden aria-controls="bk-nav-controls" aria-expanded="false" aria-label="Tampilkan navigasi Berkah Kreatif"><img src="{{ asset('images/berkah-kreatif.webp') }}" width="140" height="76" alt=""></button>

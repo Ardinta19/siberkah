@@ -17,7 +17,7 @@
     <span id="bk-scroll-marker" aria-hidden="true"></span>
     <header class="sticky top-0 z-[var(--z-sticky)] bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200" id="main-header">
         @include('partials.expand-pill')
-                <div class="container-siberkah bk-full-nav">
+                <div id="bk-nav-controls" class="container-siberkah bk-full-nav">
             <div class="flex items-center justify-between h-16">
                 <a href="{{ route('catalog.index') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
                     <svg class="w-8 h-8" viewBox="0 0 48 48" fill="none" aria-hidden="true">

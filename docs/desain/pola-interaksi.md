@@ -33,3 +33,5 @@ React digunakan sebagai komponen interaktif kecil, bukan pengganti seluruh Blade
 **Keranjang:** bedakan jumlah tersimpan dari suntingan lokal. Perbarui menyimpan tanpa berpindah; Lanjut pesan mengirim jumlah yang terlihat melalui validasi server sebelum membuka checkout produk tersebut, termasuk tanpa JavaScript. Mengubah jumlah tidak berarti memesan stok, menentukan harga akhir, atau membuat pembayaran.
 
 **Logo saat scroll:** satu permukaan kaca untuk satu kontrol. Saat pill merapat, latar dan area tekan bertemu pada lingkaran 52 × 52 px di pusat header. Tombol tidak menggambar oval atau bayangan kedua. Monogram 140:76 dipusatkan tanpa dipotong atau direntangkan; ring fokus hanya muncul untuk navigasi keyboard.
+
+Saat logo ringkas dibuka jauh di bawah halaman, fokus masuk ke kontrol navigasi yang terlihat. Escape mengembalikan fokus ke logo; berpindah fokus ke konten merapatkan navbar tanpa mengambil fokus kembali. Jika pengguna sedang memilih menu atau tanggal, panel terdalam menangani Escape lebih dulu.

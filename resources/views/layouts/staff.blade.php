@@ -90,7 +90,7 @@
             <!-- Top bar -->
             <header id="main-header" class="sticky top-0 z-[var(--z-sticky)] bg-white/95 backdrop-blur-sm border-b border-neutral-200 dark:bg-neutral-900/95 dark:border-neutral-800 transition-shadow-200">
                 @include('partials.expand-pill')
-                <div class="container-siberkah bk-full-nav">
+                <div id="bk-nav-controls" class="container-siberkah bk-full-nav">
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center gap-4">
                             <button type="button" class="lg:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors-150" aria-label="Buka sidebar" aria-controls="role-sidebar" aria-expanded="false" data-sidebar-toggle>

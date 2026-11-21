@@ -19,7 +19,7 @@
     <header class="sticky top-0 z-40 bg-[#fffdf9] backdrop-blur-sm border-b border-neutral-200 transition-shadow-200" id="main-header">
         <div class="container-siberkah">
             @include('partials.expand-pill')
-            <div class="bk-full-nav flex items-center gap-2 h-16">
+            <div id="bk-nav-controls" class="bk-full-nav flex items-center gap-2 h-16">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors-150 focus-ring rounded-lg px-2 py-1 -ml-2" aria-label="SIBERKAH - Beranda">
                     <img src="{{ asset('images/berkah-kreatif.webp') }}" width="44" height="44" alt="" class="size-11 object-contain">
