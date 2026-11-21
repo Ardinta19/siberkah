@@ -9,7 +9,10 @@
             <li class="border-b pb-3 break-words"><h3><strong>{{ $item->jumlah }} × {{ $item->nama_produk }}</strong></h3>
                 @if($item->nama_varian)<p>Varian: {{ $item->nama_varian }}</p>@endif
                 @foreach($opsiPerItem->get($item->id,collect()) as $opsi)
-                    <p>{{ $opsi->nama_opsi }}: {{ $opsi->label_nilai }}@if($opsi->teks_bebas !== null) · {{ $opsi->teks_bebas }}@if($opsi->nilai_opsi_id !== null) satuan per produk@endif@endif
+                    <p>{{ $opsi->nama_opsi }}: {{ $opsi->label_nilai }}
+                    @if($opsi->teks_bebas !== null)
+                        · {{ $opsi->teks_bebas }}{{ $opsi->nilai_opsi_id !== null ? ' satuan per produk' : '' }}
+                    @endif
                     @if($opsi->harga_tambahan) (+{{ $rupiah($opsi->harga_tambahan) }} per produk)@endif</p>
                 @endforeach
                 <p>{{ $rupiah($item->harga_satuan) }} per produk × {{ $item->jumlah }} = <strong>{{ $rupiah($item->subtotal) }}</strong></p>
