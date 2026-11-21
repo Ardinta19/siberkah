@@ -414,6 +414,38 @@ class RentalCheckoutTest extends TestCase
         $this->actingAs($admin,'staff')->get($detail,['Accept'=>'text/html'])->assertOk()->assertSee('Nadia')->assertSee('Teks terkunci')->assertDontSee('Sunting teks papan')->assertSee('Riwayat status');
     }
 
+    public static function documentGuarantees(): array
+    {
+        return [['ktp'], ['ktm']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('documentGuarantees')]
+    public function test_document_closeout_requires_known_guarantee_and_actual_return(string $kind): void
+    {
+        config(['checkout.staging'=>true]);
+        $data = $this->fixture();
+        $order = app(CreateRentalOrder::class)->create($this->customer('628111111128'), $data);
+        $admin = Pengguna::factory()->create(['peran'=>'admin']);
+        $this->actingAs($admin,'staff');
+        // Start at the closeout boundary with a settled, assessed rental.
+        $order->update(['status'=>'sudah_dikembalikan','saldo'=>0,'jumlah_dibayar'=>$order->total]);
+        DB::table('penutupan_sewa')->insert(['pesanan_id'=>$order->id,'penilai_id'=>$admin->id,'biaya_kerusakan'=>0,'alasan'=>'Kondisi baik','dinilai_pada'=>now()]);
+        $page = route('retur.inspeksi',$order->id);
+        $close = route('retur.selesai',$order->id);
+        $payload = ['nominal_kembali'=>0,'jaminan_dikembalikan'=>true,'catatan'=>'Dokumen diserahkan kembali.'];
+        $this->get($page,['Accept'=>'text/html'])->assertSee('Jenis jaminan tidak tercatat')->assertDontSee('Catat penutupan pesanan');
+        $this->postJson($close,$payload)->assertConflict();
+        $order->update(['jenis_jaminan'=>$kind]);
+        $this->get($page,['Accept'=>'text/html'])->assertSee('Kembalikan dokumen '.strtoupper($kind))->assertDontSee('Nominal aktual yang dikembalikan');
+        $this->postJson($close,array_replace($payload,['nominal_kembali'=>100000]))->assertConflict();
+        $this->postJson($close,array_replace($payload,['jaminan_dikembalikan'=>false]))->assertConflict();
+        $this->assertNull($order->fresh()->jaminan_kembali_pada);
+        $this->postJson($close,$payload)->assertOk();
+        $this->postJson($close,$payload)->assertOk();
+        $this->assertNotNull($order->fresh()->jaminan_kembali_pada);
+        $this->assertSame(1, DB::table('riwayat_status_pesanan')->where(['pesanan_id'=>$order->id,'kode_transisi'=>'T11'])->count());
+    }
+
     public static function depositCases(): array
     {
         return [[0], [40000], [100000]];

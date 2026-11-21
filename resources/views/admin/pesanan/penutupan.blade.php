@@ -29,11 +29,13 @@
 @if($order->jaminan_kembali_pada)<p>Pengembalian jaminan tercatat {{ $order->jaminan_kembali_pada->format('d/m/Y H:i') }} WIB.</p>
 @elseif($tunai && $sisa === 0)<p>Deposit habis diperhitungkan; tidak ada uang yang dikembalikan.</p>@else<p>Waktu pengembalian jaminan tidak tercatat.</p>@endif
 <p>{{ $review->catatan_penutupan }}</p>
+@elseif(!in_array($order->jenis_jaminan,['deposit','ktp','ktm'],true))<p>Jenis jaminan tidak tercatat. Periksa data serah sebelum menutup pesanan.</p>
 @elseif($order->status === 'sudah_dikembalikan' && $order->saldo === 0 && (!$tunai || $review->setoran_pada))
 <details class="bk-confirm"><summary>Selesaikan pengembalian sewa</summary>
 <form data-ledger class="bk-product-editor grid gap-3 p-4" method="post" action="{{ route('retur.selesai',$order->id) }}">@csrf
 <p>Periksa jaminan sebelum menutup pesanan {{ $order->nomor }}. Tindakan ini tidak mentransfer uang.</p>
-<label>Nominal aktual yang dikembalikan (Rp)<input name="nominal_kembali" type="number" min="{{ $sisa }}" max="{{ $sisa }}" required step="1"></label>
+@if($tunai)<label>Nominal aktual yang dikembalikan (Rp)<input name="nominal_kembali" type="number" min="{{ $sisa }}" max="{{ $sisa }}" required step="1"></label>
+@else<input type="hidden" name="nominal_kembali" value="0"><p>Kembalikan dokumen {{ strtoupper($order->jenis_jaminan) }} kepada pelanggan. Tidak ada uang deposit yang dikembalikan.</p>@endif
 <label>Hasil pemeriksaan jaminan<select name="jaminan_dikembalikan" required><option value="">Pilih hasil aktual</option>@if(!$tunai || $sisa > 0)<option value="1">{{ $tunai ? 'Sisa deposit telah dikembalikan' : 'Dokumen jaminan telah dikembalikan' }}</option>@else<option value="0">Deposit habis diperhitungkan; tidak ada sisa</option>@endif</select></label>
 <label>Catatan penutupan<textarea required name="catatan" maxlength="300"></textarea></label><button class="btn-primary">Catat penutupan pesanan</button>@include('partials.ledger-feedback')</form></details>
 @else<p>Penutupan belum tersedia. Pastikan unit sudah kembali, saldo nol, dan setoran deposit tunai sudah tercatat.</p>@endif

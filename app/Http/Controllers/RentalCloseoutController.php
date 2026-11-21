@@ -135,6 +135,7 @@ class RentalCloseoutController extends Controller
             $order = Pesanan::lockForUpdate()->findOrFail($id);
             $review = DB::table('penutupan_sewa')->where('pesanan_id', $id)->first();
             $used = (int) DB::table('pemakaian_deposit')->where('pesanan_id', $id)->value('nominal');
+            abort_unless(in_array($order->jenis_jaminan, ['deposit','ktp','ktm'], true), 409, 'Jenis jaminan tidak tercatat. Periksa data serah sebelum menutup pesanan.');
             $refund = (int) $order->nominal_jaminan - $used;
             $returned = ! $used || $refund > 0;
             abort_unless($review && (bool) $data['jaminan_dikembalikan'] === $returned && (int) $data['nominal_kembali'] === $refund, 409, 'Cocokkan nominal jaminan yang dikembalikan.');
