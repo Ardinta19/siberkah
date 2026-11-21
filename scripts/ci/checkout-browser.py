@@ -627,6 +627,30 @@ with sync_playwright() as playwright:
     assert before == after and after['neto'] == 270000
     assert {r['kanal']: r['pokok'] for r in after['rincian']} == {'bank':135000, 'tunai':135000}
     subprocess.run(audit, check=True)
+    # Exercise the real hand-off from Owner personalization to customer checkout and saved receipt.
+    checkout()
+    ribbon=page.locator('#checkout [data-extra]').first
+    ribbon.select_option(label='Perak (+Rp3.500)')
+    page.get_by_label('Jumlah Pita per produk').fill('2')
+    page.get_by_label('Kartu pesan').fill('Terima kasih')
+    expect(page.locator('[data-total]')).to_have_text('Rp137.000')
+    page.get_by_role('button',name='Buat pesanan').click()
+    receipt=page.get_by_role('region',name='Rincian biaya pesanan')
+    for text in ('Pita: Perak','2 satuan per produk','Rp7.000 per produk','Terima kasih','Rp137.000'):
+        expect(receipt).to_contain_text(text)
+    # Resolve product-specific URLs from the Owner catalog; do not assume fixture IDs.
+    audit_tab=cashier.context.new_page()
+    owner_urls=[base+p for p in ('/admin/katalog','/admin/pengaturan','/admin/pengaturan/kalender','/admin/pengaturan/tujuan-bayar','/admin/aktivitas','/admin/laporan')]+[report_url]
+    audit_tab.goto(base+'/admin/katalog')
+    for name in ('Buat draf','Edit Buket Browser','Kelola foto Buket Browser','Kelola varian Buket Browser','Kelola opsi Buket Browser','Kelola unit Papan Inventaris'):
+        owner_urls.append(audit_tab.get_by_role('link',name=name,exact=True).get_attribute('href'))
+    for url in owner_urls:
+        assert audit_tab.goto(url).ok, f'Owner destination unavailable: {url}'
+        expect(audit_tab.locator('main h1')).to_have_count(1)
+        for width in (320,768,1440):
+            audit_tab.set_viewport_size({'width':width,'height':850})
+            assert audit_tab.locator('main').evaluate('el=>el.scrollWidth<=el.clientWidth+1'), f'Owner overflow: {url}, {width}'
+    audit_tab.close()
     touch = browser.new_context(viewport={'width':390,'height':844},has_touch=True,is_mobile=True,reduced_motion='reduce')
     phone = touch.new_page()
     phone.goto(base+'/katalog')

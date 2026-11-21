@@ -23,10 +23,13 @@
         <article class="bk-task" id="kelola-{{ $p->id }}"><header><h2>{{ $p->nama }}</h2>
             <span class="bk-order-status">{{ !$p->aktif ? 'Draf / arsip' : ($p->kategori?->aktif ? 'Tampil di katalog' : 'Tersembunyi · kategori nonaktif') }}</span></header>
             <p>{{ $p->kategori?->nama }} · {{ ['jual'=>'Siap jual','sewa'=>'Sewa','custom'=>'Custom'][$p->jenis] ?? $p->jenis }}</p>
+            <div class="bk-product-actions" role="group" aria-label="Kelola {{ $p->nama }}">
             <a class="bk-secondary" href="{{ route('admin.katalog.edit',['id'=>$p->id]+$context) }}">Edit {{ $p->nama }}</a>
             <a class="bk-secondary" href="{{ route('admin.katalog.gallery',['id'=>$p->id]+$context) }}">Kelola foto {{ $p->nama }}</a>
             <a class="bk-secondary" href="{{ route('admin.katalog.variants',['id'=>$p->id]+$context) }}">Kelola varian {{ $p->nama }}</a>
             @if($p->jenis==='sewa')<a class="bk-secondary" href="{{ route('admin.katalog.units',['id'=>$p->id]+$context) }}">Kelola unit {{ $p->nama }}</a>@endif
+            @if(in_array($p->jenis,['jual','custom'],true))<a class="bk-secondary" href="{{ route('admin.katalog.options',['id'=>$p->id]+$context) }}">Kelola opsi {{ $p->nama }}</a>@endif
+            </div>
             @if($p->aktif && $p->kategori?->aktif)<a class="bk-secondary" href="{{ route('catalog.show',$p->slug) }}">Lihat {{ $p->nama }} di katalog publik</a>@endif
             @if($p->aktif || $p->kategori?->aktif)
                 <details class="bk-confirm"><summary>{{ $p->aktif ? 'Arsipkan' : 'Terbitkan' }}</summary>
