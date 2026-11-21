@@ -3,6 +3,7 @@
 @section('content')
 <section class="grid gap-5 p-5"><x-back-link :href="route('dashboard.hari-ini')">Kembali ke dasbor</x-back-link>
 <h1 class="text-2xl font-bold">Pembayaran dan setoran antar</h1>
+<a class="bk-secondary" href="{{ route('admin.rekonsiliasi.index') }}">Periksa rekonsiliasi mutasi bank</a>
 <h2 id="antrean-bank">Konfirmasi pelanggan menunggu pemeriksaan (semua tanggal)</h2>
 @forelse($queue as $b)
 <form method="post" action="{{ route('admin.pesanan.verify-payment',$b->pesanan_id) }}" class="grid gap-2 border p-3" data-ledger>@csrf

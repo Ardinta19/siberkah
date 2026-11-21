@@ -14,15 +14,27 @@ final class TransferReconciliationController extends Controller
         abort_unless(app()->environment('local', 'testing', 'staging') && config('checkout.staging'), 503, 'Rekonsiliasi belum dibuka.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->requireStaging();
-        return response()->json(DB::table('mutasi_masuk as m')
-            ->join('pembayaran as p', 'p.id', '=', 'm.pembayaran_id')
-            ->join('checkout_bank as c', 'c.pesanan_id', '=', 'p.pesanan_id')
-            ->where('m.hasil', 'perlu_rekonsiliasi')->orderBy('m.id')
-            ->paginate(25, ['m.id', 'p.pesanan_id', 'm.pembayaran_id', 'm.referensi', 'm.nominal', 'm.alasan', 'm.dicatat_pada']))
-            ->header('Cache-Control', 'private, no-store');
+        $browser = !$request->expectsJson() && !$request->acceptsAnyContentType() && $request->getPreferredFormat()==='html';
+        $history = $browser && $request->query('kelompok') === 'dikembalikan';
+        $query = DB::table('mutasi_masuk as m')->join('pembayaran as p','p.id','=','m.pembayaran_id')
+            ->join('checkout_bank as c','c.pesanan_id','=','p.pesanan_id');
+        $columns = ['m.id','p.pesanan_id','m.pembayaran_id','m.referensi','m.nominal','m.alasan','m.dicatat_pada'];
+        if ($browser) {
+            $query->join('pesanan as o','o.id','=','p.pesanan_id');
+            $columns[] = 'o.nomor';
+        }
+        if ($history) {
+            $query->join('pengembalian_mutasi as k','k.mutasi_masuk_id','=','m.id')->where('m.hasil','dikembalikan')
+                ->orderByDesc('k.dicatat_pada')->orderByDesc('m.id');
+            array_push($columns,'k.referensi_keluar','k.alasan as alasan_keluar','k.dicatat_pada as waktu_keluar');
+        } else {
+            $query->where('m.hasil','perlu_rekonsiliasi')->orderBy('m.id');
+        }
+        $rows = $query->paginate(25,$columns)->appends($history ? ['kelompok'=>'dikembalikan'] : []);
+        return ($browser ? response()->view('admin.keuangan.rekonsiliasi',compact('rows','history')) : response()->json($rows))->header('Cache-Control','private, no-store');
     }
 
     public function recordReturn(Request $request, int $mutasi)
@@ -59,6 +71,9 @@ final class TransferReconciliationController extends Controller
                 'subjek_tabel' => 'mutasi_masuk', 'subjek_id' => $mutasi, 'dibuat_pada' => now()]);
             return true;
         }, 3);
+        if (!$request->expectsJson() && $request->input('asal')==='rekonsiliasi') {
+            return redirect()->route('admin.rekonsiliasi.index',['kelompok'=>'dikembalikan'])->with('success','Pengembalian mutasi tercatat.');
+        }
         return response()->json(['mutasi_masuk_id' => $mutasi, 'hasil' => 'dikembalikan'], $created ? 201 : 200);
     }
 }

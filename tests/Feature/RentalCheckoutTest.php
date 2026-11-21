@@ -210,6 +210,7 @@ class RentalCheckoutTest extends TestCase
         $this->postJson($verify, $incoming)->assertAccepted();
         $this->postJson($verify, array_replace($incoming, ['referensi' => 'BANK:IN:B']))->assertAccepted();
         $this->getJson($queue)->assertOk()->assertJsonPath('total', 2);
+        $this->get($queue,['Accept'=>'text/html'])->assertOk()->assertSee('BANK:IN:A')->assertSee('Catat mutasi keluar');
         $id = DB::table('mutasi_masuk')->where('referensi', 'BANK:IN:A')->value('id');
         $url = route('admin.rekonsiliasi.pengembalian', $id);
         $refund = ['referensi_keluar' => 'BANK:OUT:1', 'nominal' => 120000, 'alasan' => 'Nominal transfer tidak cocok; pengembalian dicek pada mutasi keluar.'];
@@ -222,6 +223,7 @@ class RentalCheckoutTest extends TestCase
         $this->postJson(route('admin.rekonsiliasi.pengembalian', $other), $refund)->assertConflict();
         $this->postJson($verify, $incoming)->assertOk()->assertJsonPath('hasil', 'dikembalikan');
         $this->getJson($queue)->assertJsonPath('total', 1);
+        $this->get($queue.'?kelompok=dikembalikan',['Accept'=>'text/html'])->assertOk()->assertSee('BANK:OUT:1')->assertDontSee('Catat mutasi keluar untuk');
         $this->assertDatabaseCount('pengembalian_mutasi', 1);
         $this->assertDatabaseHas('log_aktivitas', ['aksi' => 'pengembalian_mutasi', 'subjek_id' => $id, 'pengguna_id' => $staff->id]);
         $this->assertDatabaseHas('pesanan', ['id' => $order->id, 'saldo' => $order->total, 'jumlah_dibayar' => 0, 'status' => 'menunggu_pembayaran']);
