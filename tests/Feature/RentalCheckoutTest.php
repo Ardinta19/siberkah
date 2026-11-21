@@ -286,6 +286,7 @@ class RentalCheckoutTest extends TestCase
         $this->actingAs($customer, 'customer')->postJson($url, $reason)->assertCreated();
         $this->postJson($url, $reason)->assertOk();
         $this->postJson($url, ['alasan' => 'Berubah'])->assertConflict();
+        $this->get(route('pesanan.show', $order->nomor))->assertOk()->assertSee('Menunggu pemeriksaan Admin. Pesanan belum dibatalkan.')->assertSee('Acara tidak jadi.')->assertDontSee('Ajukan pembatalan');
         $this->assertDatabaseCount('permohonan_batal', 1);
         $this->assertSame('dikonfirmasi', $order->fresh()->status);
         $this->assertDatabaseCount('hari_reservasi', 1);
@@ -301,6 +302,7 @@ class RentalCheckoutTest extends TestCase
         $this->postJson($accepted ? $reject : $approve, $note)->assertConflict();
         $this->getJson($queue)->assertJsonPath('total', 0);
         $this->actingAs($customer, 'customer')->getJson($url)->assertJsonPath('status', $outcome);
+        $this->get(route('pesanan.show', $order->nomor))->assertOk()->assertSee(ucfirst($outcome))->assertSee('Sudah ditinjau.')->assertDontSee('Ajukan pembatalan');
         $this->assertDatabaseHas('permohonan_batal', ['pesanan_id' => $order->id, 'peninjau_id' => $admin->id, 'catatan_keputusan' => 'Sudah ditinjau.']);
         $this->assertDatabaseCount('keputusan_refund', $accepted ? 1 : 0);
         $this->assertDatabaseCount('hari_reservasi', $accepted ? 0 : 1);

@@ -1,12 +1,13 @@
 @extends('layouts.customer')
+@section('title', 'Pesanan '.$pesanan->nomor)
 @section('content')
-@if(!$papan || !in_array($pesanan->status,['menunggu_pembayaran','dikonfirmasi']))
-@section('refresh_pesanan', '60')
-@endif
-<section class="container-siberkah py-8">
+<section class="container-siberkah py-8 bk-order-detail" @if(!$papan || !in_array($pesanan->status,['menunggu_pembayaran','dikonfirmasi'])) data-order-refresh @endif>
+    <a href="{{ route('pesanan.index') }}" class="bk-order-back">← Riwayat pesanan</a>
+    @if($errors->any())<div class="bk-notice" role="alert"><strong>Perubahan belum tersimpan.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @if($notice=session('status') ?? session('success'))<p role="status" class="bk-notice">{{ $notice }}</p>@endif
     <h1 class="text-2xl font-bold">Pesanan {{ $pesanan->nomor }}</h1>
-    <p>{{ str_replace('_', ' ', $pesanan->status) }}</p>
+    <p class="bk-order-status">{{ str_replace('_', ' ', $pesanan->status) }}</p>
+    <p>{{ $pesanan->cara_serah === 'ambil' ? 'Ambil di toko' : 'Pengantaran' }}@if($pesanan->tanggal_serah) · {{ $pesanan->tanggal_serah->locale('id')->translatedFormat('d F Y') }}@endif</p>
     <ul class="my-4">@foreach($pesanan->items as $item)<li>{{ $item->jumlah }} × {{ $item->nama_produk }}</li>@endforeach</ul>
     @if($pesanan->tunai_saat_serah && !in_array($pesanan->status, ['kedaluwarsa', 'dibatalkan']))
         @if($pesanan->status === 'menunggu_pembayaran')<p>Bayar DP terlebih dahulu. Sisa tagihan dibayar tunai saat serah.</p>
@@ -25,16 +26,23 @@
         @else<p>{{ $papan->judul }} · {{ $papan->penerima }} · {{ $papan->pengirim }} (terkunci)</p>@endif
     @endif
     <h2>Riwayat status</h2>
-    <ol>@foreach($riwayat as $perubahan)<li>{{ $perubahan->dibuat_pada }} WIB · {{ str_replace('_', ' ', $perubahan->status_baru) }}</li>@endforeach</ol>
+    <ol class="bk-order-timeline">@foreach($riwayat as $perubahan)<li @if($loop->last) aria-current="step" @endif>{{ $perubahan->dibuat_pada }} WIB · {{ str_replace('_', ' ', $perubahan->status_baru) }}</li>@endforeach</ol>
     <strong>Total Rp{{ number_format($pesanan->total, 0, ',', '.') }}</strong>
     @if(config('checkout.staging') && in_array($pesanan->asal, ['situs','admin']))
         <a href="{{ route('payment.show', $pesanan->nomor) }}">Lihat tagihan dan petunjuk pembayaran</a>
     @endif
     @if(config('checkout.staging') && in_array($pesanan->asal, ['situs','admin']))
-        @if($pesanan->status === 'menunggu_pembayaran')
+        @if($permohonan)
+            <section class="bk-cancel-record" aria-labelledby="cancel-title"><h2 id="cancel-title">Permohonan pembatalan</h2>
+                <p>Status permohonan: <strong>{{ ucfirst($permohonan->status) }}</strong></p><p>Alasan Anda: {{ $permohonan->alasan }}</p>
+                <p>Diajukan {{ $permohonan->diajukan_pada }} WIB.</p>
+                @if($permohonan->diputuskan_pada)<p>Diputuskan {{ $permohonan->diputuskan_pada }} WIB. {{ $permohonan->catatan_keputusan }}</p>
+                @else<p>Menunggu pemeriksaan Admin. Pesanan belum dibatalkan.</p>@endif
+            </section>
+        @elseif($pesanan->status === 'menunggu_pembayaran')
             <details class="bk-confirm"><summary>Batalkan pesanan</summary><p>Batalkan pesanan {{ $pesanan->nomor }}? Reservasi yang ditahan akan dilepas.</p><form data-pending="Membatalkan…" method="post" action="{{ route('pesanan.cancel',$pesanan->nomor) }}">@csrf<button>Ya, batalkan {{ $pesanan->nomor }}</button></form></details>
-        @elseif(in_array($pesanan->status,['dikonfirmasi','sedang_diproduksi','siap']))
-            <p>Permohonan untuk {{ $pesanan->nomor }} akan ditinjau Admin; status pesanan tidak langsung berubah.</p><form data-pending="Mengirim permohonan…" method="post" action="{{ route('pesanan.request-cancellation',$pesanan->nomor) }}">@csrf<label>Alasan pembatalan <input required maxlength="300" name="alasan"></label><button>Ajukan pembatalan</button></form>
+        @elseif(in_array($pesanan->status,['dikonfirmasi','sedang_diproduksi','siap']) && ($pesanan->jumlah_dibayar > 0 || $pesanan->tunai_saat_serah))
+            <p>Permohonan untuk {{ $pesanan->nomor }} akan ditinjau Admin; status pesanan tidak langsung berubah.</p><form data-pending="Mengirim permohonan…" method="post" action="{{ route('pesanan.request-cancellation',$pesanan->nomor) }}">@csrf<label>Alasan pembatalan <input required maxlength="300" name="alasan" value="{{ old('alasan') }}"></label><button>Ajukan pembatalan</button></form>
         @endif
     @endif
     @if($link = \App\Services\WhatsAppLinks::order($pesanan, false))

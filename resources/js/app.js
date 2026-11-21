@@ -1,3 +1,4 @@
+import "./order-refresh.js";
 import "./payment-window.js";
 import "./checkout-estimate.js";
 import "./product-gallery.js";
