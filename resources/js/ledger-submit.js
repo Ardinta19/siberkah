@@ -71,7 +71,8 @@ for(const form of document.querySelectorAll('form[data-ledger]')){
         review.hidden=false;
         location.reload();
       }else if(response.status===409){
-        requireReview('Pencatatan ditolak karena konflik. Periksa status terbaru sebelum melanjutkan.');
+        const reason=form.hasAttribute('data-inspection') && typeof data?.message==='string' ? data.message.trim() : '';
+        requireReview(reason || 'Pencatatan ditolak karena konflik. Periksa status terbaru sebelum melanjutkan.');
       }else if([401,403,419].includes(response.status)||response.redirected){
         requireReview('Periksa kembali sesi dan hak akses Anda. Jangan kirim ulang dari formulir ini.');
       }else{

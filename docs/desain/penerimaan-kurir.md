@@ -23,3 +23,5 @@ Pratinjau foto: buka “Lihat foto … sebelum kirim” pada daftar unit untuk m
 Jika inspeksi sudah diedit, coba muat ulang lalu pilih tetap di halaman pada konfirmasi browser. Pastikan foto dan catatan masih ada. Setelah respons tidak pasti, tautan pemeriksaan status harus tetap berfungsi. Peringatan navigasi bergantung dukungan browser, bukan pemulihan draf bila aplikasi ditutup perangkat.
 
 Saat jemput, cocokkan kondisi awal setiap komponen pada kode unit yang sama. “Tidak ada” berarti komponen dilaporkan tidak ada saat serah; “tidak tercatat” berarti tidak ada hasil yang dapat dipakai. Hasil jemput harus diisi dari pemeriksaan baru, tidak disalin dari serah.
+
+**Konflik penugasan unit:** jika agenda menolak karena penugasan berubah, jangan lanjut memakai formulir yang terkunci. Muat ulang, cocokkan kembali kode pada setiap barang dengan kartu, lalu periksa dan pilih foto untuk unit yang benar. Jika barang dan kartu tetap berbeda, hubungi Admin sebelum mencatat.

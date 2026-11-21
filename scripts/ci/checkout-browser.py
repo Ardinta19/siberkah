@@ -910,7 +910,7 @@ with sync_playwright() as playwright:
     expect(assigned).to_contain_text('Inspeksi serah tersedia pada hari dan jam serah')
     clock.write_text(f'{delivery_day} 14:00:00')
     courier.reload()
-    for stage in ('serah','kembali'):
+    for stage,stale_unit in [('serah',False),('kembali',True),('kembali',False)]:
         if stage=='kembali':
             clock.write_text(f'{delivery_day} 18:01:00')
             courier.get_by_role('link',name='Jemput',exact=True).click()
@@ -1030,6 +1030,20 @@ with sync_playwright() as playwright:
                     return response;
                 };
             }""",path)
+        if stale_unit:
+            # Send a mismatched item/unit pairing through the actual multipart endpoint.
+            # Distinct valid IDs, wrong units: not a mock HTTP response or a validation error.
+            inspect.evaluate('''form=>{
+                const [a,b]=form.querySelectorAll('input[name$="[unit_sewa_id]"]');
+                [a.value,b.value]=[b.value,a.value];
+            }''')
+            submit_inspection.click()
+            expect(inspect.locator('output')).to_contain_text('Penugasan unit berubah')
+            expect(submit_inspection).to_be_disabled()
+            inspect.get_by_role('link',name='Muat ulang untuk memeriksa status').click()
+            expect(assigned).to_be_visible()
+            subprocess.run(['php','scripts/ci/check-courier-inspection.php','serah'],check=True)
+            continue
         submit_inspection.click()
         if stage=='serah':
             expect(inspect.locator('output')).to_contain_text('belum dapat dipastikan')
