@@ -25,13 +25,15 @@ class AdminSettingsController extends BaseController
      *
      * @return View
      */
-    public function index()
+    public function index(Request $request)
     {
         $settings = [];
         foreach (BusinessSettings::RULES as $key => [$default, $min, $max]) {
             $settings[$key] = ['nilai' => BusinessSettings::value($key), 'bawaan' => $default, 'min' => $min, 'maks' => $max];
         }
-        return response()->json(['pengaturan' => $settings, 'tarif_kerusakan' => DB::table('tarif_kerusakan')->orderBy('kode')->get(['id','kode','nama','satuan','tarif']), 'zona' => DB::table('zona_antar')->orderBy('jarak_maks_km')->get(['id','nama','jarak_maks_km','aktif','ongkir'])])->header('Cache-Control', 'private, no-store');
+        $data = ['pengaturan' => $settings, 'tarif_kerusakan' => DB::table('tarif_kerusakan')->orderBy('kode')->get(['id','kode','nama','satuan','tarif']), 'zona' => DB::table('zona_antar')->orderBy('jarak_maks_km')->get(['id','nama','jarak_maks_km','aktif','ongkir'])];
+        return ($request->getPreferredFormat() === 'html' && !$request->acceptsAnyContentType() && !$request->expectsJson()
+            ? response()->view('owner.pengaturan.index',$data) : response()->json($data))->header('Cache-Control', 'private, no-store');
     }
 
     public function update(Request $request)
@@ -44,6 +46,9 @@ class AdminSettingsController extends BaseController
             $row = DB::table('pengaturan')->where('kunci', $key)->lockForUpdate()->first();
             if ((string) $row->nilai === (string) $number) {
                 return;
+            }
+            if ($request->has('sebelum') && (string)$row->nilai !== (string)$request->input('sebelum')) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['nilai'=>'Nilai telah berubah. Periksa nilai terbaru sebelum menyimpan kembali.']);
             }
             DB::table('pengaturan')->where('id', $row->id)->update(['tipe' => 'integer', 'nilai' => (string) $number, 'diubah_pada' => now()]);
             DB::table('log_aktivitas')->insert(['aksi' => 'ubah_pengaturan', 'pengguna_id' => $request->user('staff')->id,

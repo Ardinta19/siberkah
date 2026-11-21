@@ -36,8 +36,9 @@ final class VerifiedRevenueController extends Controller
             ->selectRaw('kategori, kanal, COUNT(DISTINCT pesanan_id) AS pesanan, SUM(pokok) AS pokok, SUM(refund) AS refund')->get()
             ->map(fn ($r) => ['kategori' => $r->kategori, 'kanal' => $r->kanal, 'pesanan' => (int) $r->pesanan, 'pokok' => (int) $r->pokok,
                 'refund' => (int) $r->refund, 'neto' => (int) $r->pokok - (int) $r->refund]);
-        return response()->json(['mulai' => $request->mulai, 'akhir' => $request->akhir, 'neto' => $rows->sum('neto'), 'rincian' => $rows])
-            ->header('Cache-Control', 'private, no-store');
+        $report = ['mulai' => $request->mulai, 'akhir' => $request->akhir, 'neto' => $rows->sum('neto'), 'rincian' => $rows];
+        return ($request->getPreferredFormat() === 'html' && !$request->acceptsAnyContentType() && !$request->expectsJson()
+            ? response()->view('owner.laporan.penerimaan',$report) : response()->json($report))->header('Cache-Control', 'private, no-store');
     }
 
     public function export(Request $request)
