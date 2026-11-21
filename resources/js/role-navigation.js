@@ -1,3 +1,4 @@
+import { navigationSheet } from './navigation-sheet.js';
 import { disclosure } from './disclosure-motion.js';
 const account = document.querySelector('[data-account]');
 if (account) {
@@ -54,10 +55,18 @@ if (command && sidebar && command.showModal) {
   // Keep tabs inside the inert workspace when the mobile sidebar opens.
   sidebar.nextElementSibling.append(dock);
   function filter(){let count=0;for(const a of list.children){a.hidden=!a.textContent.toLocaleLowerCase('id').includes(input.value.trim().toLocaleLowerCase('id'));if(!a.hidden)count++;}empty.hidden=!!count;}
-  let before;
-  function open(){if(document.querySelector('dialog[open],#role-sidebar[aria-modal=true]'))return;before=document.activeElement;input.value='';filter();command.showModal();input.focus();}
-  command.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();command.close();}});
-  trigger.hidden=false;trigger.onclick=open;input.oninput=filter;
-  command.querySelector('[data-dismiss]').onclick=()=>command.close();command.onclose=()=>before?.focus();
-  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();command.open?command.close():open();}});
+  input.oninput=filter;
+  command.addEventListener('keydown',e=>{
+    if(e.isComposing || e.ctrlKey || e.metaKey || e.altKey)return;
+    const choices=[...list.children].filter(a=>!a.hidden);
+    if(!choices.length)return;
+    const index=choices.indexOf(document.activeElement);
+    if(e.target!==input && index<0)return;
+    if(e.key==='Enter' && e.target===input){e.preventDefault();choices[0].click();return;}
+    if(!['ArrowDown','ArrowUp'].includes(e.key))return;
+    e.preventDefault();
+    const next=index<0 ? (e.key==='ArrowDown'?0:choices.length-1) : (index+(e.key==='ArrowDown'?1:-1)+choices.length)%choices.length;
+    choices[next].focus();
+  });
+  navigationSheet(command,trigger,()=>{input.value='';filter();input.focus();});
 }

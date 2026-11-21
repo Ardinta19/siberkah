@@ -88,3 +88,5 @@
 @media(max-width:47.99rem){[data-workspace] main:has(#bk-scroll-marker){padding-bottom:calc(5rem + env(safe-area-inset-bottom))}body:has(.bk-work-dock){padding-bottom:0}}
 @media(max-width:63.99rem){#role-sidebar[aria-modal=true]{border-radius:0 2rem 3rem 0}#role-sidebar[aria-modal=true] nav a:nth-child(3n+2){margin-inline-start:.8rem}}
 @media(prefers-color-scheme:dark){[data-workspace] #main-header::before{background:#30262bf5;border-color:#69555e}}
+#workspace-command label{display:grid;gap:.3rem}#workspace-command input{width:100%}.bk-command-hint{font-size:.82rem;color:#684653;margin:.65rem 0}#workspace-command nav a:focus-visible{outline:2px solid #8a052b;outline-offset:-2px;background:#f6e6ea;border-radius:.6rem}
+@media(pointer:coarse){.bk-command-hint{display:none}}

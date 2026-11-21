@@ -108,3 +108,19 @@ for (const form of document.querySelectorAll('form[data-pending]')) {
   });
   window.addEventListener('pageshow', () => { form.removeAttribute('aria-busy'); if(submit) submit.textContent = label; });
 }
+
+// Progressive enhancement: jump forms still work as native <details> without JS.
+const jumps = [...document.querySelectorAll('.bk-jump')];
+for (const jump of jumps) {
+  jump.addEventListener('toggle',()=>{
+    if (!jump.open) return;
+    for (const other of jumps) if (other!==jump) other.open=false;
+    const field=jump.querySelector('input[type=number]');field.focus({preventScroll:true});field.select();
+  });
+  jump.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && jump.open){e.preventDefault();jump.open=false;jump.querySelector('summary').focus();}
+  });
+}
+if(jumps.length) document.addEventListener('pointerdown',e=>{
+  for(const jump of jumps) if(jump.open && !jump.contains(e.target))jump.open=false;
+});
